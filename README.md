@@ -1,0 +1,2 @@
+# karma-kebab
+Event Management &amp; Planning Tool: A streamlined app for managing festival logistics—people, trucks—with check-in, scheduling, task management, and accessible briefings for remote employees on location.
