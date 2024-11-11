@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KC_HTTP_PORT=3000
+    command: ["start-dev"]
+    ports:
+      # Map port 3000 on the container to port 3000 on the host
+      - "3000:3000"
+
+  event-service:
+    build:
+      context: ./event-service
+      dockerfile: Dockerfile
+    environment:
+      # Keycloak connection details for event-service
+      - KEYCLOAK_SERVER_URL=http://keycloak:3000
+      - KEYCLOAK_REALM=karma-kebab-realm
+      - KEYCLOAK_CLIENT_ID=event-service
+      - KEYCLOAK_CLIENT_SECRET=event-service-secret
+    depends_on:
+      - keycloak
+    ports:
+      # Map port 3001 on the container to port 3001 on the host
+      - "3001:3001"

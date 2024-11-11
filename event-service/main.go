@@ -26,6 +26,6 @@ func main() {
 	// Define the /test endpoint
 	router.HandleFunc("/test", TestHandler).Methods("GET")
 
-	log.Println("Server is running on port 8080")
-	log.Fatal(http.ListenAndServe(":8080", router))
+	log.Println("Server is running on port 3001")
+	log.Fatal(http.ListenAndServe(":3001", router))
 }
