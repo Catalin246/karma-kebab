@@ -17,12 +17,11 @@ func main() {
 	}
 
 	// Get enviorment variables
-	accountName := os.Getenv("AZURE_ACCOUNT_NAME")
-	accountKey := os.Getenv("AZURE_ACCOUNT_KEY")
+	connectionString := os.Getenv("AZURE_STORAGE_CONNECTION_STRING")
 	tableName := os.Getenv("AZURE_CONTAINER_NAME")
 
 	// Initialize Azure Table Storage
-	db.InitAzureTable(accountName, accountKey, tableName)
+	db.InitAzureTableWithConnectionString(connectionString, tableName)
 
 	// Register routes
 	router := mux.NewRouter()

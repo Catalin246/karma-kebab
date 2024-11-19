@@ -6,7 +6,7 @@
 
 `go get -u github.com/gorilla/mux`
 
-`go run main.go`
+`go run main.go` - this is not working. the connection string must be changed.
 
 ## Project structure
 
