@@ -20,8 +20,9 @@ RUN apk --no-cache add ca-certificates
 
 WORKDIR /app
 
-# Copy the statically built binary from the builder stage
+# Copy the binary and models
 COPY --from=builder /app/event-service .
+COPY --from=builder /app/models ./models
 
 # Ensure the binary is executable
 RUN chmod +x /app/event-service

@@ -12,11 +12,27 @@ import (
 
 // Global Azure Table Storage Client
 var (
-	TableClient *aztables.Client
+	TableClients map[string]*aztables.Client // Store table clients for each table
 )
 
-// InitAzureTableWithConnectionString initializes the Azure Table Storage connection using a connection string
-func InitAzureTableWithConnectionString(connectionString, tableName string) {
+// Models defines the list of tables to be created
+var Models = []string{
+	"events",
+	"persons",
+}
+
+// InitAzureTables initializes Azure Table Storage connections for all models
+func InitAzureTables(connectionString string) {
+	TableClients = make(map[string]*aztables.Client)
+
+	// Iterate over each model and create a table
+	for _, tableName := range Models {
+		initTable(connectionString, tableName)
+	}
+}
+
+// initTable creates a table if it does not exist and stores the client
+func initTable(connectionString, tableName string) {
 	// Create the Azure Table Service client using the connection string
 	serviceClient, err := aztables.NewServiceClientFromConnectionString(connectionString, nil)
 	if err != nil {
@@ -26,11 +42,11 @@ func InitAzureTableWithConnectionString(connectionString, tableName string) {
 	// Ensure the table exists by attempting to create it
 	_, err = serviceClient.CreateTable(context.Background(), tableName, nil)
 	if err != nil && !isResourceExistsError(err) {
-		log.Fatalf("Failed to create table: %v", err)
+		log.Fatalf("Failed to create table [%s]: %v", tableName, err)
 	}
 
 	// Create a table client for the specified table
-	TableClient = serviceClient.NewClient(tableName)
+	TableClients[tableName] = serviceClient.NewClient(tableName)
 
 	log.Printf("Successfully connected to Azure Table Storage: Table [%s]", tableName)
 }
