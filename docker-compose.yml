@@ -1,18 +1,27 @@
 version: '3.8'
 
 services:
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    command: "azurite --loose --blobHost 0.0.0.0 --blobPort 10000 --queueHost 0.0.0.0 --queuePort 10001 --tableHost 0.0.0.0 --tablePort 10002 --location /workspace --debug /workspace/debug.log"
+    volumes:
+      - azurite-data:/data
+    ports:
+      - "10000:10000" # Blob service endpoint
+      - "10001:10001" # Queue service endpoint
+      - "10002:10002" # Table service endpoint
+
   event-service:
     build:
       context: ./event-service
       dockerfile: Dockerfile
-    environment:
-      # Keycloak connection details for event-service
-      - KEYCLOAK_SERVER_URL=http://keycloak:3000
-      - KEYCLOAK_REALM=karma-kebab-realm
-      - KEYCLOAK_CLIENT_ID=event-service
-      - KEYCLOAK_CLIENT_SECRET=event-service-secret
+    volumes:
+      - ./event-service/.env:/app/.env
     depends_on:
-      - keycloak
+      - azurite
     ports:
       # Map port 3001 on the container to port 3001 on the host
       - "3001:3001"
+
+volumes:
+  azurite-data:

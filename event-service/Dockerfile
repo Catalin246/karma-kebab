@@ -1,29 +1,33 @@
-# Use an official Golang image as the base image for building
-FROM golang:1.18 AS builder
+# Stage 1: Build the Go application
+FROM golang:1.20 AS builder
 
-# Set the working directory in the container
 WORKDIR /app
 
-# Copy the go.mod and go.sum files and download dependencies
+# Copy the Go module files and download dependencies
 COPY go.mod go.sum ./
 RUN go mod download
 
-# Latest golang image on apline linux
-FROM golang:1.17-alpine
-
-# Work directory
-WORKDIR /docker-go
-
-# Installing dependencies
-COPY go.mod go.sum ./
-RUN go mod download
-
-# Copying all the files
+# Copy the rest of the application source code
 COPY . .
 
-# Starting our application
-CMD ["go", "run", "main.go"]
+# Build a statically linked binary
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o event-service .
 
-# Exposing server port
-EXPOSE 5000
+# Stage 2: Use a minimal base image for running the application
+FROM alpine:latest
 
+RUN apk --no-cache add ca-certificates
+
+WORKDIR /app
+
+# Copy the statically built binary from the builder stage
+COPY --from=builder /app/event-service .
+
+# Ensure the binary is executable
+RUN chmod +x /app/event-service
+
+# Expose the application port
+EXPOSE 3001
+
+# Command to run the application
+CMD ["./event-service"]
