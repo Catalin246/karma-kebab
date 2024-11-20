@@ -27,7 +27,7 @@ services:
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
-    command: ["start-dev", "--import-realm"]
+    # command: ["start-dev", "--import-realm"]
     ports:
       - "8080:8080"
     depends_on:
@@ -46,6 +46,16 @@ services:
       - keycloak
     ports:
       - "3001:3001"
+    networks:
+      - karama-kebab-network
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - "3007:3007"
     networks:
       - karama-kebab-network
 

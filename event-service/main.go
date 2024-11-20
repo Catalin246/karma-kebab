@@ -2,28 +2,28 @@ package main
 
 import (
 	"event-service/db"
+	"event-service/routes"
 	"log"
 	"net/http"
 	"os"
 
-	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 )
 
 func main() {
-	// Load enviorment variables
+	// Load environment variables
 	if err := godotenv.Load(".env"); err != nil {
-		log.Fatal("Erros loading .env file: ", err)
+		log.Fatal("Error loading .env file: ", err)
 	}
 
-	// Get enviorment variables
+	// Get environment variables
 	connectionString := os.Getenv("AZURE_STORAGE_CONNECTION_STRING")
 
 	// Initialize Azure Table Storage
 	db.InitAzureTables(connectionString)
 
 	// Register routes
-	router := mux.NewRouter()
+	router := routes.RegisterRoutes()
 
 	// Start the server
 	log.Println("Server is running on port 3001")
