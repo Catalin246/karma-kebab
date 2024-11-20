@@ -1,37 +1,39 @@
 {
-    "realm": "karama-kebab-realm",
-    "enabled": true,
-    "clients": [
+  "realm": "karma-kebab-realm",
+  "enabled": true,
+  "clients": [
       {
-        "clientId": "karama-kebab-client",
-        "enabled": true,
-        "protocol": "openid-connect",
-        "redirectUris": [
-          "http://localhost:3001/*",
-          "http://localhost:3002/*",
-          "http://localhost:3003/*",
-          "http://localhost:3004/*",
-          "http://localhost:3005/*",
-          "http://localhost:3006/*"
-        ],
-        "secret": "karama-kebab-client-secret"
+          "clientId": "karma-kebab-client",
+          "enabled": true,
+          "protocol": "openid-connect",
+          "redirectUris": [
+              "http://localhost:3001/*",
+              "http://localhost:3002/*",
+              "http://localhost:3003/*",
+              "http://localhost:3004/*",
+              "http://localhost:3005/*",
+              "http://localhost:3006/*"
+          ],
+          "secret": "karma-kebab-client-secret",
+          "directAccessGrantsEnabled": true,
+          "standardFlowEnabled": false,
+          "serviceAccountsEnabled": true
       }
-    ],
-    "users": [
-        {
-            "username": "testuser",
-            "enabled": true,
-            "emailVerified": true,
-            "firstName": "Test",
-            "lastName": "User",
-            "email": "testuser@example.com",
-            "credentials": [
-            {
-                "type": "password",
-                "value": "testpassword"
-            }
-            ]
-        }
-    ]
-  }
-  
+  ],
+  "users": [
+      {
+          "username": "testuser",
+          "enabled": true,
+          "emailVerified": true,
+          "firstName": "Test",
+          "lastName": "User",
+          "email": "testuser@example.com",
+          "credentials": [
+              {
+                  "type": "password",
+                  "value": "testpassword"
+              }
+          ]
+      }
+  ]
+}
