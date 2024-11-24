@@ -19,17 +19,23 @@ func NewAvailabilityService(repo repository.AvailabilityRepository) *Availabilit
 	}
 }
 
-func (s *AvailabilityService) GetAll(ctx context.Context) ([]models.Availability, error) {
-	return s.repo.GetAll(ctx)
+// Fetch all availability records for a specific EmployeeID
+func (s *AvailabilityService) GetAll(ctx context.Context, employeeID string) ([]models.Availability, error) {
+	if employeeID == "" {
+		return nil, models.ErrInvalidAvailability
+	}
+	return s.repo.GetAll(ctx, employeeID)
 }
 
-func (s *AvailabilityService) GetByID(ctx context.Context, id string) (*models.Availability, error) {
-	if id == "" {
+// Fetch a specific availability record by ID and EmployeeID
+func (s *AvailabilityService) GetByID(ctx context.Context, employeeID, id string) (*models.Availability, error) {
+	if employeeID == "" || id == "" {
 		return nil, models.ErrInvalidID
 	}
-	return s.repo.GetByID(ctx, id)
+	return s.repo.GetByID(ctx, employeeID, id)
 }
 
+// Create a new availability record
 func (s *AvailabilityService) Create(ctx context.Context, availability models.Availability) (*models.Availability, error) {
 	if err := s.validateAvailability(availability); err != nil {
 		return nil, err
@@ -47,8 +53,9 @@ func (s *AvailabilityService) Create(ctx context.Context, availability models.Av
 	return &availability, nil
 }
 
-func (s *AvailabilityService) Update(ctx context.Context, id string, availability models.Availability) error {
-	if id == "" {
+// Update an existing availability record by ID and EmployeeID
+func (s *AvailabilityService) Update(ctx context.Context, employeeID, id string, availability models.Availability) error {
+	if employeeID == "" || id == "" {
 		return models.ErrInvalidID
 	}
 
@@ -57,17 +64,20 @@ func (s *AvailabilityService) Update(ctx context.Context, id string, availabilit
 	}
 
 	availability.ID = id
+	availability.EmployeeID = employeeID
 
-	return s.repo.Update(ctx, id, availability)
+	return s.repo.Update(ctx, employeeID, availability)
 }
 
-func (s *AvailabilityService) Delete(ctx context.Context, id string) error {
-	if id == "" {
+// Delete an availability record by ID and EmployeeID
+func (s *AvailabilityService) Delete(ctx context.Context, employeeID, id string) error {
+	if employeeID == "" || id == "" {
 		return models.ErrInvalidID
 	}
-	return s.repo.Delete(ctx, id)
+	return s.repo.Delete(ctx, employeeID, id)
 }
 
+// Validate the availability record's fields
 func (s *AvailabilityService) validateAvailability(availability models.Availability) error {
 	if availability.EmployeeID == "" {
 		return models.ErrInvalidAvailability

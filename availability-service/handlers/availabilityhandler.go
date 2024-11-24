@@ -1,4 +1,3 @@
-// The handler includes Swagger documentation comments that you can use with swaggo/swag to generate API documentation
 package handlers
 
 import (
@@ -13,6 +12,17 @@ import (
 type AvailabilityHandler struct {
 	service *service.AvailabilityService
 }
+type CreateAvailabilityRequest struct {
+    EmployeeID string `json:"employeeId" binding:"required"`
+    StartDate  string `json:"startDate" binding:"required"`
+    EndDate    string `json:"endDate" binding:"required"`
+}
+
+type UpdateAvailabilityRequest struct {
+    EmployeeID string `json:"employeeId" binding:"required"`
+    StartDate  string `json:"startDate" binding:"required"`
+    EndDate    string `json:"endDate" binding:"required"`
+}
 
 func NewAvailabilityHandler(service *service.AvailabilityService) *AvailabilityHandler {
 	return &AvailabilityHandler{
@@ -20,36 +30,23 @@ func NewAvailabilityHandler(service *service.AvailabilityService) *AvailabilityH
 	}
 }
 
-// Request/Response structures
-type CreateAvailabilityRequest struct {
-	EmployeeID string `json:"employeeId" binding:"required"`
-	StartDate  string `json:"startDate" binding:"required"`
-	EndDate    string `json:"endDate" binding:"required"`
-}
-
-type UpdateAvailabilityRequest struct {
-	EmployeeID string `json:"employeeId" binding:"required"`
-	StartDate  string `json:"startDate" binding:"required"`
-	EndDate    string `json:"endDate" binding:"required"`
-}
-
-type AvailabilityResponse struct {
-	ID         string `json:"id"`
-	EmployeeID string `json:"employeeId"`
-	StartDate  string `json:"startDate"`
-	EndDate    string `json:"endDate"`
-}
-
 // GetAll godoc
 // @Summary Get all availabilities
-// @Description Get all availability records
+// @Description Get all availability records for a specific EmployeeID
 // @Tags availability
 // @Accept json
 // @Produce json
+// @Param employeeId query string true "Employee ID"
 // @Success 200 {array} AvailabilityResponse
 // @Router /api/v1/availability [get]
 func (h *AvailabilityHandler) GetAll(c *gin.Context) {
-	availabilities, err := h.service.GetAll(c.Request.Context())
+	employeeID := c.Query("employeeId")
+	if employeeID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "EmployeeID is required"})
+		return
+	}
+
+	availabilities, err := h.service.GetAll(c.Request.Context(), employeeID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -60,16 +57,24 @@ func (h *AvailabilityHandler) GetAll(c *gin.Context) {
 
 // GetByID godoc
 // @Summary Get availability by ID
-// @Description Get a single availability record by ID
+// @Description Get a single availability record by ID and EmployeeID
 // @Tags availability
 // @Accept json
 // @Produce json
 // @Param id path string true "Availability ID"
+// @Param employeeId query string true "Employee ID"
 // @Success 200 {object} AvailabilityResponse
 // @Router /api/v1/availability/{id} [get]
 func (h *AvailabilityHandler) GetByID(c *gin.Context) {
 	id := c.Param("id")
-	availability, err := h.service.GetByID(c.Request.Context(), id)
+	employeeID := c.Query("employeeId")
+
+	if employeeID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "EmployeeID is required"})
+		return
+	}
+
+	availability, err := h.service.GetByID(c.Request.Context(), employeeID, id)
 	if err != nil {
 		if err == models.ErrNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Availability not found"})
@@ -171,7 +176,7 @@ func (h *AvailabilityHandler) Update(c *gin.Context) {
 		EndDate:    endDate,
 	}
 
-	err = h.service.Update(c.Request.Context(), id, availability)
+	err = h.service.Update(c.Request.Context(), req.EmployeeID, id, availability)
 	if err != nil {
 		switch err {
 		case models.ErrNotFound:
@@ -194,11 +199,19 @@ func (h *AvailabilityHandler) Update(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path string true "Availability ID"
+// @Param employeeId query string true "Employee ID"
 // @Success 204 "No Content"
 // @Router /api/v1/availability/{id} [delete]
 func (h *AvailabilityHandler) Delete(c *gin.Context) {
 	id := c.Param("id")
-	err := h.service.Delete(c.Request.Context(), id)
+	employeeID := c.Query("employeeId")
+
+	if employeeID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "EmployeeID is required"})
+		return
+	}
+
+	err := h.service.Delete(c.Request.Context(), employeeID, id)
 	if err != nil {
 		switch err {
 		case models.ErrNotFound:
