@@ -97,7 +97,7 @@ func main() {
 	router.Use(gin.Logger())
 
 	// Initialize handlers
-	handlers.NewAvailabilityHandler(router, availabilityService)
+	handlers.NewAvailabilityHandler(availabilityService)  //used to be router, availabilityservice
 
 	// Create HTTP server
 	srv := &http.Server{
