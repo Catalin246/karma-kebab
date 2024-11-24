@@ -69,12 +69,12 @@ func setupCosmosClient(config *Config) (*azcosmos.Client, error) {
 	return client, nil
 }
 
-func setupTableStorageClient(config *Config) (*aztables.Client, error) {
-	client, err := aztables.NewClientFromConnectionString(config.TableStorage.ConnectionString, nil)
+func setupTableStorageClient(config *Config) (*aztables.ServiceClient, error) {
+	serviceClient, err := aztables.NewServiceClientFromConnectionString(config.TableStorage.ConnectionString, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create table storage client: %w", err)
 	}
-	return client, nil
+	return serviceClient, nil
 }
 
 func main() {
@@ -99,17 +99,17 @@ func main() {
 		if err != nil {
 			log.Fatalf("Failed to get container reference: %v", err)
 		}
-		repo = repository.NewCosmosAvailabilityRepository(container) // Use Cosmos DB repository
+		repo = repository.NewCosmosAvailabilityRepository(container)
 
 	} else if config.Environment == "tableStorage" {
 		// Setup Azure Table Storage client
-		tableClient, err := setupTableStorageClient(config)
+		serviceClient, err := setupTableStorageClient(config)
 		if err != nil {
 			log.Fatalf("Failed to setup Table Storage client: %v", err)
 		}
 
 		// Initialize repository for Azure Table Storage
-		repo = repository.NewTableStorageAvailabilityRepository(tableClient) // Use Table Storage repository
+		repo = repository.NewTableStorageAvailabilityRepository(serviceClient)
 
 	} else {
 		log.Fatalf("Unknown environment: %s", config.Environment)

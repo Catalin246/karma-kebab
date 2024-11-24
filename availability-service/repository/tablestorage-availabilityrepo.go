@@ -3,35 +3,45 @@ package repository
 import (
 	"availability-service/models"
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/data/aztables"
 )
 
 type TableStorageAvailabilityRepository struct {
-	tableClient *aztable.Client
+	serviceClient *aztables.ServiceClient
+	tableName     string
 }
 
-func NewTableStorageAvailabilityRepository(tableClient *aztable.Client) *TableStorageAvailabilityRepository {
+func NewTableStorageAvailabilityRepository(serviceClient *aztables.ServiceClient) *TableStorageAvailabilityRepository {
 	return &TableStorageAvailabilityRepository{
-		tableClient: tableClient,
+		serviceClient: serviceClient,
+		tableName:     "Availability",
 	}
 }
 
 // Create inserts an availability record into Table Storage
 func (r *TableStorageAvailabilityRepository) Create(ctx context.Context, availability models.Availability) error {
-	table := r.tableClient.NewTable("Availability") // Your table name
-	entity := aztable.Ent{
-		PartitionKey: aztable.String("availability"),  // Partition key
-		RowKey:       aztable.String(availability.ID), // Row key (unique identifier)
-		Properties: map[string]interface{}{
-			"EmployeeID": availability.EmployeeID,
-			"StartDate":  availability.StartDate,
-			"EndDate":    availability.EndDate,
-		},
+	tableClient := r.serviceClient.NewClient(r.tableName)
+
+	// Create entity as a map
+	entity := map[string]interface{}{
+		"PartitionKey": availability.EmployeeID,
+		"RowKey":       availability.ID,
+		"EmployeeID":   availability.EmployeeID,
+		"StartDate":    availability.StartDate.Format(time.RFC3339),
+		"EndDate":      availability.EndDate.Format(time.RFC3339),
 	}
 
-	_, err := table.InsertEntity(ctx, &entity)
+	// Marshal the entity to JSON
+	entityBytes, err := json.Marshal(entity)
+	if err != nil {
+		return fmt.Errorf("failed to marshal entity: %v", err)
+	}
+
+	_, err = tableClient.AddEntity(ctx, entityBytes, nil)
 	if err != nil {
 		return fmt.Errorf("failed to insert entity: %v", err)
 	}
@@ -41,20 +51,36 @@ func (r *TableStorageAvailabilityRepository) Create(ctx context.Context, availab
 
 // GetByID retrieves an availability record by ID
 func (r *TableStorageAvailabilityRepository) GetByID(ctx context.Context, employeeID, id string) (*models.Availability, error) {
-	table := r.tableClient.NewTable("Availability")
+	tableClient := r.serviceClient.NewClient(r.tableName)
 
-	// Get the entity using the partition key (employeeID) and row key (id)
-	entity, err := table.GetEntity(ctx, employeeID, id)
+	response, err := tableClient.GetEntity(ctx, employeeID, id, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get entity: %v", err)
+	}
+
+	// Create a map to hold the entity data
+	var entityData map[string]interface{}
+	if err := json.Unmarshal(response.Value, &entityData); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal entity: %v", err)
+	}
+
+	// Parse the dates
+	startDate, err := time.Parse(time.RFC3339, entityData["StartDate"].(string))
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse start date: %v", err)
+	}
+
+	endDate, err := time.Parse(time.RFC3339, entityData["EndDate"].(string))
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse end date: %v", err)
 	}
 
 	// Map entity properties to the Availability model
 	availability := models.Availability{
 		ID:         id,
 		EmployeeID: employeeID,
-		StartDate:  entity.Properties["StartDate"].(string),
-		EndDate:    entity.Properties["EndDate"].(string),
+		StartDate:  startDate,
+		EndDate:    endDate,
 	}
 
 	return &availability, nil
@@ -62,51 +88,87 @@ func (r *TableStorageAvailabilityRepository) GetByID(ctx context.Context, employ
 
 // GetAll retrieves all availability records
 func (r *TableStorageAvailabilityRepository) GetAll(ctx context.Context, employeeID string, startDate, endDate *time.Time) ([]models.Availability, error) {
+	tableClient := r.serviceClient.NewClient(r.tableName)
+
 	// Build the base query for Table Storage
 	filter := fmt.Sprintf("PartitionKey eq '%s'", employeeID)
 
 	// Add date filters if startDate and endDate are provided
 	if startDate != nil {
-		filter += fmt.Sprintf(" and Date ge '%s'", startDate.Format(time.RFC3339))
+		filter += fmt.Sprintf(" and StartDate ge datetime'%s'", startDate.Format("2006-01-02T15:04:05Z"))
 	}
 	if endDate != nil {
-		filter += fmt.Sprintf(" and Date le '%s'", endDate.Format(time.RFC3339))
+		filter += fmt.Sprintf(" and EndDate le datetime'%s'", endDate.Format("2006-01-02T15:04:05Z"))
+	}
+
+	// Create list options with the filter
+	listOptions := &aztables.ListEntitiesOptions{
+		Filter: &filter,
 	}
 
 	// Query table storage with the filter
-	entities, err := r.tableClient.QueryEntities(ctx, "Availability", filter, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to query availability records: %w", err)
-	}
-
-	// Convert entities to Availability models
+	pager := tableClient.NewListEntitiesPager(listOptions)
 	var availabilities []models.Availability
-	for _, entity := range entities {
-		var availability models.Availability
-		if err := entity.Unmarshal(&availability); err != nil {
-			return nil, fmt.Errorf("failed to unmarshal entity: %v", err)
+
+	for pager.More() {
+		response, err := pager.NextPage(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed to list entities: %v", err)
 		}
-		availabilities = append(availabilities, availability)
+
+		for _, entityBytes := range response.Entities {
+			var entityData map[string]interface{}
+			if err := json.Unmarshal(entityBytes, &entityData); err != nil {
+				return nil, fmt.Errorf("failed to unmarshal entity: %v", err)
+			}
+
+			// Parse the dates
+			startDate, err := time.Parse(time.RFC3339, entityData["StartDate"].(string))
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse start date: %v", err)
+			}
+
+			endDate, err := time.Parse(time.RFC3339, entityData["EndDate"].(string))
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse end date: %v", err)
+			}
+
+			availability := models.Availability{
+				ID:         entityData["RowKey"].(string),
+				EmployeeID: entityData["PartitionKey"].(string),
+				StartDate:  startDate,
+				EndDate:    endDate,
+			}
+			availabilities = append(availabilities, availability)
+		}
 	}
 
 	return availabilities, nil
 }
 
 func (r *TableStorageAvailabilityRepository) Update(ctx context.Context, employeeID string, availability models.Availability) error {
-	table := r.tableClient.NewTable("Availability")
+	tableClient := r.serviceClient.NewClient(r.tableName)
 
-	entity := aztable.Ent{
-		PartitionKey: aztable.String(employeeID),      // Using employeeID as partition key
-		RowKey:       aztable.String(availability.ID), // Using availability ID as row key
-		Properties: map[string]interface{}{
-			"EmployeeID": availability.EmployeeID,
-			"StartDate":  availability.StartDate,
-			"EndDate":    availability.EndDate,
-		},
+	// Create entity as a map
+	entity := map[string]interface{}{
+		"PartitionKey": employeeID,
+		"RowKey":       availability.ID,
+		"EmployeeID":   availability.EmployeeID,
+		"StartDate":    availability.StartDate.Format(time.RFC3339),
+		"EndDate":      availability.EndDate.Format(time.RFC3339),
 	}
 
-	// Update the entity in the table
-	_, err := table.UpdateEntity(ctx, &entity, aztable.Replace)
+	// Marshal the entity to JSON
+	entityBytes, err := json.Marshal(entity)
+	if err != nil {
+		return fmt.Errorf("failed to marshal entity: %v", err)
+	}
+
+	updateOptions := &aztables.UpdateEntityOptions{
+		UpdateMode: aztables.UpdateModeReplace,
+	}
+
+	_, err = tableClient.UpdateEntity(ctx, entityBytes, updateOptions)
 	if err != nil {
 		return fmt.Errorf("failed to update entity: %v", err)
 	}
@@ -115,14 +177,15 @@ func (r *TableStorageAvailabilityRepository) Update(ctx context.Context, employe
 }
 
 func (r *TableStorageAvailabilityRepository) Delete(ctx context.Context, employeeID string, id string) error {
-	table := r.tableClient.NewTable("Availability")
+	tableClient := r.serviceClient.NewClient(r.tableName)
 
-	partitionKey := employeeID // Use employeeID as partition key
-	rowKey := id               // Use id as row key
+	options := &aztables.DeleteEntityOptions{
+		IfMatch: nil, // Use nil for unconditional delete
+	}
 
-	_, err := table.DeleteEntity(ctx, partitionKey, rowKey)
+	_, err := tableClient.DeleteEntity(ctx, employeeID, id, options)
 	if err != nil {
-		return fmt.Errorf("failed to delete availability recod with id %s for employee %s: %v", id, employeeID, err)
+		return fmt.Errorf("failed to delete availability record with id %s for employee %s: %v", id, employeeID, err)
 	}
 
 	return nil
