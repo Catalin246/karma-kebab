@@ -1,9 +1,9 @@
 package main
 
 import (
+	"availability-service/handlers"
 	"availability-service/repository"
 	"availability-service/service"
-	"availability-service/handlers"
 	"context"
 	"fmt"
 	"log"
@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/data/azcosmos"
+	"github.com/Azure/azure-sdk-for-go/sdk/data/aztables"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 )
@@ -24,11 +25,15 @@ type Config struct {
 		Host string `mapstructure:"host"`
 	} `mapstructure:"server"`
 	Cosmos struct {
-		Endpoint string `mapstructure:"endpoint"`
-		Key      string `mapstructure:"key"`
-		Database string `mapstructure:"database"`
+		Endpoint  string `mapstructure:"endpoint"`
+		Key       string `mapstructure:"key"`
+		Database  string `mapstructure:"database"`
 		Container string `mapstructure:"container"`
 	} `mapstructure:"cosmos"`
+	TableStorage struct {
+		ConnectionString string `mapstructure:"connectionString"`
+	} `mapstructure:"tableStorage"`
+	Environment string `mapstructure:"environment"`
 }
 
 func loadConfig() (*Config, error) {
@@ -36,7 +41,6 @@ func loadConfig() (*Config, error) {
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath("./configs")
 	viper.AddConfigPath(".")
-	
 	viper.AutomaticEnv()
 
 	if err := viper.ReadInConfig(); err != nil {
@@ -65,6 +69,14 @@ func setupCosmosClient(config *Config) (*azcosmos.Client, error) {
 	return client, nil
 }
 
+func setupTableStorageClient(config *Config) (*aztables.Client, error) {
+	client, err := aztables.NewClientFromConnectionString(config.TableStorage.ConnectionString, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create table storage client: %w", err)
+	}
+	return client, nil
+}
+
 func main() {
 	// Load configuration
 	config, err := loadConfig()
@@ -72,32 +84,49 @@ func main() {
 		log.Fatalf("Failed to load configuration: %v", err)
 	}
 
-	// Setup Cosmos DB client
-	cosmosClient, err := setupCosmosClient(config)
-	if err != nil {
-		log.Fatalf("Failed to setup Cosmos DB client: %v", err)
-	}
+	var repo repository.AvailabilityRepository
 
-	// Initialize repository
-	container, err := cosmosClient.NewContainer(config.Cosmos.Database, config.Cosmos.Container)
-	if err != nil {
-		log.Fatalf("Failed to get container reference: %v", err)
+	// Choose which DB to use based on the environment
+	if config.Environment == "cosmos" {
+		// Setup Cosmos DB client
+		cosmosClient, err := setupCosmosClient(config)
+		if err != nil {
+			log.Fatalf("Failed to setup Cosmos DB client: %v", err)
+		}
+
+		// Initialize repository for Cosmos DB
+		container, err := cosmosClient.NewContainer(config.Cosmos.Database, config.Cosmos.Container)
+		if err != nil {
+			log.Fatalf("Failed to get container reference: %v", err)
+		}
+		repo = repository.NewCosmosAvailabilityRepository(container) // Use Cosmos DB repository
+
+	} else if config.Environment == "tableStorage" {
+		// Setup Azure Table Storage client
+		tableClient, err := setupTableStorageClient(config)
+		if err != nil {
+			log.Fatalf("Failed to setup Table Storage client: %v", err)
+		}
+
+		// Initialize repository for Azure Table Storage
+		repo = repository.NewTableStorageAvailabilityRepository(tableClient) // Use Table Storage repository
+
+	} else {
+		log.Fatalf("Unknown environment: %s", config.Environment)
 	}
-	
-	repo := repository.NewCosmosAvailabilityRepository(container)
 
 	// Initialize service
 	availabilityService := service.NewAvailabilityService(repo)
 
 	// Setup Gin router
 	router := gin.Default()
-	
+
 	// Add middleware
 	router.Use(gin.Recovery())
 	router.Use(gin.Logger())
 
 	// Initialize handlers
-	handlers.NewAvailabilityHandler(availabilityService)  //used to be router, availabilityservice
+	handlers.NewAvailabilityHandler(availabilityService)
 
 	// Create HTTP server
 	srv := &http.Server{

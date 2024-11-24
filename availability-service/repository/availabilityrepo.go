@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/data/azcosmos"
 )
@@ -22,33 +23,32 @@ func NewCosmosAvailabilityRepository(container *azcosmos.ContainerClient) *Cosmo
 // Make sure this implements the interface
 var _ AvailabilityRepository = (*CosmosAvailabilityRepository)(nil)
 
-// func (r *CosmosAvailabilityRepository) GetAll(ctx context.Context) ([]models.Availability, error) {
-//     query := "SELECT * FROM c"
-//     queryPager := r.container.NewQueryItemsPager(query, azcosmos.QueryOptions{})
+func (r *CosmosAvailabilityRepository) GetAll(ctx context.Context, employeeID string, startDate, endDate *time.Time) ([]models.Availability, error) {
+    // Base query to fetch availability records for a specific employee
+    query := "SELECT * FROM c WHERE c.EmployeeID = @employeeID"
 
-//     var availabilities []models.Availability
-//     for queryPager.More() {
-//         queryResponse, err := queryPager.NextPage(ctx)
-//         if err != nil {
-//             return nil, fmt.Errorf("%w: %v", models.ErrDatabaseOperation, err)
-//         }
+    // Prepare query parameters (filtering by dates if provided)
+    parameters := []azcosmos.QueryParameter{
+        {Name: "@employeeID", Value: employeeID},
+    }
 
-//         for _, item := range queryResponse.Items {
-//             var availability models.Availability
-//             if err := json.Unmarshal(item, &availability); err != nil {
-//                 return nil, fmt.Errorf("%w: %v", models.ErrDatabaseOperation, err)
-//             }
-//             availabilities = append(availabilities, availability)
-//         }
-//     }
+    if startDate != nil {
+        parameters = append(parameters, azcosmos.QueryParameter{Name: "@startDate", Value: startDate.Format(time.RFC3339)})
+        query += " AND c.Date >= @startDate"
+    }
 
-//     return availabilities, nil
-// }
-func (r *CosmosAvailabilityRepository) GetAll(ctx context.Context, employeeID string) ([]models.Availability, error) {
-    query := "SELECT * FROM c"
-    partitionKey := azcosmos.NewPartitionKeyString(employeeID) // Use EmployeeID as partition key
+    if endDate != nil {
+        parameters = append(parameters, azcosmos.QueryParameter{Name: "@endDate", Value: endDate.Format(time.RFC3339)})
+        query += " AND c.Date <= @endDate"
+    }
 
-    queryPager := r.container.NewQueryItemsPager(query, partitionKey, &azcosmos.QueryOptions{})
+    // Use the PartitionKey to optimize querying by EmployeeID
+    partitionKey := azcosmos.NewPartitionKeyString(employeeID)
+
+    // Create a query pager
+    queryPager := r.container.NewQueryItemsPager(query, partitionKey, &azcosmos.QueryOptions{
+        QueryParameters: parameters, // Pass query parameters here
+    })
 
     var availabilities []models.Availability
     for queryPager.More() {
@@ -70,23 +70,6 @@ func (r *CosmosAvailabilityRepository) GetAll(ctx context.Context, employeeID st
 }
 
 
-// func (r *CosmosAvailabilityRepository) GetByID(ctx context.Context, id string) (*models.Availability, error) {
-// 	pk := azcosmos.NewPartitionKeyString(id)
-// 	response, err := r.container.ReadItem(ctx, pk, id, nil)
-// 	if err != nil {
-// 		if isNotFoundError(err) {
-// 			return nil, models.ErrNotFound
-// 		}
-// 		return nil, fmt.Errorf("%w: %v", models.ErrDatabaseOperation, err)
-// 	}
-
-// 	var availability models.Availability
-// 	if err := json.Unmarshal(response.Value, &availability); err != nil {
-// 		return nil, fmt.Errorf("%w: %v", models.ErrDatabaseOperation, err)
-// 	}
-
-// 	return &availability, nil
-// }
 func (r *CosmosAvailabilityRepository) GetByID(ctx context.Context, employeeID, id string) (*models.Availability, error) {
     partitionKey := azcosmos.NewPartitionKeyString(employeeID)
     response, err := r.container.ReadItem(ctx, partitionKey, id, nil)
@@ -125,25 +108,6 @@ func (r *CosmosAvailabilityRepository) Create(ctx context.Context, availability 
     return nil
 }
 
-
-// func (r *CosmosAvailabilityRepository) Update(ctx context.Context, id string, availability models.Availability) error {
-// 	pk := azcosmos.NewPartitionKeyString(id)
-
-// 	data, err := json.Marshal(availability)
-// 	if err != nil {
-// 		return fmt.Errorf("%w: %v", models.ErrDatabaseOperation, err)
-// 	}
-
-// 	_, err = r.container.ReplaceItem(ctx, pk, id, data, nil)
-// 	if err != nil {
-// 		if isNotFoundError(err) {
-// 			return models.ErrNotFound
-// 		}
-// 		return fmt.Errorf("%w: %v", models.ErrDatabaseOperation, err)
-// 	}
-
-// 	return nil
-// }
 func (r *CosmosAvailabilityRepository) Update(ctx context.Context, employeeID string, availability models.Availability) error {
     partitionKey := azcosmos.NewPartitionKeyString(employeeID)
 

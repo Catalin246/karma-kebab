@@ -23,7 +23,6 @@ type UpdateAvailabilityRequest struct {
     StartDate  string `json:"startDate" binding:"required"`
     EndDate    string `json:"endDate" binding:"required"`
 }
-
 func NewAvailabilityHandler(service *service.AvailabilityService) *AvailabilityHandler {
 	return &AvailabilityHandler{
 		service: service,
@@ -40,18 +39,49 @@ func NewAvailabilityHandler(service *service.AvailabilityService) *AvailabilityH
 // @Success 200 {array} AvailabilityResponse
 // @Router /api/v1/availability [get]
 func (h *AvailabilityHandler) GetAll(c *gin.Context) {
+	// Retrieve employeeID from query parameters
 	employeeID := c.Query("employeeId")
 	if employeeID == "" {
+		// Return error if employeeID is not provided
 		c.JSON(http.StatusBadRequest, gin.H{"error": "EmployeeID is required"})
 		return
 	}
 
-	availabilities, err := h.service.GetAll(c.Request.Context(), employeeID)
+	// Retrieve optional date range parameters from query
+	startDateStr := c.DefaultQuery("startDate", "")
+	endDateStr := c.DefaultQuery("endDate", "")
+
+	var startDate, endDate *time.Time
+
+	// Parse start date if provided
+	if startDateStr != "" {
+		startDateParsed, err := time.Parse("2006-01-02", startDateStr) // Assuming "YYYY-MM-DD" format
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid startDate format. Use YYYY-MM-DD"})
+			return
+		}
+		startDate = &startDateParsed
+	}
+
+	// Parse end date if provided
+	if endDateStr != "" {
+		endDateParsed, err := time.Parse("2006-01-02", endDateStr) // Assuming "YYYY-MM-DD" format
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid endDate format. Use YYYY-MM-DD"})
+			return
+		}
+		endDate = &endDateParsed
+	}
+
+	// Call the service to get all availability records
+	availabilities, err := h.service.GetAll(c.Request.Context(), employeeID, startDate, endDate)
 	if err != nil {
+		// Handle internal server error and return it to the client
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
+	// Return success with the availability records
 	c.JSON(http.StatusOK, availabilities)
 }
 

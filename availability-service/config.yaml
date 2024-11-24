@@ -1,11 +1,15 @@
-#config file
-
+#config file 
 server:
+  host: "localhost"
   port: 8080
-  host: "0.0.0.0"
 
 cosmos:
-  endpoint: "your-cosmos-endpoint"
-  key: "your-cosmos-key"
-  database: "availability-db"
-  container: "availabilities"
+  endpoint: "https://<cosmos-db-endpoint>"
+  key: "<cosmos-db-key>"
+  database: "<database-name>"
+  container: "<container-name>"
+
+tableStorage:
+  connectionString: "<table-storage-connection-string>"
+
+environment: "tableStorage"  # Or "cosmos"
