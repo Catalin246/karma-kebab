@@ -5,7 +5,6 @@ import (
     "encoding/json"
     "fmt"
     "availability-service/models"
-	"availability-service/models/error.go"
     "github.com/Azure/azure-sdk-for-go/sdk/data/azcosmos"
 )
 
@@ -50,14 +49,14 @@ func (r *CosmosAvailabilityRepository) GetByID(ctx context.Context, id string) (
 	response, err := r.container.ReadItem(ctx, pk, id, nil)
 	if err != nil {
 		if isNotFoundError(err) {
-			return nil, errors.ErrNotFound
+			return nil, models.ErrNotFound
 		}
-		return nil, fmt.Errorf("%w: %v", errors.ErrDatabaseOperation, err)
+		return nil, fmt.Errorf("%w: %v", models.ErrDatabaseOperation, err)
 	}
 
 	var availability models.Availability
 	if err := json.Unmarshal(response.Value, &availability); err != nil {
-		return nil, fmt.Errorf("%w: %v", errors.ErrDatabaseOperation, err)
+		return nil, fmt.Errorf("%w: %v", models.ErrDatabaseOperation, err)
 	}
 
 	return &availability, nil
@@ -68,15 +67,15 @@ func (r *CosmosAvailabilityRepository) Create(ctx context.Context, availability 
 
 	data, err := json.Marshal(availability)
 	if err != nil {
-		return fmt.Errorf("%w: %v", errors.ErrDatabaseOperation, err)
+		return fmt.Errorf("%w: %v", models.ErrDatabaseOperation, err)
 	}
 
 	_, err = r.container.CreateItem(ctx, pk, data, nil)
 	if err != nil {
 		if isConflictError(err) {
-			return errors.ErrConflict
+			return models.ErrConflict
 		}
-		return fmt.Errorf("%w: %v", errors.ErrDatabaseOperation, err)
+		return fmt.Errorf("%w: %v", models.ErrDatabaseOperation, err)
 	}
 
 	return nil
@@ -87,15 +86,15 @@ func (r *CosmosAvailabilityRepository) Update(ctx context.Context, id string, av
 
 	data, err := json.Marshal(availability)
 	if err != nil {
-		return fmt.Errorf("%w: %v", errors.ErrDatabaseOperation, err)
+		return fmt.Errorf("%w: %v", models.ErrDatabaseOperation, err)
 	}
 
 	_, err = r.container.ReplaceItem(ctx, pk, id, data, nil)
 	if err != nil {
 		if isNotFoundError(err) {
-			return errors.ErrNotFound
+			return models.ErrNotFound
 		}
-		return fmt.Errorf("%w: %v", errors.ErrDatabaseOperation, err)
+		return fmt.Errorf("%w: %v", models.ErrDatabaseOperation, err)
 	}
 
 	return nil
@@ -107,9 +106,9 @@ func (r *CosmosAvailabilityRepository) Delete(ctx context.Context, id string) er
 	_, err := r.container.DeleteItem(ctx, pk, id, nil)
 	if err != nil {
 		if isNotFoundError(err) {
-			return errors.ErrNotFound
+			return models.ErrNotFound
 		}
-		return fmt.Errorf("%w: %v", errors.ErrDatabaseOperation, err)
+		return fmt.Errorf("%w: %v", models.ErrDatabaseOperation, err)
 	}
 
 	return nil

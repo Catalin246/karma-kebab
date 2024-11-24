@@ -3,6 +3,7 @@ package main
 import (
 	"availability-service/repository"
 	"availability-service/service"
+	"availability-service/handlers"
 	"context"
 	"fmt"
 	"log"
