@@ -1,6 +1,52 @@
-@shift_service_HostAddress = http://localhost:5088
-
-GET {{shift_service_HostAddress}}/weatherforecast/
+# Get All Shifts
+GET http://localhost:5001/api/shifts
 Accept: application/json
+# Authorization: Bearer <your-jwt-token-if-needed>
 
-###
+# Get Shifts by Employee ID
+GET http://localhost:5001/api/shifts?employeeId=12345-abcd-6789
+Accept: application/json
+# Authorization: Bearer <your-jwt-token-if-needed>
+
+# Get Shift by ID
+GET http://localhost:5001/api/shifts/shiftId
+Accept: application/json
+# Authorization: Bearer <your-jwt-token-if-needed>
+
+# Create a new Shift
+POST http://localhost:5001/api/shifts
+Content-Type: application/json
+Accept: application/json
+# Authorization: Bearer <your-jwt-token-if-needed>
+
+{
+  "employeeId": "12345-abcd-6789",
+  "startTime": "2024-11-26T09:00:00",
+  "endTime": "2024-11-26T17:00:00",
+  "shiftType": "Morning",
+  "status": "Scheduled",
+  "clockInTime": null,
+  "clockOutTime": null,
+  "shiftHours": 8.0
+}
+
+# Update a Shift by ID
+PUT http://localhost:5001/api/shifts/shiftId
+Content-Type: application/json
+Accept: application/json
+# Authorization: Bearer <your-jwt-token-if-needed>
+
+{
+  "employeeId": "12345-abcd-6789",
+  "startTime": "2024-11-26T10:00:00",
+  "endTime": "2024-11-26T18:00:00",
+  "shiftType": "Afternoon",
+  "status": "Confirmed",
+  "clockInTime": "2024-11-26T10:00:00",
+  "clockOutTime": "2024-11-26T18:00:00",
+  "shiftHours": 8.0
+}
+
+# Delete a Shift by ID
+DELETE http://localhost:5001/api/shifts/shiftId
+# Authorization: Bearer <your-jwt-token-if-needed>
