@@ -11,8 +11,6 @@ public class ShiftEntity : ITableEntity
     public string RowKey { get; set; }        // shiftId
     public DateTimeOffset? Timestamp { get; set; }
     public Azure.ETag ETag { get; set; }
-
-    // Shift properties
     public Guid ShiftId
     {
         get => Guid.Parse(RowKey);

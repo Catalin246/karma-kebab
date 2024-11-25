@@ -19,7 +19,7 @@ public class ShiftService : IShiftService
     {
         try
         {
-            var shifts = await _context.GetShifts();  // Get all shifts
+            var shifts = await _context.GetShifts();  
 
             // Apply filters based on parameters
             if (date.HasValue)
@@ -51,7 +51,7 @@ public class ShiftService : IShiftService
         try
         {
             var shiftEntity = await _context.GetShiftById(shiftId);
-            return shiftEntity != null ? MapToDto(shiftEntity) : null;
+            return shiftEntity;
         }
         catch (Exception ex)
         {
@@ -90,7 +90,7 @@ public class ShiftService : IShiftService
             shift.ClockInTime = shiftDto.ClockInTime;
             shift.ClockOutTime = shiftDto.ClockOutTime;
 
-            var updatedShift = await _context.UpdateShift(shift);
+            var updatedShift = await _context.UpdateShift(MapToEntity(shift));
             return MapToDto(updatedShift);
         }
         catch (Exception ex)
@@ -100,22 +100,23 @@ public class ShiftService : IShiftService
         }
     }
 
-    public async Task<bool> DeleteShift(Guid shiftId)
+public async Task<bool> DeleteShift(Guid shiftId)
+{
+    try
     {
-        try
-        {
-            var shift = await _context.GetShiftById(shiftId);
-            if (shift == null) return false;
-
-            await _context.DeleteShift(shift.PartitionKey, shift.RowKey);
-            return true;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error deleting shift with ID: {ShiftId}", shiftId);
-            throw;
-        }
+        var shiftDto = await _context.GetShiftById(shiftId); 
+        if (shiftDto == null) return false;
+        var shiftEntity = MapToEntity(shiftDto);
+        await _context.DeleteShift(shiftEntity.PartitionKey, shiftEntity.RowKey);
+        return true;
     }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Error deleting shift with ID: {ShiftId}", shiftId);
+        throw;
+    }
+}
+
 
     public async Task<decimal> GetTotalHoursByEmployee(Guid employeeId)
     {
@@ -153,7 +154,7 @@ public class ShiftService : IShiftService
     {
         try
         {
-            var shifts = await _context.GetShifts(eventId); 
+            var shifts = await _context.GetShifts(null, null, null, null, eventId); 
             if (!shifts.Any()) return null;
 
             foreach (var shift in shifts)
@@ -172,12 +173,11 @@ public class ShiftService : IShiftService
         }
     }
 
-// Map ShiftEntity to ShiftDto
 private static ShiftDto MapToDto(ShiftEntity shift)
 {
     return new ShiftDto
     {
-        ShiftId = shift.ShiftId,  // Ensure this is a valid property
+        ShiftId = shift.ShiftId,
         StartTime = shift.StartTime,
         EndTime = shift.EndTime,
         EmployeeId = shift.EmployeeId,
@@ -192,9 +192,6 @@ private static ShiftDto MapToDto(ShiftEntity shift)
     };
 }
 
-
-
-// Map ShiftDto to ShiftEntity
 private static ShiftEntity MapToEntity(ShiftDto shiftDto)
 {
     return new ShiftEntity

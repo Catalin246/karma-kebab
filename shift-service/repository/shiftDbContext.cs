@@ -78,14 +78,48 @@ public class ShiftDbContext : IShiftDbContext
         return shifts;
     }
 
-    public async Task<IEnumerable<ShiftEntity>> GetShifts(string? filter = null)
+    public async Task<IEnumerable<ShiftEntity>> GetShifts(DateTime? date = null, Guid? employeeId = null, ShiftType? shiftType = null, Guid? shiftId = null, Guid? eventId = null)
     {
         var shifts = new List<ShiftEntity>();
         
+        // Start building the filter string
+        var filterList = new List<string>();
+
+        if (employeeId.HasValue)
+        {
+            filterList.Add($"PartitionKey eq '{employeeId}'"); // EmployeeId is stored in PartitionKey
+        }
+
+        if (shiftId.HasValue)
+        {
+            filterList.Add($"RowKey eq '{shiftId}'"); // ShiftId is stored in RowKey
+        }
+
+        if (date.HasValue)
+        {
+            filterList.Add($"StartTime ge '{date.Value:yyyy-MM-dd}' and EndTime le '{date.Value:yyyy-MM-dd}'"); // Assuming date comparison with StartTime and EndTime
+        }
+
+        if (shiftType.HasValue)
+        {
+            filterList.Add($"ShiftType eq '{shiftType}'");
+        }
+
+        if (eventId.HasValue)
+        {
+            // Assuming eventId is a part of the RowKey or another column (adjust if needed)
+            filterList.Add($"EventId eq '{eventId}'"); // Adjust depending on how eventId is stored
+        }
+
+        // Combine all filters using "and"
+        string filter = string.Join(" and ", filterList);
+
+        // If no filters are applied, query all shifts
         var queryResults = string.IsNullOrEmpty(filter) 
             ? _tableClient.QueryAsync<ShiftEntity>() 
             : _tableClient.QueryAsync<ShiftEntity>(filter);
         
+        // Collect results
         await foreach (var shift in queryResults)
         {
             shifts.Add(shift);
@@ -93,6 +127,7 @@ public class ShiftDbContext : IShiftDbContext
 
         return shifts;
     }
+
 
     // Add a new shift
     public async Task<ShiftEntity> AddShift(ShiftEntity shift)

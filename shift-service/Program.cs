@@ -4,8 +4,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.OpenApi.Models;
 
-//https://camunda.com/resources/microservices/c/ - really good source for building c# microservices
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
@@ -40,7 +38,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// Ensure the application listens for HTTPS in local development environment
+if (app.Environment.IsDevelopment())
+{
+    // Explicitly configure Kestrel to listen on both HTTP and HTTPS ports
+    app.UseHttpsRedirection(); // Automatically redirects HTTP to HTTPS
+}
 
 app.UseAuthorization();
 
