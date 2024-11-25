@@ -1,20 +1,31 @@
 using Azure.Data.Tables;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
+
+public class AzureStorageConfig
+{
+    public string ConnectionString { get; set; }
+}
 
 public class ShiftDbContext : IShiftDbContext
 {
     private readonly TableClient _tableClient;
     private const string TableName = "Shifts";
 
-    public ShiftDbContext(IConfiguration configuration)
+    public ShiftDbContext(IOptions<AzureStorageConfig> options)
     {
-        var connectionString = configuration["AzureStorage:ConnectionString"] 
-            ?? "UseDevelopmentStorage=true"; // Default to Azurite local storage
-            
+        if (options == null) throw new ArgumentNullException(nameof(options));
+        
+        var connectionString = options.Value.ConnectionString;
+        if (string.IsNullOrEmpty(connectionString))
+        {
+            throw new InvalidOperationException("Azure Storage connection string is not configured");
+        }
+
         _tableClient = new TableClient(connectionString, TableName);
         _tableClient.CreateIfNotExists();
     }
