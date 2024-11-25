@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -61,11 +62,11 @@ func isResourceExistsError(err error) bool {
 	return false
 }
 
-// QueryTableWithFilter queries an Azure Table using a given filter
+// QueryTableWithFilter queries the table with a given filter
 func QueryTableWithFilter(tableName string, filter string) ([]map[string]interface{}, error) {
 	client, exists := TableClients[tableName]
 	if !exists {
-		return nil, errors.New("Table client not initialized for " + tableName)
+		return nil, fmt.Errorf("table client for '%s' not initialized", tableName)
 	}
 
 	pager := client.NewListEntitiesPager(&aztables.ListEntitiesOptions{
@@ -73,20 +74,19 @@ func QueryTableWithFilter(tableName string, filter string) ([]map[string]interfa
 	})
 
 	var results []map[string]interface{}
+
 	for pager.More() {
 		resp, err := pager.NextPage(context.Background())
 		if err != nil {
-			log.Printf("Error querying table [%s]: %v", tableName, err)
 			return nil, err
 		}
 
 		for _, entity := range resp.Entities {
-			var row map[string]interface{}
-			if err := json.Unmarshal(entity, &row); err != nil {
-				log.Printf("Error decoding entity: %v", err)
-				continue
+			var result map[string]interface{}
+			if err := json.Unmarshal(entity, &result); err != nil {
+				return nil, err
 			}
-			results = append(results, row)
+			results = append(results, result)
 		}
 	}
 
