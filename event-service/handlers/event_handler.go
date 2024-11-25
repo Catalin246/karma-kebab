@@ -158,10 +158,104 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 
 // UpdateEvent updates an existing event
 func UpdateEvent(w http.ResponseWriter, r *http.Request) {
+	// Extract PartitionKey and RowKey from the URL path using mux.Vars
+	vars := mux.Vars(r)
+	partitionKey := vars["partitionKey"]
+	rowKey := vars["rowKey"]
 
+	log.Printf("Received Request to Update Event - PartitionKey: %s, RowKey: %s", partitionKey, rowKey)
+
+	// Decode the request body into an Event object
+	var event models.Event
+	if err := json.NewDecoder(r.Body).Decode(&event); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Get the table client for "events"
+	client, exists := db.TableClients["events"]
+	if !exists {
+		log.Println("Table client for 'events' not initialized")
+		http.Error(w, "Table client not initialized", http.StatusInternalServerError)
+		return
+	}
+
+	// Retrieve the existing entity from the table
+	resp, err := client.GetEntity(context.Background(), partitionKey, rowKey, nil)
+	if err != nil {
+		log.Printf("Error retrieving entity - PartitionKey: %s, RowKey: %s, Error: %v", partitionKey, rowKey, err)
+		http.Error(w, "Failed to retrieve event: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Unmarshal the existing entity into a map
+	var existingEvent map[string]interface{}
+	if err := json.Unmarshal(resp.Value, &existingEvent); err != nil {
+		log.Printf("Error decoding existing event: %v", err)
+		http.Error(w, "Failed to decode existing event", http.StatusInternalServerError)
+		return
+	}
+
+	event.Date = time.Now() // Set the current time as Date
+
+	// Update the entity with the new values from the request body
+	existingEvent["Date"] = event.Date.Format(time.RFC3339) // Update Date if provided
+	existingEvent["Address"] = event.Address                // Update Address
+	existingEvent["Venue"] = event.Venue                    // Update Venue
+	existingEvent["Description"] = event.Description        // Update Description
+	existingEvent["Money"] = event.Money                    // Update Money
+	existingEvent["Status"] = string(event.Status)          // Update Status
+	existingEvent["FirstName"] = event.Person.FirstName     // Update FirstName
+	existingEvent["LastName"] = event.Person.LastName       // Update LastName
+	existingEvent["Email"] = event.Person.Email             // Update Email
+	existingEvent["Note"] = event.Note                      // Update Note
+
+	// Marshal the updated entity back into JSON
+	updatedEntity, err := json.Marshal(existingEvent)
+	if err != nil {
+		http.Error(w, "Failed to marshal updated event: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Update the entity in Azure Table Storage
+	_, err = client.UpdateEntity(context.Background(), updatedEntity, nil)
+	if err != nil {
+		log.Printf("Error updating entity - PartitionKey: %s, RowKey: %s, Error: %v", partitionKey, rowKey, err)
+		http.Error(w, "Failed to update event: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Respond with success
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"message": "Event updated successfully"})
 }
 
 // DeleteEvent deletes an existing event
 func DeleteEvent(w http.ResponseWriter, r *http.Request) {
+	// Extract PartitionKey and RowKey from the URL path using mux.Vars
+	vars := mux.Vars(r)
+	partitionKey := vars["partitionKey"]
+	rowKey := vars["rowKey"]
 
+	log.Printf("Received Request to Delete Event - PartitionKey: %s, RowKey: %s", partitionKey, rowKey)
+
+	// Get the table client for "events"
+	client, exists := db.TableClients["events"]
+	if !exists {
+		log.Println("Table client for 'events' not initialized")
+		http.Error(w, "Table client not initialized", http.StatusInternalServerError)
+		return
+	}
+
+	// Delete the entity from Azure Table Storage
+	_, err := client.DeleteEntity(context.Background(), partitionKey, rowKey, nil)
+	if err != nil {
+		log.Printf("Error deleting entity - PartitionKey: %s, RowKey: %s, Error: %v", partitionKey, rowKey, err)
+		http.Error(w, "Failed to delete event: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Respond with success
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"message": "Event deleted successfully"})
 }
