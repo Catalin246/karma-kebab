@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"log"
 	"net/http"
@@ -58,4 +59,36 @@ func isResourceExistsError(err error) bool {
 		return responseErr.StatusCode == http.StatusConflict // 409 Conflict indicates resource exists
 	}
 	return false
+}
+
+// QueryTableWithFilter queries an Azure Table using a given filter
+func QueryTableWithFilter(tableName string, filter string) ([]map[string]interface{}, error) {
+	client, exists := TableClients[tableName]
+	if !exists {
+		return nil, errors.New("Table client not initialized for " + tableName)
+	}
+
+	pager := client.NewListEntitiesPager(&aztables.ListEntitiesOptions{
+		Filter: &filter,
+	})
+
+	var results []map[string]interface{}
+	for pager.More() {
+		resp, err := pager.NextPage(context.Background())
+		if err != nil {
+			log.Printf("Error querying table [%s]: %v", tableName, err)
+			return nil, err
+		}
+
+		for _, entity := range resp.Entities {
+			var row map[string]interface{}
+			if err := json.Unmarshal(entity, &row); err != nil {
+				log.Printf("Error decoding entity: %v", err)
+				continue
+			}
+			results = append(results, row)
+		}
+	}
+
+	return results, nil
 }
