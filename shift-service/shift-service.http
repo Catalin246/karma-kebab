@@ -1,12 +1,12 @@
 # Get All Shifts
 GET http://localhost:5001/api/shifts
 Accept: application/json
-# Authorization: Bearer <your-jwt-token-if-needed>
+#Authorization: Bearer <your-jwt-token-if-needed>
 
 # Get Shifts by Employee ID
 GET http://localhost:5001/api/shifts?employeeId=12345-abcd-6789
 Accept: application/json
-# Authorization: Bearer <your-jwt-token-if-needed>
+#Authorization: Bearer <your-jwt-token-if-needed>
 
 # Get Shift by ID
 GET http://localhost:5001/api/shifts/shiftId
