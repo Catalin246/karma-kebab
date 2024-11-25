@@ -7,11 +7,12 @@ using System.Linq;
 
 public interface IShiftDbContext
 {
-    Task<ShiftEntity> GetShiftAsync(string partitionKey, string rowKey);
-    Task<IEnumerable<ShiftEntity>> GetShiftsAsync(string filter = null);
-    Task<ShiftEntity> AddShiftAsync(ShiftEntity shift);
-    Task<ShiftEntity> UpdateShiftAsync(ShiftEntity shift);
-    Task DeleteShiftAsync(string partitionKey, string rowKey);
-    Task<IEnumerable<ShiftEntity>> GetShiftsByEmployeeAsync(Guid employeeId);
-    Task DeleteShiftsByEmployeeAsync(Guid employeeId);
+    Task<ShiftEntity> GetShift(string partitionKey, string rowKey);
+    Task<IEnumerable<ShiftEntity>> GetShifts(string? filter = null);
+    Task<ShiftDto> GetShiftById(Guid shiftId);
+    Task<ShiftEntity> AddShift(ShiftEntity shift);
+    Task<ShiftEntity> UpdateShift(ShiftEntity shift);
+    Task DeleteShift(string partitionKey, string rowKey);
+    Task<IEnumerable<ShiftEntity>> GetShiftsByEmployee(Guid employeeId);
+    Task DeleteShiftsByEmployee(Guid employeeId);
 }

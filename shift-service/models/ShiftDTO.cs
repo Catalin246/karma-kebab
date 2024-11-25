@@ -6,11 +6,11 @@ public class ShiftDto
     public DateTime StartTime { get; set; }
     public DateTime EndTime { get; set; }
     public Guid EmployeeId { get; set; }
-    public ShiftType ShiftType { get; set; }
-    public ShiftStatus Status { get; set; }
+    public string ShiftType { get; set; }
+    public string Status { get; set; }
     public DateTime? ClockInTime { get; set; }
     public DateTime? ClockOutTime { get; set; }
-    public decimal ShiftHours { get; set; }
+    public double ShiftHours { get; set; }
 }
 
 public class CreateShiftDto

@@ -21,11 +21,12 @@ public class ShiftsController : ControllerBase
         [FromQuery] DateTime? date = null,
         [FromQuery] Guid? employeeId = null,
         [FromQuery] ShiftType? shiftType = null,
-        [FromQuery] Guid? shiftId = null)
+        [FromQuery] Guid? shiftId = null, 
+        [FromQuery] Guid? eventId = null)
     {
         try
         {
-            var shifts = await _shiftService.GetShiftsAsync(date, employeeId, shiftType, shiftId);
+            var shifts = await _shiftService.GetShifts(date, employeeId, shiftType, shiftId, eventId);
             return Ok(new ApiResponse 
             { 
                 Success = true,
@@ -49,7 +50,7 @@ public class ShiftsController : ControllerBase
     {
         try
         {
-            var shift = await _shiftService.GetShiftByIdAsync(shiftId);
+            var shift = await _shiftService.GetShiftById(shiftId);
             if (shift == null)
                 return NotFound();
 
@@ -76,7 +77,7 @@ public class ShiftsController : ControllerBase
     {
         try
         {
-            var createdShift = await _shiftService.CreateShiftAsync(shiftDto);
+            var createdShift = await _shiftService.CreateShift(shiftDto);
             return CreatedAtAction(
                 nameof(GetShiftById),
                 new { shiftId = createdShift.ShiftId },
@@ -103,7 +104,7 @@ public class ShiftsController : ControllerBase
     {
         try
         {
-            var updatedShift = await _shiftService.UpdateShiftAsync(shiftId, shiftDto);
+            var updatedShift = await _shiftService.UpdateShift(shiftId, shiftDto);
             if (updatedShift == null)
                 return NotFound();
 
@@ -130,7 +131,7 @@ public class ShiftsController : ControllerBase
     {
         try
         {
-            var result = await _shiftService.DeleteShiftAsync(shiftId);
+            var result = await _shiftService.DeleteShift(shiftId);
             if (!result)
                 return NotFound();
 
@@ -148,7 +149,7 @@ public class ShiftsController : ControllerBase
     {
         try
         {
-            var totalHours = await _shiftService.GetTotalHoursByEmployeeAsync(employeeId);
+            var totalHours = await _shiftService.GetTotalHoursByEmployee(employeeId);
             return Ok(new ApiResponse 
             { 
                 Success = true,
@@ -172,7 +173,7 @@ public class ShiftsController : ControllerBase
     {
         try
         {
-            var result = await _shiftService.DeleteEmployeeAndShiftsAsync(employeeId);
+            var result = await _shiftService.DeleteEmployeeAndShifts(employeeId);
             if (!result)
                 return NotFound();
 
@@ -190,7 +191,7 @@ public class ShiftsController : ControllerBase
     {
         try
         {
-            var updatedShifts = await _shiftService.UpdateShiftWithEventChangesAsync(eventId, eventDto);
+            var updatedShifts = await _shiftService.UpdateShiftWithEventChanges(eventId, eventDto);
             if (updatedShifts == null)
                 return NotFound();
 

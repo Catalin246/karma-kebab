@@ -1,42 +1,42 @@
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Linq;
-using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 public class ShiftService : IShiftService
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IShiftDbContext _context;
     private readonly ILogger<ShiftService> _logger;
 
-    public ShiftService(ApplicationDbContext context, ILogger<ShiftService> logger)
+    public ShiftService(IShiftDbContext context, ILogger<ShiftService> logger)
     {
         _context = context;
         _logger = logger;
     }
 
-    public async Task<IEnumerable<ShiftDto>> GetShifts(DateTime? date, Guid? employeeId, ShiftType? shiftType, Guid? shiftId)
+    public async Task<IEnumerable<ShiftDto>> GetShifts(DateTime? date, Guid? employeeId, ShiftType? shiftType, Guid? shiftId, Guid? eventId)
     {
         try
         {
-            var query = _context.Shifts.AsQueryable();
+            var shifts = await _context.GetShifts();  // Get all shifts
 
+            // Apply filters based on parameters
             if (date.HasValue)
             {
                 var dateOnly = date.Value.Date;
-                query = query.Where(s => s.StartTime.Date == dateOnly);
+                shifts = shifts.Where(s => s.StartTime.Date == dateOnly);
             }
 
             if (employeeId.HasValue)
-                query = query.Where(s => s.EmployeeId == employeeId.Value);
+                shifts = shifts.Where(s => s.EmployeeId == employeeId.Value);
 
             if (shiftType.HasValue)
-                query = query.Where(s => s.ShiftType == shiftType.Value);
+                shifts = shifts.Where(s => s.ShiftType == shiftType.Value.ToString());
 
             if (shiftId.HasValue)
-                query = query.Where(s => s.ShiftId == shiftId.Value);
+                shifts = shifts.Where(s => s.ShiftId == shiftId.Value);
 
-            var shifts = await query.ToListAsync();
             return shifts.Select(MapToDto);
         }
         catch (Exception ex)
@@ -50,10 +50,8 @@ public class ShiftService : IShiftService
     {
         try
         {
-            var shift = await _context.Shifts
-                .FirstOrDefaultAsync(s => s.ShiftId == shiftId);
-
-            return shift != null ? MapToDto(shift) : null;
+            var shiftEntity = await _context.GetShiftById(shiftId);
+            return shiftEntity != null ? MapToDto(shiftEntity) : null;
         }
         catch (Exception ex)
         {
@@ -66,20 +64,9 @@ public class ShiftService : IShiftService
     {
         try
         {
-            var shift = new Shift
-            {
-                ShiftId = Guid.NewGuid(),
-                StartTime = shiftDto.StartTime,
-                EndTime = shiftDto.EndTime,
-                EmployeeId = shiftDto.EmployeeId,
-                ShiftType = shiftDto.ShiftType,
-                Status = ShiftStatus.Unconfirmed // Default status for new shifts is unconfirmed
-            };
-
-            _context.Shifts.Add(shift);
-            await _context.SaveChangesAsync();
-
-            return MapToDto(shift);
+            var shiftEntity = MapToEntity(shiftDto);
+            var createdShift = await _context.AddShift(shiftEntity);
+            return MapToDto(createdShift);
         }
         catch (Exception ex)
         {
@@ -92,24 +79,19 @@ public class ShiftService : IShiftService
     {
         try
         {
-            var shift = await _context.Shifts.FindAsync(shiftId);
+            var shift = await _context.GetShiftById(shiftId);
             if (shift == null) return null;
 
-            // Update basic properties
+            // Update the shift entity based on ShiftDto
             shift.StartTime = shiftDto.StartTime;
             shift.EndTime = shiftDto.EndTime;
             shift.ShiftType = shiftDto.ShiftType;
             shift.Status = shiftDto.Status;
+            shift.ClockInTime = shiftDto.ClockInTime;
+            shift.ClockOutTime = shiftDto.ClockOutTime;
 
-            // Handle clock in/out times if provided
-            if (shiftDto.ClockInTime.HasValue)
-                shift.ClockInTime = shiftDto.ClockInTime;
-            
-            if (shiftDto.ClockOutTime.HasValue)
-                shift.ClockOutTime = shiftDto.ClockOutTime;
-
-            await _context.SaveChangesAsync();
-            return MapToDto(shift);
+            var updatedShift = await _context.UpdateShift(shift);
+            return MapToDto(updatedShift);
         }
         catch (Exception ex)
         {
@@ -122,11 +104,10 @@ public class ShiftService : IShiftService
     {
         try
         {
-            var shift = await _context.Shifts.FindAsync(shiftId);
+            var shift = await _context.GetShiftById(shiftId);
             if (shift == null) return false;
 
-            _context.Shifts.Remove(shift);
-            await _context.SaveChangesAsync();
+            await _context.DeleteShift(shift.PartitionKey, shift.RowKey);
             return true;
         }
         catch (Exception ex)
@@ -140,11 +121,9 @@ public class ShiftService : IShiftService
     {
         try
         {
-            var shifts = await _context.Shifts
-                .Where(s => s.EmployeeId == employeeId && s.ClockOutTime.HasValue && s.ClockInTime.HasValue)
-                .ToListAsync();
-
-            return shifts.Sum(s => (decimal)(s.ClockOutTime.Value - s.ClockInTime.Value).TotalHours);
+            var shifts = await _context.GetShiftsByEmployee(employeeId);
+            return shifts.Where(s => s.ClockInTime.HasValue && s.ClockOutTime.HasValue)
+                         .Sum(s => (decimal)(s.ClockOutTime.Value - s.ClockInTime.Value).TotalHours);
         }
         catch (Exception ex)
         {
@@ -157,14 +136,10 @@ public class ShiftService : IShiftService
     {
         try
         {
-            var shifts = await _context.Shifts
-                .Where(s => s.EmployeeId == employeeId)
-                .ToListAsync();
-
+            var shifts = await _context.GetShiftsByEmployee(employeeId);
             if (!shifts.Any()) return false;
 
-            _context.Shifts.RemoveRange(shifts);
-            await _context.SaveChangesAsync();
+            await _context.DeleteShiftsByEmployee(employeeId);
             return true;
         }
         catch (Exception ex)
@@ -178,19 +153,16 @@ public class ShiftService : IShiftService
     {
         try
         {
-            var shifts = await _context.Shifts
-                .Where(s => s.EventId == eventId)
-                .ToListAsync();
-
+            var shifts = await _context.GetShifts(eventId); 
             if (!shifts.Any()) return null;
 
             foreach (var shift in shifts)
             {
                 shift.StartTime = eventDto.StartTime;
                 shift.EndTime = eventDto.EndTime;
+                await _context.UpdateShift(shift);  // Update shift in DB
             }
 
-            await _context.SaveChangesAsync();
             return shifts.Select(MapToDto);
         }
         catch (Exception ex)
@@ -200,19 +172,44 @@ public class ShiftService : IShiftService
         }
     }
 
-    private static ShiftDto MapToDto(Shift shift)
+// Map ShiftEntity to ShiftDto
+private static ShiftDto MapToDto(ShiftEntity shift)
+{
+    return new ShiftDto
     {
-        return new ShiftDto
-        {
-            ShiftId = shift.ShiftId,
-            StartTime = shift.StartTime,
-            EndTime = shift.EndTime,
-            EmployeeId = shift.EmployeeId,
-            ShiftType = shift.ShiftType,
-            Status = shift.Status,
-            ClockInTime = shift.ClockInTime,
-            ClockOutTime = shift.ClockOutTime,
-            ShiftHours = shift.ShiftHours
-        };
-    }
+        ShiftId = shift.ShiftId,  // Ensure this is a valid property
+        StartTime = shift.StartTime,
+        EndTime = shift.EndTime,
+        EmployeeId = shift.EmployeeId,
+        
+         // Convert enum to string
+        ShiftType = shift.GetShiftTypeEnum().ToString(),
+        Status = shift.GetStatusEnum().ToString(),
+        
+        ClockInTime = shift.ClockInTime,
+        ClockOutTime = shift.ClockOutTime,
+        ShiftHours = (double)shift.ShiftHours
+    };
+}
+
+
+
+// Map ShiftDto to ShiftEntity
+private static ShiftEntity MapToEntity(ShiftDto shiftDto)
+{
+    return new ShiftEntity
+    {
+        ShiftId = shiftDto.ShiftId,
+        StartTime = shiftDto.StartTime,
+        EndTime = shiftDto.EndTime,
+        EmployeeId = shiftDto.EmployeeId,
+        ShiftType = shiftDto.ShiftType,
+        Status = shiftDto.Status,    
+        ClockInTime = shiftDto.ClockInTime,
+        ClockOutTime = shiftDto.ClockOutTime,
+        ShiftHours = (decimal)shiftDto.ShiftHours
+    };
+}
+
+
 }

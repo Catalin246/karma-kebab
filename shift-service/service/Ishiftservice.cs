@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 public interface IShiftService
 {
-    Task<IEnumerable<ShiftDto>> GetShifts(DateTime? date, Guid? employeeId, ShiftType? shiftType, Guid? shiftId);
+    Task<IEnumerable<ShiftDto>> GetShifts(DateTime? date, Guid? employeeId, ShiftType? shiftType, Guid? shiftId, Guid? eventId);
     Task<ShiftDto> GetShiftById(Guid shiftId);
     Task<ShiftDto> CreateShift(ShiftDto shiftDto);
     Task<ShiftDto> UpdateShift(Guid shiftId, ShiftDto shiftDto);
