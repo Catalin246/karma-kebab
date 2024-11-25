@@ -19,17 +19,36 @@ func GetEvents(w http.ResponseWriter, r *http.Request) {
 	startDate := query.Get("startDate")
 	endDate := query.Get("endDate")
 
-	filter := ""
-	if startDate != "" && endDate != "" {
-		filter = "Date ge datetime'" + startDate + "' and Date le datetime'" + endDate + "'"
+	// Initialize the filter string
+	var filter string
+
+	// Filter based on startDate
+	if startDate != "" {
+		filter = "Date ge datetime'" + startDate + "'"
 	}
 
+	// Filter based on endDate
+	if endDate != "" {
+		if filter != "" {
+			// If there's already a filter, append the endDate condition
+			filter += " and Date le datetime'" + endDate + "'"
+		} else {
+			// If no startDate filter, just use the endDate filter
+			filter = "Date le datetime'" + endDate + "'"
+		}
+	}
+
+	// Log the filter query to verify correctness
+	log.Printf("Filter query: %s", filter)
+
+	// Execute the query with the filter
 	events, err := db.QueryTableWithFilter("events", filter)
 	if err != nil {
 		http.Error(w, "Failed to retrieve events: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	// Send the response
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(events)
 }
@@ -63,8 +82,6 @@ func GetEventByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("Raw Response from Azure Table Storage: %+v", resp)
-
 	var event map[string]interface{}
 	if err := json.Unmarshal(resp.Value, &event); err != nil {
 		log.Printf("Error decoding response JSON: %v", err)
@@ -88,15 +105,19 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Validate required fields
-	if event.PartitionKey == "" || event.RowKey == uuid.Nil {
-		http.Error(w, "Missing PartitionKey or RowKey in request body", http.StatusBadRequest)
+	if event.PartitionKey == "" {
+		http.Error(w, "Missing PartitionKey in request body", http.StatusBadRequest)
 		return
 	}
+
+	// Auto-generate RowKey as a new UUID and set the Date to current time
+	event.RowKey = uuid.New() // Generate a new UUID for RowKey
+	event.Date = time.Now()   // Set the current time as Date
 
 	// Prepare the entity for Azure Table Storage
 	entity := map[string]interface{}{
 		"PartitionKey": event.PartitionKey,
-		"RowKey":       event.RowKey,
+		"RowKey":       event.RowKey.String(),           // RowKey as string
 		"Date":         event.Date.Format(time.RFC3339), // ISO 8601 format
 		"Address":      event.Address,
 		"Venue":        event.Venue,
