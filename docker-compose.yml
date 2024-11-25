@@ -35,6 +35,19 @@ services:
     networks:
       - karama-kebab-network
 
+  rabbitmq:
+    build:
+      context: ./rabbitmq
+      dockerfile: Dockerfile
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672" # RabbitMQ messaging port
+      - "15672:15672" # RabbitMQ management console
+    networks:
+      - karama-kebab-network
+
   event-service:
     build:
       context: ./event-service
@@ -44,6 +57,7 @@ services:
     depends_on:
       - azurite
       - keycloak
+      - rabbitmq
     ports:
       - "3001:3001"
     networks:
