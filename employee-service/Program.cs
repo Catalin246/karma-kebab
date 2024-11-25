@@ -1,13 +1,34 @@
+using employee_service.Controllers;
+using employee_service.Database;
+using employee_service.Services;
+
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
+// Register services
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Register Database and DatabaseService
+builder.Services.AddSingleton<Database>(serviceProvider =>
+{
+    var host = "localhost";
+    var username = "postgres";
+    var password = "password";
+    return new Database(host, username, password);
+});
+
+builder.Services.AddSingleton<DatabaseService>();
+builder.Services.AddSingleton<EmployeeService>();
+
+
 var app = builder.Build();
+
+// Ensure the database and tables are created on startup
+var databaseService = app.Services.GetRequiredService<DatabaseService>();
+databaseService.EnsureDatabaseExists("employeedb");
+databaseService.CreateTables("employeedb");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -17,7 +38,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();
