@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "3DT6PN33XWu1z3MI98jwfNvo2c7qxtsNDqBoBTAz9yA=",
+  "Source": "employee-service",
+  "BasePath": "_content/employee-service",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}
