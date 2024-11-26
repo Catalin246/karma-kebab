@@ -50,47 +50,78 @@ func (r *TableStorageAvailabilityRepository) Create(ctx context.Context, availab
 }
 
 // GetByEmployeeID retrieves an availability record by ID
-func (r *TableStorageAvailabilityRepository) GetByEmployeeID(ctx context.Context, employeeID string) (*models.Availability, error) {
-	tableClient := r.serviceClient.NewClient(r.tableName)
+// func (r *TableStorageAvailabilityRepository) GetByEmployeeID(ctx context.Context, employeeID string) (*models.Availability, error) {
+// 	tableClient := r.serviceClient.NewClient(r.tableName)
 
-	response, err := tableClient.GetEntity(ctx, employeeID, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get entity: %v", err)
-	}
+// 	response, err := tableClient.GetEntity(ctx, employeeID, nil)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("failed to get entity: %v", err)
+// 	}
 
-	// Create a map to hold the entity data
-	var entityData map[string]interface{}
-	if err := json.Unmarshal(response.Value, &entityData); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal entity: %v", err)
-	}
+// 	// Create a map to hold the entity data
+// 	var entityData map[string]interface{}
+// 	if err := json.Unmarshal(response.Value, &entityData); err != nil {
+// 		return nil, fmt.Errorf("failed to unmarshal entity: %v", err)
+// 	}
 
-	// Parse the dates
-	startDate, err := time.Parse(time.RFC3339, entityData["StartDate"].(string))
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse start date: %v", err)
-	}
+// 	// Parse the dates
+// 	startDate, err := time.Parse(time.RFC3339, entityData["StartDate"].(string))
+// 	if err != nil {
+// 		return nil, fmt.Errorf("failed to parse start date: %v", err)
+// 	}
 
-	endDate, err := time.Parse(time.RFC3339, entityData["EndDate"].(string))
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse end date: %v", err)
-	}
+// 	endDate, err := time.Parse(time.RFC3339, entityData["EndDate"].(string))
+// 	if err != nil {
+// 		return nil, fmt.Errorf("failed to parse end date: %v", err)
+// 	}
 
-	// Map entity properties to the Availability model
-	availability := models.Availability{
-		EmployeeID: employeeID,
-		StartDate:  startDate,
-		EndDate:    endDate,
-	}
+// 	// Map entity properties to the Availability model
+// 	availability := models.Availability{
+// 		EmployeeID: employeeID,
+// 		StartDate:  startDate,
+// 		EndDate:    endDate,
+// 	}
 
-	return &availability, nil
+// 	return &availability, nil
+// }
+func (r *TableStorageAvailabilityRepository) GetByEmployeeID(ctx context.Context, employeeID string) ([]models.Availability, error) {
+    tableClient := r.serviceClient.NewClient(r.tableName)
+
+    // Create a filter to get all entities with this partition key
+    filter := fmt.Sprintf("PartitionKey eq '%s'", employeeID)
+    
+    pager := tableClient.NewListEntitiesPager(&aztables.ListEntitiesOptions{
+        Filter: &filter,
+    })
+
+    var availabilities []models.Availability
+
+    for pager.More() {
+        page, err := pager.NextPage(ctx)
+        if err != nil {
+            return nil, fmt.Errorf("failed to get entities: %v", err)
+        }
+
+        for _, entity := range page.Entities {
+            var availability models.Availability
+            
+			err = json.Unmarshal(entity, &availability)
+            if err != nil {
+                return nil, fmt.Errorf("failed to unmarshal entity: %v", err)
+            }
+            availabilities = append(availabilities, availability)
+        }
+    }
+
+    return availabilities, nil
 }
 
 // GetAll retrieves all availability records
-func (r *TableStorageAvailabilityRepository) GetAll(ctx context.Context, employeeID string, startDate, endDate *time.Time) ([]models.Availability, error) {
+func (r *TableStorageAvailabilityRepository) GetAll(ctx context.Context, startDate, endDate *time.Time) ([]models.Availability, error) {
 	tableClient := r.serviceClient.NewClient(r.tableName)
 
 	// Build the base query for Table Storage
-	filter := fmt.Sprintf("PartitionKey eq '%s'", employeeID)
+	filter := ""
 
 	// Add date filters if startDate and endDate are provided
 	if startDate != nil {

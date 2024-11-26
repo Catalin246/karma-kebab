@@ -4,9 +4,10 @@ import (
 	"context"
 	"time"
 
-	"github.com/google/uuid"
 	"availability-service/models"
 	"availability-service/repository"
+
+	"github.com/google/uuid"
 )
 
 type AvailabilityService struct {
@@ -20,16 +21,13 @@ func NewAvailabilityService(repo repository.AvailabilityRepository) *Availabilit
 }
 
 // Fetch all availability records for a specific EmployeeID with optional date range filter
-func (s *AvailabilityService) GetAll(ctx context.Context, employeeID string, startDate, endDate *time.Time) ([]models.Availability, error) {
-    if employeeID == "" {
-        return nil, models.ErrInvalidAvailability
-    }
-    
-    return s.repo.GetAll(ctx, employeeID, startDate, endDate)
+func (s *AvailabilityService) GetAll(ctx context.Context, startDate, endDate *time.Time) ([]models.Availability, error) {
+
+	return s.repo.GetAll(ctx, startDate, endDate)
 }
 
 // Fetch a specific availability record by ID and EmployeeID
-func (s *AvailabilityService) GetByEmployeeID(ctx context.Context, employeeID string) (*models.Availability, error) {
+func (s *AvailabilityService) GetByEmployeeID(ctx context.Context, employeeID string) ([]models.Availability, error) {
 	if employeeID == "" {
 		return nil, models.ErrInvalidID
 	}

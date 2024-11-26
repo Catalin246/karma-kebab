@@ -34,7 +34,6 @@ func NewAvailabilityHandler(service *service.AvailabilityService) *AvailabilityH
 
 // GetAll retrieves all availability records for all employees.
 func (h *AvailabilityHandler) GetAll(w http.ResponseWriter, r *http.Request) {
-    employeeID := r.URL.Query().Get("employeeId")
     startDateStr := r.URL.Query().Get("startDate")
     endDateStr := r.URL.Query().Get("endDate")
 
@@ -56,7 +55,7 @@ func (h *AvailabilityHandler) GetAll(w http.ResponseWriter, r *http.Request) {
         endDate = &parsedEndDate
     }
 
-    availabilities, err := h.service.GetAll(r.Context(), employeeID, startDate, endDate)
+    availabilities, err := h.service.GetAll(r.Context(),  startDate, endDate)
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
