@@ -2,14 +2,16 @@ package routes
 
 import (
 	"availability-service/handlers"
+	"availability-service/middlewares"
 	"availability-service/repository"
 	"availability-service/service"
+	"net/http"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/data/aztables"
-	"github.com/gin-gonic/gin"
+	"github.com/gorilla/mux"
 )
 
-func RegisterRouter(serviceClient *aztables.ServiceClient) *gin.Engine {
+func RegisterRoutes(serviceClient *aztables.ServiceClient) *mux.Router {
 	// Create the repository and service instances
 	availabilityRepository := repository.NewTableStorageAvailabilityRepository(serviceClient)
 	availabilityService := service.NewAvailabilityService(availabilityRepository)
@@ -17,27 +19,18 @@ func RegisterRouter(serviceClient *aztables.ServiceClient) *gin.Engine {
 	// Create the availability handler and inject the service
 	availabilityHandler := handlers.NewAvailabilityHandler(availabilityService)
 
-	// Create the Gin router
-	router := gin.Default()
+	// Create a new Gorilla Mux router
+	r := mux.NewRouter()
 
-	// Health check route
-	router.GET("/health", func(c *gin.Context) {
-		c.JSON(200, gin.H{"status": "ok"})
-	})
+	// Apply middleware to all routes
+	r.Use(middlewares.GatewayHeaderMiddleware)
 
-	// API v1 group
-	v1 := router.Group("/api/v1")
-	{
-		// Availability routes
-		availability := v1.Group("/availability")
-		{
-			availability.GET("", availabilityHandler.GetAll)
-			availability.GET("/:id", availabilityHandler.GetByID)
-			availability.POST("", availabilityHandler.Create)
-			availability.PUT("/:id", availabilityHandler.Update)
-			availability.DELETE("/:id", availabilityHandler.Delete)
-		}
-	}
+	// Availability routes
+	r.HandleFunc("availability", availabilityHandler.GetAll).Methods(http.MethodGet)
+	r.HandleFunc("availability/{partitionKey}/{rowKey}", availabilityHandler.GetByID).Methods(http.MethodGet)
+	r.HandleFunc("availability", availabilityHandler.Create).Methods(http.MethodPost)
+	r.HandleFunc("availability/{partitionKey}/{rowKey}", availabilityHandler.Update).Methods(http.MethodPut)
+	r.HandleFunc("availability/{partitionKey}/{rowKey}", availabilityHandler.Delete).Methods(http.MethodDelete)
 
-	return router
+	return r
 }

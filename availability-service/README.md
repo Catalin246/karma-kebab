@@ -7,8 +7,6 @@ each record will be a record of when an employee is NOT available
 
    "go mod init availability-microservice"
    "go get github.com/Azure/azure-sdk-for-go/sdk/data/azcosmos"
-   "go get github.com/gin-gonic/gin"
-   "go get github.com/spf13/viper"
 
 ### for local testing
    npm install -g azurite
