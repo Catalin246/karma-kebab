@@ -65,10 +65,10 @@ services:
 
   availability-service:
     build:
-      context: ./availability-service
+      context: ./availability-service-2
       dockerfile: Dockerfile
     volumes:
-      - ./availability-service/.env:/app/.env
+      - ./availability-service-2/.env:/app/.env
     depends_on:
       - azurite
       - keycloak
