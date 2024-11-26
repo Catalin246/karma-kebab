@@ -49,41 +49,6 @@ func (r *TableStorageAvailabilityRepository) Create(ctx context.Context, availab
 	return nil
 }
 
-// GetByEmployeeID retrieves an availability record by ID
-// func (r *TableStorageAvailabilityRepository) GetByEmployeeID(ctx context.Context, employeeID string) (*models.Availability, error) {
-// 	tableClient := r.serviceClient.NewClient(r.tableName)
-
-// 	response, err := tableClient.GetEntity(ctx, employeeID, nil)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("failed to get entity: %v", err)
-// 	}
-
-// 	// Create a map to hold the entity data
-// 	var entityData map[string]interface{}
-// 	if err := json.Unmarshal(response.Value, &entityData); err != nil {
-// 		return nil, fmt.Errorf("failed to unmarshal entity: %v", err)
-// 	}
-
-// 	// Parse the dates
-// 	startDate, err := time.Parse(time.RFC3339, entityData["StartDate"].(string))
-// 	if err != nil {
-// 		return nil, fmt.Errorf("failed to parse start date: %v", err)
-// 	}
-
-// 	endDate, err := time.Parse(time.RFC3339, entityData["EndDate"].(string))
-// 	if err != nil {
-// 		return nil, fmt.Errorf("failed to parse end date: %v", err)
-// 	}
-
-// 	// Map entity properties to the Availability model
-// 	availability := models.Availability{
-// 		EmployeeID: employeeID,
-// 		StartDate:  startDate,
-// 		EndDate:    endDate,
-// 	}
-
-// 	return &availability, nil
-// }
 func (r *TableStorageAvailabilityRepository) GetByEmployeeID(ctx context.Context, employeeID string) ([]models.Availability, error) {
     tableClient := r.serviceClient.NewClient(r.tableName)
 

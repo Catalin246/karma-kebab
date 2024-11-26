@@ -4,6 +4,7 @@ import (
 	"availability-service-2/models"
 	"availability-service-2/service"
 	"encoding/json"
+	"log"
 	"net/http"
 	"time"
 
@@ -34,50 +35,61 @@ func NewAvailabilityHandler(service *service.AvailabilityService) *AvailabilityH
 
 // GetAll retrieves all availability records for all employees.
 func (h *AvailabilityHandler) GetAll(w http.ResponseWriter, r *http.Request) {
-    startDateStr := r.URL.Query().Get("startDate")
-    endDateStr := r.URL.Query().Get("endDate")
+	startDateStr := r.URL.Query().Get("startDate")
+	endDateStr := r.URL.Query().Get("endDate")
+	log.Println("Received GET all request:")
 
-    var startDate, endDate *time.Time
-    if startDateStr != "" {
-        parsedStartDate, err := time.Parse(time.RFC3339, startDateStr)
-        if err != nil {
-            http.Error(w, "Invalid startDate format", http.StatusBadRequest)
-            return
-        }
-        startDate = &parsedStartDate
-    }
-    if endDateStr != "" {
-        parsedEndDate, err := time.Parse(time.RFC3339, endDateStr)
-        if err != nil {
-            http.Error(w, "Invalid endDate format", http.StatusBadRequest)
-            return
-        }
-        endDate = &parsedEndDate
-    }
+	var startDate, endDate *time.Time
+	if startDateStr != "" {
+		parsedStartDate, err := time.Parse(time.RFC3339, startDateStr)
+		if err != nil {
+			http.Error(w, "Invalid startDate format", http.StatusBadRequest)
+			return
+		}
+		startDate = &parsedStartDate
+	}
+	if endDateStr != "" {
+		parsedEndDate, err := time.Parse(time.RFC3339, endDateStr)
+		if err != nil {
+			http.Error(w, "Invalid endDate format", http.StatusBadRequest)
+			return
+		}
+		endDate = &parsedEndDate
+	}
 
-    availabilities, err := h.service.GetAll(r.Context(),  startDate, endDate)
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
-
-    w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(availabilities)
-}
-
-// GetByID retrieves a specific availability record by EmployeeID.
-func (h *AvailabilityHandler) GetByEmployeeID(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	employeeID := vars["employeeId"]
-
-	// Ensure employee ID is provided
-	if employeeID == "" {
-		http.Error(w, "EmployeeID is required", http.StatusBadRequest)
+	availabilities, err := h.service.GetAll(r.Context(), startDate, endDate)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	availability, err := h.service.GetByEmployeeID(r.Context(), employeeID)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(availabilities)
+}
+
+// gets all availabilities of one employee
+func (h *AvailabilityHandler) GetByEmployeeID(w http.ResponseWriter, r *http.Request) {
+	// Log full request details for debugging
+	log.Printf("Received GETby emp id request: %+v", r)
+
+	// Log all URL variables
+	vars := mux.Vars(r)
+	log.Printf("URL Variables: %+v", vars)
+
+	// Use partitionKey instead of employeeId
+	partitionKey := vars["partitionKey"]
+	log.Printf("Extracted PartitionKey (EmployeeID): '%s'", partitionKey)
+
+	// Ensure partition key is provided
+	if partitionKey == "" {
+		log.Println("Error: PartitionKey is empty")
+		http.Error(w, "PartitionKey is required", http.StatusBadRequest)
+		return
+	}
+
+	availabilities, err := h.service.GetByEmployeeID(r.Context(), partitionKey)
 	if err != nil {
+		log.Printf("Service Error: %v", err)
 		if err == models.ErrNotFound {
 			http.Error(w, "Availability not found", http.StatusNotFound)
 		} else {
@@ -86,8 +98,20 @@ func (h *AvailabilityHandler) GetByEmployeeID(w http.ResponseWriter, r *http.Req
 		return
 	}
 
+	// Log the retrieved availabilities
+	log.Printf("Retrieved Availabilities: %+v", availabilities)
+
+	// Check if no availabilities found
+	if len(availabilities) == 0 {
+		http.Error(w, "No availabilities found for this employee", http.StatusNotFound)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(availability)
+	if err := json.NewEncoder(w).Encode(availabilities); err != nil {
+		log.Printf("JSON Encoding Error: %v", err)
+		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+	}
 }
 
 // Create creates a new availability record.
