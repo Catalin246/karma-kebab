@@ -34,7 +34,7 @@ public class ShiftEntity : ITableEntity
     // Helper methods for enum conversion
     public ShiftType GetShiftTypeEnum()
     {
-        return Enum.Parse<ShiftType>(ShiftType);
+        return Enum.Parse<ShiftType>(ShiftType, ignoreCase: true);
     }
 
     public void SetShiftTypeEnum(ShiftType shiftType)
@@ -44,50 +44,11 @@ public class ShiftEntity : ITableEntity
 
     public ShiftStatus GetStatusEnum()
     {
-        return Enum.Parse<ShiftStatus>(Status);
+        return Enum.Parse<ShiftStatus>(Status, ignoreCase: true);
     }
 
     public void SetStatusEnum(ShiftStatus status)
     {
         Status = status.ToString();
-    }
-}
-
-// Extension methods to help with conversion between Entity and Domain models
-public static class ShiftEntityExtensions
-{
-    public static Shift ToDomainModel(this ShiftEntity entity)
-    {
-        return new Shift
-        {
-            ShiftId = entity.ShiftId,
-            EmployeeId = entity.EmployeeId,
-            StartTime = entity.StartTime,
-            EndTime = entity.EndTime,
-            ShiftType = entity.GetShiftTypeEnum(),
-            Status = entity.GetStatusEnum(),
-            ClockInTime = entity.ClockInTime,
-            ClockOutTime = entity.ClockOutTime,
-            // ShiftHours is computed in the domain model
-        };
-    }
-
-    public static ShiftEntity ToEntity(this Shift shift)
-    {
-        var entity = new ShiftEntity
-        {
-            ShiftId = shift.ShiftId,
-            EmployeeId = shift.EmployeeId,
-            StartTime = shift.StartTime,
-            EndTime = shift.EndTime,
-            ClockInTime = shift.ClockInTime,
-            ClockOutTime = shift.ClockOutTime,
-            ShiftHours = shift.ShiftHours
-        };
-
-        entity.SetShiftTypeEnum(shift.ShiftType);
-        entity.SetStatusEnum(shift.Status);
-
-        return entity;
     }
 }

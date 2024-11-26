@@ -3,17 +3,18 @@ GET http://localhost:5001/api/shifts
 Accept: application/json
 #Authorization: Bearer <your-jwt-token-if-needed>
 
-# Get Shifts by Employee ID
+### Get Shifts by Employee ID
 GET http://localhost:5001/api/shifts?employeeId=12345-abcd-6789
 Accept: application/json
 #Authorization: Bearer <your-jwt-token-if-needed>
 
-# Get Shift by ID
+
+### Get Shift by ID
 GET http://localhost:5001/api/shifts/shiftId
 Accept: application/json
 # Authorization: Bearer <your-jwt-token-if-needed>
 
-# Create a new Shift
+### Create a new Shift
 POST http://localhost:5001/api/shifts
 Content-Type: application/json
 Accept: application/json
@@ -30,7 +31,7 @@ Accept: application/json
   "shiftHours": 8.0
 }
 
-# Update a Shift by ID
+### Update a Shift by ID
 PUT http://localhost:5001/api/shifts/shiftId
 Content-Type: application/json
 Accept: application/json
@@ -47,6 +48,6 @@ Accept: application/json
   "shiftHours": 8.0
 }
 
-# Delete a Shift by ID
+### Delete a Shift by ID
 DELETE http://localhost:5001/api/shifts/shiftId
 # Authorization: Bearer <your-jwt-token-if-needed>
