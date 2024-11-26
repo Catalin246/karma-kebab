@@ -34,3 +34,6 @@ C:\Users\Aizaz Ahsan\Inholland Year 4 minor\KarmaKebabProject\karma-kebab\employ
 C:\Users\Aizaz Ahsan\Inholland Year 4 minor\KarmaKebabProject\karma-kebab\employee-service\obj\Debug\net8.0\employee-service.pdb
 C:\Users\Aizaz Ahsan\Inholland Year 4 minor\KarmaKebabProject\karma-kebab\employee-service\obj\Debug\net8.0\employee-service.genruntimeconfig.cache
 C:\Users\Aizaz Ahsan\Inholland Year 4 minor\KarmaKebabProject\karma-kebab\employee-service\obj\Debug\net8.0\ref\employee-service.dll
+C:\Users\Aizaz Ahsan\Inholland Year 4 minor\KarmaKebabProject\karma-kebab\employee-service\bin\Debug\net8.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll
+C:\Users\Aizaz Ahsan\Inholland Year 4 minor\KarmaKebabProject\karma-kebab\employee-service\bin\Debug\net8.0\Microsoft.Extensions.Logging.Abstractions.dll
+C:\Users\Aizaz Ahsan\Inholland Year 4 minor\KarmaKebabProject\karma-kebab\employee-service\bin\Debug\net8.0\Npgsql.dll

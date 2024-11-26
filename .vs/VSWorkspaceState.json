@@ -1,7 +1,10 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\employee-service",
+    "\\employee-service\\Database",
+    "\\employee-service\\Models",
+    "\\employee-service\\Services"
   ],
-  "SelectedNode": "\\karma-kebab.sln",
   "PreviewInSolutionExplorer": false
 }

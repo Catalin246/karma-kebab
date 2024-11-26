@@ -71,12 +71,18 @@ public class DatabaseService
     // Method to create tables in the specified database
     public void CreateTables(string databaseName)
     {
-        var createTableQuery = @"CREATE TABLE employees (
-                                    id SERIAL PRIMARY KEY,
-                                    first_name VARCHAR(50),
-                                    last_name VARCHAR(50),
-                                    email VARCHAR(100)
-                                    )";
+        var createTableQuery = @"
+            CREATE TABLE employees (
+                employee_id UUID PRIMARY KEY,
+                date_of_birth DATE NOT NULL,
+                first_name VARCHAR(50) NOT NULL,
+                last_name VARCHAR(50) NOT NULL,
+                address TEXT NOT NULL,
+                payrate DECIMAL(10, 2) NOT NULL,
+                role INT NOT NULL,
+                email VARCHAR(100) NOT NULL,
+                skills JSONB NOT NULL
+            )";
 
         var connStringWithDb = $"{_database.ConnectionString};Database={databaseName}";
         using (var conn = new NpgsqlConnection(connStringWithDb))

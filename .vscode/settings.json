@@ -5,7 +5,7 @@
             "server": "localhost",
             "port": 5432,
             "driver": "PostgreSQL",
-            "name": "employeemicroservice",
+            "name": "EmployeeServiceDB",
             "database": "employeedb",
             "username": "postgres",
             "password": "password",
