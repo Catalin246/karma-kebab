@@ -20,10 +20,13 @@ func main() {
 	connectionString := os.Getenv("AZURE_STORAGE_CONNECTION_STRING")
 
 	// Initialize Azure Table Storage
-	db.InitAzureTables(connectionString)
+	client, err := db.InitAzureTables(connectionString)
+	if err != nil {
+		log.Fatal("Error initializing Azure Table Storage: ", err)
+	}
 
-	// Register routes
-	router := routes.RegisterRoutes()
+	// Register routes with the service client
+	router := routes.RegisterRoutes(client)
 
 	// Start the server
 	log.Println("Server is running on port 3001")

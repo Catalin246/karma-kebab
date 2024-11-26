@@ -1,46 +1,127 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
+	"event-service/models"
+	"event-service/services"
 	"net/http"
+	"time"
+
+	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 )
 
-// GetEvents retrievs all events
-func GetEvents(w http.ResponseWriter, r *http.Request) {
-	// TO DO
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"message": "GetEvents"})
+type EventHandler struct {
+	service services.EventServiceInteface
 }
 
-// GetEventByID retrieves a specific event
-func GetEventByID(w http.ResponseWriter, r *http.Request) {
-	// TO DO
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"message": "GetEventByID"})
+// NewEventHandler creates a new EventHandler
+func NewEventHandler(service services.EventServiceInteface) *EventHandler {
+	return &EventHandler{service: service}
 }
 
-// CreateEvent creates a new event
-func CreateEvent(w http.ResponseWriter, r *http.Request) {
-	// TO DO
+func (h *EventHandler) GetEvents(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query()
+	startDate := query.Get("startDate")
+	endDate := query.Get("endDate")
+
+	var startTime, endTime *time.Time
+
+	if startDate != "" {
+		t, err := time.Parse(time.RFC3339, startDate)
+		if err == nil {
+			startTime = &t
+		}
+	}
+
+	if endDate != "" {
+		t, err := time.Parse(time.RFC3339, endDate)
+		if err == nil {
+			endTime = &t
+		}
+	}
+
+	events, err := h.service.GetAll(context.Background(), startTime, endTime)
+	if err != nil {
+		http.Error(w, "Failed to retrieve events: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"message": "CreateEvent"})
+	json.NewEncoder(w).Encode(events)
 }
 
-// UpdateEvent updates an existing event
-func UpdateEvent(w http.ResponseWriter, r *http.Request) {
-	// TO DO
+func (h *EventHandler) GetEventByID(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	partitionKey := vars["partitionKey"]
+	rowKey := vars["rowKey"]
+
+	if partitionKey == "" || rowKey == "" {
+		http.Error(w, "Missing partitionKey or rowKey", http.StatusBadRequest)
+		return
+	}
+
+	event, err := h.service.GetByID(context.Background(), partitionKey, rowKey)
+	if err != nil {
+		http.Error(w, "Failed to retrieve event: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"message": "UpdateEvent"})
+	json.NewEncoder(w).Encode(event)
 }
 
-// DeleteEvent deletes an existing event
-func DeleteEvent(w http.ResponseWriter, r *http.Request) {
-	// TO DO
-	w.Header().Set("Content-Type", "application/json")
+func (h *EventHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
+	var event models.Event
+	if err := json.NewDecoder(r.Body).Decode(&event); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	event.RowKey = uuid.New()
+	event.Date = time.Now()
+
+	if err := h.service.Create(context.Background(), event); err != nil {
+		http.Error(w, "Failed to create event: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(map[string]string{"message": "Event created successfully"})
+}
+
+func (h *EventHandler) UpdateEvent(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	partitionKey := vars["partitionKey"]
+	rowKey := vars["rowKey"]
+
+	var event models.Event
+	event.Date = time.Now()
+	if err := json.NewDecoder(r.Body).Decode(&event); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.service.Update(context.Background(), partitionKey, rowKey, event); err != nil {
+		http.Error(w, "Failed to update event: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"message": "DeleteEvent"})
+	json.NewEncoder(w).Encode(map[string]string{"message": "Event updated successfully"})
+}
+
+func (h *EventHandler) DeleteEvent(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	partitionKey := vars["partitionKey"]
+	rowKey := vars["rowKey"]
+
+	if err := h.service.Delete(context.Background(), partitionKey, rowKey); err != nil {
+		http.Error(w, "Failed to delete event: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"message": "Event deleted successfully"})
 }

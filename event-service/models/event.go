@@ -19,8 +19,7 @@ const (
 // Event class
 type Event struct {
 	PartitionKey string    `json:"partitionKey"` // Azure Table Storage PartitionKey
-	RowKey       string    `json:"rowKey"`       // Azure Table Storage RowKey
-	ID           uuid.UUID `json:"id"`           // UUID for the event (used internally)
+	RowKey       uuid.UUID `json:"rowKey"`       // Azure Table Storage RowKey
 	Date         time.Time `json:"date"`         // Event date and time
 	Address      string    `json:"address"`      // Event address
 	Venue        string    `json:"venue"`        // Venue name
