@@ -68,7 +68,7 @@ services:
       context: ./availability-service
       dockerfile: Dockerfile
     volumes:
-      - ./event-service/.env:/app/.env
+      - ./availability-service/.env:/app/.env
     depends_on:
       - azurite
       - keycloak
