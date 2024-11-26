@@ -27,7 +27,7 @@ func RegisterRoutes(serviceClient *aztables.ServiceClient) *mux.Router {
 
 	// Availability routes
 	r.HandleFunc("availability", availabilityHandler.GetAll).Methods(http.MethodGet)
-	r.HandleFunc("availability/{partitionKey}/{rowKey}", availabilityHandler.GetByID).Methods(http.MethodGet)
+	r.HandleFunc("availability/{partitionKey}", availabilityHandler.GetByEmployeeID).Methods(http.MethodGet)
 	r.HandleFunc("availability", availabilityHandler.Create).Methods(http.MethodPost)
 	r.HandleFunc("availability/{partitionKey}/{rowKey}", availabilityHandler.Update).Methods(http.MethodPut)
 	r.HandleFunc("availability/{partitionKey}/{rowKey}", availabilityHandler.Delete).Methods(http.MethodDelete)

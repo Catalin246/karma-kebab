@@ -49,11 +49,11 @@ func (r *TableStorageAvailabilityRepository) Create(ctx context.Context, availab
 	return nil
 }
 
-// GetByID retrieves an availability record by ID
-func (r *TableStorageAvailabilityRepository) GetByID(ctx context.Context, employeeID, id string) (*models.Availability, error) {
+// GetByEmployeeID retrieves an availability record by ID
+func (r *TableStorageAvailabilityRepository) GetByEmployeeID(ctx context.Context, employeeID string) (*models.Availability, error) {
 	tableClient := r.serviceClient.NewClient(r.tableName)
 
-	response, err := tableClient.GetEntity(ctx, employeeID, id, nil)
+	response, err := tableClient.GetEntity(ctx, employeeID, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get entity: %v", err)
 	}
@@ -77,7 +77,6 @@ func (r *TableStorageAvailabilityRepository) GetByID(ctx context.Context, employ
 
 	// Map entity properties to the Availability model
 	availability := models.Availability{
-		ID:         id,
 		EmployeeID: employeeID,
 		StartDate:  startDate,
 		EndDate:    endDate,

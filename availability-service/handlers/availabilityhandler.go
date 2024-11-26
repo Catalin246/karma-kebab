@@ -32,59 +32,52 @@ func NewAvailabilityHandler(service *service.AvailabilityService) *AvailabilityH
 	}
 }
 
-// GetAll retrieves all availability records for a specific EmployeeID, with optional date range.
+// GetAll retrieves all availability records for all employees.
 func (h *AvailabilityHandler) GetAll(w http.ResponseWriter, r *http.Request) {
-	employeeID := r.URL.Query().Get("employeeId")
-	if employeeID == "" {
-		http.Error(w, "EmployeeID is required", http.StatusBadRequest)
-		return
-	}
+    employeeID := r.URL.Query().Get("employeeId")
+    startDateStr := r.URL.Query().Get("startDate")
+    endDateStr := r.URL.Query().Get("endDate")
 
-	startDateStr := r.URL.Query().Get("startDate")
-	endDateStr := r.URL.Query().Get("endDate")
+    var startDate, endDate *time.Time
+    if startDateStr != "" {
+        parsedStartDate, err := time.Parse(time.RFC3339, startDateStr)
+        if err != nil {
+            http.Error(w, "Invalid startDate format", http.StatusBadRequest)
+            return
+        }
+        startDate = &parsedStartDate
+    }
+    if endDateStr != "" {
+        parsedEndDate, err := time.Parse(time.RFC3339, endDateStr)
+        if err != nil {
+            http.Error(w, "Invalid endDate format", http.StatusBadRequest)
+            return
+        }
+        endDate = &parsedEndDate
+    }
 
-	var startDate, endDate *time.Time
+    availabilities, err := h.service.GetAll(r.Context(), employeeID, startDate, endDate)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
 
-	if startDateStr != "" {
-		parsed, err := time.Parse("2006-01-02", startDateStr)
-		if err != nil {
-			http.Error(w, "Invalid startDate format. Use YYYY-MM-DD", http.StatusBadRequest)
-			return
-		}
-		startDate = &parsed
-	}
-
-	if endDateStr != "" {
-		parsed, err := time.Parse("2006-01-02", endDateStr)
-		if err != nil {
-			http.Error(w, "Invalid endDate format. Use YYYY-MM-DD", http.StatusBadRequest)
-			return
-		}
-		endDate = &parsed
-	}
-
-	availabilities, err := h.service.GetAll(r.Context(), employeeID, startDate, endDate)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(availabilities)
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(availabilities)
 }
 
-// GetByID retrieves a specific availability record by ID and EmployeeID.
-func (h *AvailabilityHandler) GetByID(w http.ResponseWriter, r *http.Request) {
+// GetByID retrieves a specific availability record by EmployeeID.
+func (h *AvailabilityHandler) GetByEmployeeID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	id := vars["id"]
-	employeeID := r.URL.Query().Get("employeeId")
+	employeeID := vars["employeeId"]
 
+	// Ensure employee ID is provided
 	if employeeID == "" {
 		http.Error(w, "EmployeeID is required", http.StatusBadRequest)
 		return
 	}
 
-	availability, err := h.service.GetByID(r.Context(), employeeID, id)
+	availability, err := h.service.GetByEmployeeID(r.Context(), employeeID)
 	if err != nil {
 		if err == models.ErrNotFound {
 			http.Error(w, "Availability not found", http.StatusNotFound)

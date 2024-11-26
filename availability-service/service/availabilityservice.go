@@ -29,11 +29,11 @@ func (s *AvailabilityService) GetAll(ctx context.Context, employeeID string, sta
 }
 
 // Fetch a specific availability record by ID and EmployeeID
-func (s *AvailabilityService) GetByID(ctx context.Context, employeeID, id string) (*models.Availability, error) {
-	if employeeID == "" || id == "" {
+func (s *AvailabilityService) GetByEmployeeID(ctx context.Context, employeeID string) (*models.Availability, error) {
+	if employeeID == "" {
 		return nil, models.ErrInvalidID
 	}
-	return s.repo.GetByID(ctx, employeeID, id)
+	return s.repo.GetByEmployeeID(ctx, employeeID)
 }
 
 // Create a new availability record

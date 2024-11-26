@@ -3,10 +3,6 @@
 This microservice manages employee (un)availability for events in the Karma Kebab application.
 each record will be a record of when an employee is NOT available
 
-### Installation Steps
-
-   "go mod init availability-microservice"
-   "go get github.com/Azure/azure-sdk-for-go/sdk/data/azcosmos"
 
 ### for local testing
    npm install -g azurite
