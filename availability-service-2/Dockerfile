@@ -21,7 +21,7 @@ RUN apk --no-cache add ca-certificates
 WORKDIR /app
 
 # Copy the binary and models
-COPY --from=builder /app/availability-service .
+COPY --from=builder /app/availability-service-2 .
 COPY --from=builder /app/models ./models
 
 # Ensure the binary is executable
