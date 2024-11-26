@@ -1,50 +1,27 @@
 package services
 
 import (
+	"context"
 	"duty-service/models"
 	"duty-service/repositories"
-
-	"github.com/google/uuid"
 )
 
-type DutyService interface {
-	GetAllDuties() ([]models.Duty, error)
-	GetDutyById(id uuid.UUID) (*models.Duty, error)
-	GetDutiesByRole(roleId uuid.UUID) ([]models.Duty, error)
-	CreateDuty(duty *models.Duty) error
-	EditDuty(duty *models.Duty) error
-	DeleteDuty(id uuid.UUID) error
+type DutyService struct {
+	repo repositories.InterfaceDutyRepository
 }
 
-type dutyServiceImpl struct {
-	repository repositories.DutyRepository
+// NewDutyService creates a new DutyService
+func NewDutyService(repo repositories.InterfaceDutyRepository) *DutyService {
+	return &DutyService{repo: repo}
 }
 
-// NewDutyService creates a new instance of the DutyService
-func NewDutyService(repo repositories.DutyRepository) DutyService {
-	return &dutyServiceImpl{repository: repo}
-}
+// GET all duties
+func (s *DutyService) GetAllDuties(ctx context.Context, name string) ([]models.Duty, error) {
+	var filter string
 
-func (s *dutyServiceImpl) GetAllDuties() ([]models.Duty, error) {
-	return s.repository.GetAllDuties()
-}
+	if name != "" { // Check if the name is not empty
+		filter = "Name eq '" + name + "'" // Construct the filter for the name
+	}
 
-func (s *dutyServiceImpl) GetDutyById(id uuid.UUID) (*models.Duty, error) {
-	return s.repository.GetDutyById(id)
-}
-
-func (s *dutyServiceImpl) GetDutiesByRole(roleId uuid.UUID) ([]models.Duty, error) {
-	return s.repository.GetDutiesByRole(roleId)
-}
-
-func (s *dutyServiceImpl) CreateDuty(duty *models.Duty) error {
-	return s.repository.CreateDuty(duty)
-}
-
-func (s *dutyServiceImpl) EditDuty(duty *models.Duty) error {
-	return s.repository.UpdateDuty(duty)
-}
-
-func (s *dutyServiceImpl) DeleteDuty(id uuid.UUID) error {
-	return s.repository.DeleteDuty(id)
+	return s.repo.GetAllDuties(ctx, filter)
 }

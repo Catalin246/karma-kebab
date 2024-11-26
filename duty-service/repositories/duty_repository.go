@@ -2,131 +2,75 @@ package repositories
 
 import (
 	"context"
+	"duty-service/models"
 	"encoding/json"
 	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/data/aztables"
 	"github.com/google/uuid"
-
-	"duty-service/models"
 )
 
-// DutyRepository implements DutyStorage using Azure Table Storage
 type DutyRepository struct {
-	client *aztables.Client
-	table  string
+	serviceClient *aztables.ServiceClient
+	tableName     string
 }
 
-// NewDutyRepository creates a new instance of DutyRepository using a connection string
-func NewDutyRepository(connectionString, tableName string) (*DutyRepository, error) {
-	// Create a new client for Azure Tables using the connection string
-	serviceClient, err := aztables.NewServiceClientFromConnectionString(connectionString, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create Azure Table ServiceClient from connection string: %w", err)
+func NewDutyRepository(serviceClient *aztables.ServiceClient) *DutyRepository {
+	return &DutyRepository{
+		serviceClient: serviceClient,
+		tableName:     "duties",
+	}
+}
+
+// GET ALL DUTIES
+func (r *DutyRepository) GetAllDuties(ctx context.Context, filter string) ([]models.Duty, error) {
+	tableClient := r.serviceClient.NewClient(r.tableName)
+
+	listOptions := &aztables.ListEntitiesOptions{
+		Filter: &filter,
 	}
 
-	// Now create a Client for the specific table
-	client := serviceClient.NewClient(tableName)
+	pager := tableClient.NewListEntitiesPager(listOptions)
 
-	return &DutyRepository{
-		client: client,
-		table:  tableName,
-	}, nil
-}
-
-func (s *DutyRepository) GetAllDuties() ([]models.Duty, error) {
 	var duties []models.Duty
 
-	// Setup the options for listing entities
-	options := &aztables.ListEntitiesOptions{
-		Top: nil, // To limit the number of records per request CHECKLATER
-	}
-
-	// Initialize the pager for listing entities
-	pager := s.client.NewListEntitiesPager(options)
-
-	// Iterate through the pages of entities
 	for pager.More() {
-		page, err := pager.NextPage(context.Background())
+		page, err := pager.NextPage(ctx)
 		if err != nil {
-			return nil, fmt.Errorf("failed to list duties: %w", err)
+			return nil, fmt.Errorf("failed to list duties: %v", err)
 		}
 
-		// Iterate through the entities in the current page
+		// Unmarshal each entity and add duties[]
 		for _, entity := range page.Entities {
-			// Unmarshal the entity bytes into an EDMEntity
-			var edmEntity aztables.EDMEntity
-			err := json.Unmarshal(entity, &edmEntity)
+			var dutyData map[string]interface{}
+
+			if err := json.Unmarshal(entity, &dutyData); err != nil {
+				return nil, fmt.Errorf("failed to unmarshal duty: %v", err)
+			}
+
+			//TODO BETH: put these parsing to another method 26/11
+			// Parse RowKey as UUID
+			rowKeyUUID, err := uuid.Parse(dutyData["RowKey"].(string))
 			if err != nil {
-				return nil, fmt.Errorf("failed to unmarshal entity: %w", err)
+				return nil, fmt.Errorf("failed to parse Duty RowKey as UUID: %v", err)
 			}
 
-			//DUTY ID
-			idVal, exists := edmEntity.Properties["id"]
-			if !exists {
-				return nil, fmt.Errorf("missing 'id' property")
-			}
-
-			idStr, ok := idVal.(string)
-			if !ok {
-				return nil, fmt.Errorf("invalid type for 'id' property: expected string, got %T", idVal)
-			}
-
-			id, err := uuid.Parse(idStr)
+			// Parse RoleId as UUID
+			roleIdUUID, err := uuid.Parse(dutyData["RoleId"].(string))
 			if err != nil {
-				return nil, fmt.Errorf("invalid UUID format: %w", err)
+				return nil, fmt.Errorf("failed to parse Duty RoleId as UUID: %v", err)
 			}
 
-			//DUTY ROLE ID
-			roleIdVal, exists := edmEntity.Properties["role_id"]
-			if !exists {
-				return nil, fmt.Errorf("missing 'role_id' property")
-			}
-
-			roleIdStr, ok := roleIdVal.(string)
-			if !ok {
-				return nil, fmt.Errorf("invalid type for 'role_id' property: expected string, got %T", roleIdVal)
-			}
-
-			roleId, err := uuid.Parse(roleIdStr)
-			if err != nil {
-				return nil, fmt.Errorf("invalid UUID format for 'role_id': %w", err)
-			}
-
-			//DUTY NAME:
-			nameVal, exists := edmEntity.Properties["name"]
-			if !exists {
-				return nil, fmt.Errorf("missing 'name' property")
-			}
-
-			name, ok := nameVal.(string)
-			if !ok {
-				return nil, fmt.Errorf("invalid type for 'name' property: expected string, got %T", nameVal)
-			}
-
-			// DUTY DESC:
-			descriptionVal, exists := edmEntity.Properties["description"]
-			if !exists {
-				return nil, fmt.Errorf("missing 'description' property")
-			}
-
-			description, ok := descriptionVal.(string)
-			if !ok {
-				return nil, fmt.Errorf("invalid type for 'description' property: expected string, got %T", descriptionVal)
-			}
-
-			// Create the Duty model from the entity properties
 			duty := models.Duty{
-				Id:              id.String(),
-				RoleId:          roleId.String(),
-				DutyName:        name,
-				DutyDescription: description,
+				PartitionKey:    dutyData["PartitionKey"].(string),
+				RowKey:          rowKeyUUID,
+				RoleId:          roleIdUUID,
+				DutyName:        dutyData["DutyName"].(string),
+				DutyDescription: dutyData["DutyDescription"].(string),
 			}
 
-			// Append the duty to the duties slice
 			duties = append(duties, duty)
 		}
 	}
-
 	return duties, nil
 }
