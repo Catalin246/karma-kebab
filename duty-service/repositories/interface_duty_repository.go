@@ -12,5 +12,5 @@ type InterfaceDutyRepository interface {
 	// GetDutiesByRole(roleID uuid.UUID) ([]models.Duty, error)
 	CreateDuty(ctx context.Context, duty models.Duty) error
 	// UpdateDuty(duty *models.Duty) error
-	// DeleteDuty(id uuid.UUID) error
+	DeleteDuty(ctx context.Context, partitionKey, rowKey string) error
 }

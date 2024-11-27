@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 )
 
 type DutyHandler struct {
@@ -53,4 +54,18 @@ func (h *DutyHandler) CreateDuty(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(map[string]string{"message": "duty created successfully"})
+}
+
+func (h *DutyHandler) DeleteDuty(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	partitionKey := vars["PartitionKey"]
+	rowKey := vars["RowKey"]
+
+	if err := h.service.DeleteDuty(context.Background(), partitionKey, rowKey); err != nil {
+		http.Error(w, "Failed to delete duty: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"message": "Duty deleted successfully"})
 }

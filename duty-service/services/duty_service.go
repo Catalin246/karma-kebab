@@ -26,6 +26,12 @@ func (s *DutyService) GetAllDuties(ctx context.Context, name string) ([]models.D
 	return s.repo.GetAllDuties(ctx, filter)
 }
 
+// POST create duty
 func (s *DutyService) CreateDuty(ctx context.Context, duty models.Duty) error {
 	return s.repo.CreateDuty(ctx, duty)
+}
+
+// DELETE delete a duty
+func (s *DutyService) DeleteDuty(ctx context.Context, partitionKey, rowKey string) error {
+	return s.repo.DeleteDuty(ctx, partitionKey, rowKey)
 }

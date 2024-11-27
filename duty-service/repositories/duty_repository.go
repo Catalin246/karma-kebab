@@ -97,7 +97,20 @@ func (r *DutyRepository) CreateDuty(ctx context.Context, duty models.Duty) error
 	// Insert the entity
 	_, err = tableClient.AddEntity(ctx, entityBytes, nil)
 	if err != nil {
-		return fmt.Errorf("failed to insert event: %v", err)
+		return fmt.Errorf("failed to insert duty: %v", err)
+	}
+
+	return nil
+}
+
+// DELETE A DUTY (removes a duty by PartitionKey and RowKey)
+func (r *DutyRepository) DeleteDuty(ctx context.Context, partitionKey, rowKey string) error {
+	tableClient := r.serviceClient.NewClient(r.tableName)
+
+	// Delete the entity
+	_, err := tableClient.DeleteEntity(ctx, partitionKey, rowKey, nil)
+	if err != nil {
+		return fmt.Errorf("failed to delete duty: %v", err)
 	}
 
 	return nil
