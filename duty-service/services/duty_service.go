@@ -26,6 +26,11 @@ func (s *DutyService) GetAllDuties(ctx context.Context, name string) ([]models.D
 	return s.repo.GetAllDuties(ctx, filter)
 }
 
+// GET duty by id
+func (s *DutyService) GetDutyById(ctx context.Context, partitionKey, rowKey string) (*models.Duty, error) {
+	return s.repo.GetDutyById(ctx, partitionKey, rowKey)
+}
+
 // POST create duty
 func (s *DutyService) CreateDuty(ctx context.Context, duty models.Duty) error {
 	return s.repo.CreateDuty(ctx, duty)

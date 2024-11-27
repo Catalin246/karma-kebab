@@ -7,7 +7,7 @@ import (
 
 type InterfaceDutyRepository interface {
 	GetAllDuties(ctx context.Context, filter string) ([]models.Duty, error)
-	// GetDutyById(id uuid.UUID) (*models.Duty, error)
+	GetDutyById(ctx context.Context, partitionKey, rowKey string) (*models.Duty, error)
 	// GetDutyByName(name string) (*models.Duty, error)
 	// GetDutiesByRole(roleID uuid.UUID) ([]models.Duty, error)
 	CreateDuty(ctx context.Context, duty models.Duty) error

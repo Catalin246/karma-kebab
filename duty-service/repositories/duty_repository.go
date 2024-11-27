@@ -75,6 +75,46 @@ func (r *DutyRepository) GetAllDuties(ctx context.Context, filter string) ([]mod
 	return duties, nil
 }
 
+// GET DUTY BY ID retrieves a duty by PartitionKey and RowKey
+func (r *DutyRepository) GetDutyById(ctx context.Context, partitionKey, rowKey string) (*models.Duty, error) {
+	tableClient := r.serviceClient.NewClient(r.tableName)
+
+	// Retrieve the entity by PartitionKey and RowKey
+	resp, err := tableClient.GetEntity(ctx, partitionKey, rowKey, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get duty: %v", err)
+	}
+
+	// Parse the entity into a map
+	var dutyData map[string]interface{}
+	if err := json.Unmarshal(resp.Value, &dutyData); err != nil {
+		return nil, fmt.Errorf("failed to decode duty: %v", err)
+	}
+
+	// Parse RowKey as UUID
+	rowKeyUUID, err := uuid.Parse(dutyData["RowKey"].(string))
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse RowKey as UUID: %v", err)
+	}
+
+	// Parse RoleId as UUID
+	roleIdUUID, err := uuid.Parse(dutyData["RoleId"].(string))
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse RoleId as UUID: %v", err)
+	}
+
+	// Return the duty object
+	duty := models.Duty{
+		PartitionKey:    dutyData["PartitionKey"].(string),
+		RowKey:          rowKeyUUID, // Assign UUID here
+		RoleId:          roleIdUUID,
+		DutyName:        dutyData["DutyName"].(string),
+		DutyDescription: dutyData["DutyDescription"].(string),
+	}
+
+	return &duty, nil
+}
+
 // CREATE NEW DUTY (POST)
 func (r *DutyRepository) CreateDuty(ctx context.Context, duty models.Duty) error {
 	tableClient := r.serviceClient.NewClient(r.tableName)

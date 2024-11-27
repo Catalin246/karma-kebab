@@ -33,6 +33,26 @@ func (h *DutyHandler) GetAllDuties(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(duties)
 }
 
+func (h *DutyHandler) GetDutyById(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	partitionKey := vars["PartitionKey"]
+	rowKey := vars["RowKey"]
+
+	if partitionKey == "" || rowKey == "" {
+		http.Error(w, "Missing PartitionKey or RrowKey", http.StatusBadRequest)
+		return
+	}
+
+	duty, err := h.service.GetDutyById(context.Background(), partitionKey, rowKey)
+	if err != nil {
+		http.Error(w, "Failed to retrieve duty: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(duty)
+}
+
 func (h *DutyHandler) CreateDuty(w http.ResponseWriter, r *http.Request) {
 	var duty models.Duty
 	if err := json.NewDecoder(r.Body).Decode(&duty); err != nil {
