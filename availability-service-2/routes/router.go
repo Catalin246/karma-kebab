@@ -26,18 +26,14 @@ func RegisterRoutes(serviceClient *aztables.ServiceClient) *mux.Router {
 	r.Use(middlewares.GatewayHeaderMiddleware)
 
 	// Availability routes
-	r.HandleFunc("/availability", availabilityHandler.GetAll).Methods(http.MethodGet) //works
-	r.HandleFunc("/availability/{partitionKey}", availabilityHandler.GetByEmployeeID).Methods(http.MethodGet) //should work
-	// r.HandleFunc("/availability/{partitionKey}", func(w http.ResponseWriter, r *http.Request) { //200
-	// 	log.Printf("CATCH-ALL: Received request on /availability/{partitionKey}")
-	// }).Methods(http.MethodGet)
+	r.HandleFunc("/availability", availabilityHandler.GetAll).Methods(http.MethodGet)                         //works
+	r.HandleFunc("/availability/{partitionKey}", availabilityHandler.GetByEmployeeID).Methods(http.MethodGet) //works
 	r.HandleFunc("/availability", availabilityHandler.Create).Methods(http.MethodPost)                           //works
 	r.HandleFunc("/availability/{partitionKey}/{rowKey}", availabilityHandler.Update).Methods(http.MethodPut)    //this gives me 'invaid id'
 	r.HandleFunc("/availability/{partitionKey}/{rowKey}", availabilityHandler.Delete).Methods(http.MethodDelete) //'EmployeeID is required'
 	http.Handle("/", r)
 	return r
 }
-
 
 // # Stop all running containers
 // docker-compose down

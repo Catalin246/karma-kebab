@@ -158,10 +158,10 @@ func (h *AvailabilityHandler) Create(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(created)
 }
 
-// Update updates an existing availability record.
 func (h *AvailabilityHandler) Update(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	id := vars["id"]
+	partitionKey := vars["partitionKey"] // EmployeeID
+	rowKey := vars["rowKey"]             // Availability ID
 
 	var req UpdateAvailabilityRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -182,43 +182,46 @@ func (h *AvailabilityHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	availability := models.Availability{
-		ID:         id,
-		EmployeeID: req.EmployeeID,
+		ID:         rowKey,
+		EmployeeID: partitionKey,
 		StartDate:  startDate,
 		EndDate:    endDate,
 	}
 
-	err = h.service.Update(r.Context(), req.EmployeeID, id, availability)
+	err = h.service.Update(r.Context(), partitionKey, rowKey, availability)
 	if err != nil {
 		switch err {
 		case models.ErrNotFound:
 			http.Error(w, "Availability not found", http.StatusNotFound)
+		case models.ErrInvalidID:
+			http.Error(w, "Invalid employee ID or availability ID", http.StatusBadRequest)
 		default:
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(availability)
+	w.WriteHeader(http.StatusOK)
 }
 
-// Delete deletes an availability record.
+// delete
 func (h *AvailabilityHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	id := vars["id"]
-	employeeID := r.URL.Query().Get("employeeId")
+	partitionKey := vars["partitionKey"] // EmployeeID
+	rowKey := vars["rowKey"]             // Availability ID
 
-	if employeeID == "" {
-		http.Error(w, "EmployeeID is required", http.StatusBadRequest)
+	if partitionKey == "" || rowKey == "" {
+		http.Error(w, "EmployeeID and Availability ID are required", http.StatusBadRequest)
 		return
 	}
 
-	err := h.service.Delete(r.Context(), employeeID, id)
+	err := h.service.Delete(r.Context(), partitionKey, rowKey)
 	if err != nil {
 		switch err {
 		case models.ErrNotFound:
 			http.Error(w, "Availability not found", http.StatusNotFound)
+		case models.ErrInvalidID:
+			http.Error(w, "Invalid employee ID or availability ID", http.StatusBadRequest)
 		default:
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
