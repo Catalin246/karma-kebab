@@ -76,6 +76,27 @@ func (h *DutyHandler) CreateDuty(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"message": "duty created successfully"})
 }
 
+func (h *DutyHandler) UpdateDuty(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	partitionKey := vars["PartitionKey"]
+	rowKey := vars["RowKey"]
+
+	var duty models.Duty
+
+	if err := json.NewDecoder(r.Body).Decode(&duty); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.service.UpdateDuty(context.Background(), partitionKey, rowKey, duty); err != nil {
+		http.Error(w, "Failed to update duty: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"message": "Duty updated successfully"})
+}
+
 func (h *DutyHandler) DeleteDuty(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	partitionKey := vars["PartitionKey"]

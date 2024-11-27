@@ -36,6 +36,11 @@ func (s *DutyService) CreateDuty(ctx context.Context, duty models.Duty) error {
 	return s.repo.CreateDuty(ctx, duty)
 }
 
+// PUT update a duty
+func (s *DutyService) UpdateDuty(ctx context.Context, partitionKey, rowKey string, duty models.Duty) error {
+	return s.repo.UpdateDuty(ctx, partitionKey, rowKey, duty)
+}
+
 // DELETE delete a duty
 func (s *DutyService) DeleteDuty(ctx context.Context, partitionKey, rowKey string) error {
 	return s.repo.DeleteDuty(ctx, partitionKey, rowKey)

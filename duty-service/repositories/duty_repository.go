@@ -143,6 +143,34 @@ func (r *DutyRepository) CreateDuty(ctx context.Context, duty models.Duty) error
 	return nil
 }
 
+// UPDATE A DUTY (PUT)
+func (r *DutyRepository) UpdateDuty(ctx context.Context, partitionKey, rowKey string, duty models.Duty) error {
+	tableClient := r.serviceClient.NewClient(r.tableName)
+
+	// Prepare the updated entity
+	entity := map[string]interface{}{
+		"PartitionKey":    partitionKey,
+		"RowKey":          rowKey,
+		"RoleId":          duty.RoleId.String(),
+		"DutyName":        duty.DutyName,
+		"DutyDescription": duty.DutyDescription,
+	}
+
+	// Marshal the entity to JSON
+	entityBytes, err := json.Marshal(entity)
+	if err != nil {
+		return fmt.Errorf("failed to marshal updated entity: %v", err)
+	}
+
+	// Update the entity
+	_, err = tableClient.UpdateEntity(ctx, entityBytes, nil)
+	if err != nil {
+		return fmt.Errorf("failed to update duty: %v", err)
+	}
+
+	return nil
+}
+
 // DELETE A DUTY (removes a duty by PartitionKey and RowKey)
 func (r *DutyRepository) DeleteDuty(ctx context.Context, partitionKey, rowKey string) error {
 	tableClient := r.serviceClient.NewClient(r.tableName)

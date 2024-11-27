@@ -28,6 +28,8 @@ func RegisterRoutes(serviceClient *aztables.ServiceClient) *mux.Router {
 	r.HandleFunc("/duties", dutyHandler.GetAllDuties).Methods(http.MethodGet)
 	r.HandleFunc("/duties/{PartitionKey}/{RowKey}", dutyHandler.GetDutyById).Methods(http.MethodGet) //TODO: make partitionkey default "Duty"????? 27/11
 	r.HandleFunc("/duties", dutyHandler.CreateDuty).Methods(http.MethodPost)
+	r.HandleFunc("/duties/{PartitionKey}/{RowKey}", dutyHandler.UpdateDuty).Methods(http.MethodPut)    //TODO: make partitionkey default "Duty"????? 27/11
 	r.HandleFunc("/duties/{PartitionKey}/{RowKey}", dutyHandler.DeleteDuty).Methods(http.MethodDelete) //TODO: make partitionkey default "Duty"????? 27/11
+
 	return r
 }
