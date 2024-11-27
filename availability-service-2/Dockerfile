@@ -32,3 +32,22 @@ EXPOSE 3002
 
 # Command to run the application
 CMD ["./availability-service-2"]
+
+
+# // # Stop all running containers
+# // docker-compose down
+
+# // # Remove all containers
+# // docker-compose rm -f
+
+# // # Remove all images
+# // docker-compose down --rmi all
+
+# // # Remove all volumes
+# // docker-compose down -v
+
+# // # Rebuild with no cache
+# // docker-compose build --no-cache
+
+# // # Start containers
+# // docker-compose up
