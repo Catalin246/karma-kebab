@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"availability-service-2/models"
-	"availability-service-2/service"
+	"availability-service/models"
+	"availability-service/service"
 	"encoding/json"
 	"log"
 	"net/http"

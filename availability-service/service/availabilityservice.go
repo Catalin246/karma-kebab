@@ -5,8 +5,8 @@ import (
 	"log"
 	"time"
 
-	"availability-service-2/models"
-	"availability-service-2/repository"
+	"availability-service/models"
+	"availability-service/repository"
 
 	"github.com/google/uuid"
 )
@@ -79,29 +79,29 @@ func (s *AvailabilityService) Delete(ctx context.Context, employeeID, id string)
 
 // Validate the availability record's fields
 func (s *AvailabilityService) validateAvailability(availability models.Availability) error {
-    // Log the availability being validated
-    log.Printf("Validating availability: %+v", availability)
+	// Log the availability being validated
+	log.Printf("Validating availability: %+v", availability)
 
-    if availability.EmployeeID == "" {
-        log.Println("Employee ID is empty")
-        return models.ErrInvalidAvailability
-    }
+	if availability.EmployeeID == "" {
+		log.Println("Employee ID is empty")
+		return models.ErrInvalidAvailability
+	}
 
-    if availability.StartDate.IsZero() || availability.EndDate.IsZero() {
-        log.Println("Start date or end date is zero")
-        return models.ErrInvalidAvailability
-    }
+	if availability.StartDate.IsZero() || availability.EndDate.IsZero() {
+		log.Println("Start date or end date is zero")
+		return models.ErrInvalidAvailability
+	}
 
-    if availability.EndDate.Before(availability.StartDate) {
-        log.Println("End date is before start date")
-        return models.ErrInvalidAvailability
-    }
+	if availability.EndDate.Before(availability.StartDate) {
+		log.Println("End date is before start date")
+		return models.ErrInvalidAvailability
+	}
 
-    if availability.StartDate.Before(time.Now()) {
-        log.Println("Start date is in the past")
-        return models.ErrInvalidAvailability
-    }
+	if availability.StartDate.Before(time.Now()) {
+		log.Println("Start date is in the past")
+		return models.ErrInvalidAvailability
+	}
 
-    log.Println("Availability validation successful")
-    return nil
+	log.Println("Availability validation successful")
+	return nil
 }

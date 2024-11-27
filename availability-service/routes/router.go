@@ -1,10 +1,10 @@
 package routes
 
 import (
-	"availability-service-2/handlers"
-	"availability-service-2/middlewares"
-	"availability-service-2/repository"
-	"availability-service-2/service"
+	"availability-service/handlers"
+	"availability-service/middlewares"
+	"availability-service/repository"
+	"availability-service/service"
 	"net/http"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/data/aztables"

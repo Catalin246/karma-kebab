@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"availability-service-2/models"
+	"availability-service/models"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -50,35 +50,35 @@ func (r *TableStorageAvailabilityRepository) Create(ctx context.Context, availab
 }
 
 func (r *TableStorageAvailabilityRepository) GetByEmployeeID(ctx context.Context, employeeID string) ([]models.Availability, error) {
-    tableClient := r.serviceClient.NewClient(r.tableName)
+	tableClient := r.serviceClient.NewClient(r.tableName)
 
-    // Create a filter to get all entities with this partition key
-    filter := fmt.Sprintf("PartitionKey eq '%s'", employeeID)
-    
-    pager := tableClient.NewListEntitiesPager(&aztables.ListEntitiesOptions{
-        Filter: &filter,
-    })
+	// Create a filter to get all entities with this partition key
+	filter := fmt.Sprintf("PartitionKey eq '%s'", employeeID)
 
-    var availabilities []models.Availability
+	pager := tableClient.NewListEntitiesPager(&aztables.ListEntitiesOptions{
+		Filter: &filter,
+	})
 
-    for pager.More() {
-        page, err := pager.NextPage(ctx)
-        if err != nil {
-            return nil, fmt.Errorf("failed to get entities: %v", err)
-        }
+	var availabilities []models.Availability
 
-        for _, entity := range page.Entities {
-            var availability models.Availability
-            
+	for pager.More() {
+		page, err := pager.NextPage(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get entities: %v", err)
+		}
+
+		for _, entity := range page.Entities {
+			var availability models.Availability
+
 			err = json.Unmarshal(entity, &availability)
-            if err != nil {
-                return nil, fmt.Errorf("failed to unmarshal entity: %v", err)
-            }
-            availabilities = append(availabilities, availability)
-        }
-    }
+			if err != nil {
+				return nil, fmt.Errorf("failed to unmarshal entity: %v", err)
+			}
+			availabilities = append(availabilities, availability)
+		}
+	}
 
-    return availabilities, nil
+	return availabilities, nil
 }
 
 // GetAll retrieves all availability records

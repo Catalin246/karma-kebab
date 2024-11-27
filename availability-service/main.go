@@ -1,9 +1,8 @@
-
 package main
 
 import (
-	"availability-service-2/db"
-	"availability-service-2/routes"
+	"availability-service/db"
+	"availability-service/routes"
 	"log"
 	"net/http"
 	"os"

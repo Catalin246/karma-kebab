@@ -1,4 +1,4 @@
-module availability-service-2
+module availability-service
 
 go 1.23.1
 
