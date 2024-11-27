@@ -74,3 +74,31 @@ func (r *DutyRepository) GetAllDuties(ctx context.Context, filter string) ([]mod
 	}
 	return duties, nil
 }
+
+// CREATE NEW DUTY (POST)
+func (r *DutyRepository) CreateDuty(ctx context.Context, duty models.Duty) error {
+	tableClient := r.serviceClient.NewClient(r.tableName)
+
+	// Prepare the entity for insertion
+	entity := map[string]interface{}{
+		"PartitionKey":    duty.PartitionKey,
+		"RowKey":          duty.RowKey.String(), // convert UUID to string
+		"RoleId":          duty.RoleId.String(), // convert UUID to string
+		"DutyName":        duty.DutyName,
+		"DutyDescription": duty.DutyDescription,
+	}
+
+	// Marshal the entity to JSON
+	entityBytes, err := json.Marshal(entity)
+	if err != nil {
+		return fmt.Errorf("failed to marshal entity: %v", err)
+	}
+
+	// Insert the entity
+	_, err = tableClient.AddEntity(ctx, entityBytes, nil)
+	if err != nil {
+		return fmt.Errorf("failed to insert event: %v", err)
+	}
+
+	return nil
+}

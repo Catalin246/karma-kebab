@@ -24,6 +24,9 @@ WORKDIR /app
 COPY --from=builder /app/duty-service .
 COPY --from=builder /app/models ./models
 
+# Copy the .env file
+COPY .env .env
+
 # Ensure the binary is executable
 RUN chmod +x /app/duty-service
 

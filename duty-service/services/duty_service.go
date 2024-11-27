@@ -25,3 +25,7 @@ func (s *DutyService) GetAllDuties(ctx context.Context, name string) ([]models.D
 
 	return s.repo.GetAllDuties(ctx, filter)
 }
+
+func (s *DutyService) CreateDuty(ctx context.Context, duty models.Duty) error {
+	return s.repo.CreateDuty(ctx, duty)
+}
