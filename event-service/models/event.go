@@ -12,7 +12,7 @@ type Status string
 const (
 	StatusPlanned   Status = "Planned"
 	StatusOngoing   Status = "Ongoing"
-	StatusCompletes Status = "Completes"
+	StatusCompletes Status = "Completed"
 	StatusCancelled Status = "Cancelled"
 )
 
