@@ -29,8 +29,9 @@ func (m *MockEventService) Create(ctx context.Context, event models.Event) error
 	return m.Called(ctx, event).Error(0)
 }
 
-func (m *MockEventService) Update(ctx context.Context, partitionKey, rowKey string, event models.Event) error {
-	return m.Called(ctx, partitionKey, rowKey, event).Error(0)
+func (m *MockEventService) Update(ctx context.Context, partitionKey string, rowKey string, event models.Event) error {
+	args := m.Called(ctx, partitionKey, rowKey, event)
+	return args.Error(0)
 }
 
 func (m *MockEventService) Delete(ctx context.Context, partitionKey, rowKey string) error {
