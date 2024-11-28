@@ -4,10 +4,13 @@
     "\\employee-service",
     "\\employee-service\\bin",
     "\\employee-service\\bin\\Debug",
+    "\\employee-service\\bin\\Debug\\net8.0",
+    "\\employee-service\\bin\\Release",
     "\\employee_service",
     "\\employee_service\\EmployeeMicroservice.Functions",
-    "\\employee_service\\EmployeeMicroservice.Functions\\Properties"
+    "\\employee_service\\EmployeeMicroservice.Functions\\Repositories",
+    "\\employee_service\\EmployeeMicroservice.Functions\\Services"
   ],
-  "SelectedNode": "\\karma-kebab.sln",
+  "SelectedNode": "\\employee_service\\EmployeeMicroservice.Functions\\EmployeeFunctions.cs",
   "PreviewInSolutionExplorer": false
 }

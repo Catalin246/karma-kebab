@@ -21,9 +21,11 @@ builder.Services.AddSingleton<Database>(serviceProvider =>
     var password = "password";
     return new Database(host, username, password);
 });
-
 builder.Services.AddSingleton<DatabaseService>();
-builder.Services.AddSingleton<EmployeeService>();
+
+// Register repositories and services
+builder.Services.AddSingleton<IEmployeeRepository, EmployeeRepository>(); 
+builder.Services.AddSingleton<IEmployeeService, EmployeeService>(); 
 
 // Ensure the database and tables are created on startup
 var databaseService = builder.Services.BuildServiceProvider().GetRequiredService<DatabaseService>();
