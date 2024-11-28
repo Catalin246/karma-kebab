@@ -2,9 +2,12 @@
   "ExpandedNodes": [
     "",
     "\\employee-service",
-    "\\employee-service\\Database",
-    "\\employee-service\\Models",
-    "\\employee-service\\Services"
+    "\\employee-service\\bin",
+    "\\employee-service\\bin\\Debug",
+    "\\employee_service",
+    "\\employee_service\\EmployeeMicroservice.Functions",
+    "\\employee_service\\EmployeeMicroservice.Functions\\Properties"
   ],
+  "SelectedNode": "\\karma-kebab.sln",
   "PreviewInSolutionExplorer": false
 }

@@ -1,0 +1,15 @@
+{
+  "profiles": {
+    "EmployeeMicroservice.Functions": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7107"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker",
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
+      "containerRunArguments": "--init",
+      "httpPort": 30351,
+      "useSSL": false
+    }
+  }
+}

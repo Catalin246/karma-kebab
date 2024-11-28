@@ -1,6 +1,4 @@
-using employee_service.Controllers;
-using employee_service.Database;
-using employee_service.Services;
+
 
 
 var builder = WebApplication.CreateBuilder(args);

@@ -3,20 +3,12 @@
   "WorkspaceRootPath": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service\\Models\\Employee.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:employee-service\\Models\\Employee.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{5DEEEB84-FAE4-422C-94B0-5F2841BB1144}|employee_service\\EmployeeMicroservice.Functions\\EmployeeMicroservice.Functions.csproj|c:\\users\\aizaz ahsan\\inholland year 4 minor\\karmakebabproject\\karma-kebab\\employee_service\\employeemicroservice.functions\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5DEEEB84-FAE4-422C-94B0-5F2841BB1144}|employee_service\\EmployeeMicroservice.Functions\\EmployeeMicroservice.Functions.csproj|solutionrelative:employee_service\\employeemicroservice.functions\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service\\Services\\DatabaseService.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:employee-service\\Services\\DatabaseService.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service\\Database\\Database.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:employee-service\\Database\\Database.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service\\Program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:employee-service\\Program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{5DEEEB84-FAE4-422C-94B0-5F2841BB1144}|employee_service\\EmployeeMicroservice.Functions\\EmployeeMicroservice.Functions.csproj|c:\\users\\aizaz ahsan\\inholland year 4 minor\\karmakebabproject\\karma-kebab\\employee_service\\employeemicroservice.functions\\dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{5DEEEB84-FAE4-422C-94B0-5F2841BB1144}|employee_service\\EmployeeMicroservice.Functions\\EmployeeMicroservice.Functions.csproj|solutionrelative:employee_service\\employeemicroservice.functions\\dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}"
     }
   ],
   "DocumentGroupContainers": [
@@ -26,58 +18,32 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "Employee.cs",
-              "DocumentMoniker": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service\\Models\\Employee.cs",
-              "RelativeDocumentMoniker": "employee-service\\Models\\Employee.cs",
-              "ToolTip": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service\\Models\\Employee.cs",
-              "RelativeToolTip": "employee-service\\Models\\Employee.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-11-26T17:27:27.017Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "DatabaseService.cs",
-              "DocumentMoniker": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service\\Services\\DatabaseService.cs",
-              "RelativeDocumentMoniker": "employee-service\\Services\\DatabaseService.cs",
-              "ToolTip": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service\\Services\\DatabaseService.cs",
-              "RelativeToolTip": "employee-service\\Services\\DatabaseService.cs",
-              "ViewState": "AgIAADkAAAAAAAAAAAAAAEcAAAAcAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-11-26T17:17:18.302Z",
+              "Title": "Dockerfile",
+              "DocumentMoniker": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee_service\\EmployeeMicroservice.Functions\\Dockerfile",
+              "RelativeDocumentMoniker": "employee_service\\EmployeeMicroservice.Functions\\Dockerfile",
+              "ToolTip": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee_service\\EmployeeMicroservice.Functions\\Dockerfile",
+              "RelativeToolTip": "employee_service\\EmployeeMicroservice.Functions\\Dockerfile",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2024-11-28T13:24:47.615Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "Database.cs",
-              "DocumentMoniker": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service\\Database\\Database.cs",
-              "RelativeDocumentMoniker": "employee-service\\Database\\Database.cs",
-              "ToolTip": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service\\Database\\Database.cs",
-              "RelativeToolTip": "employee-service\\Database\\Database.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-11-26T17:16:52.333Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 0,
               "Title": "Program.cs",
-              "DocumentMoniker": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service\\Program.cs",
-              "RelativeDocumentMoniker": "employee-service\\Program.cs",
-              "ToolTip": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service\\Program.cs",
-              "RelativeToolTip": "employee-service\\Program.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAACMAAAAVAAAAAAAAAA==",
+              "DocumentMoniker": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee_service\\EmployeeMicroservice.Functions\\Program.cs",
+              "RelativeDocumentMoniker": "employee_service\\EmployeeMicroservice.Functions\\Program.cs",
+              "ToolTip": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee_service\\EmployeeMicroservice.Functions\\Program.cs",
+              "RelativeToolTip": "employee_service\\EmployeeMicroservice.Functions\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAAyAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-11-25T12:13:22.649Z",
+              "WhenOpened": "2024-11-28T12:59:08.499Z",
               "EditorCaption": ""
             }
           ]
