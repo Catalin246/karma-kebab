@@ -1,6 +1,9 @@
 using employee_service.Interfaces;
+using employee_service.Repositories;
+using employee_service.Services;
 using employee_service.Models;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System.Net;

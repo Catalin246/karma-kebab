@@ -1,7 +1,7 @@
 using employee_service.Interfaces;
 using employee_service.Models;
 
-namespace employee_service.Controllers;
+namespace employee_service.Services;
 
 public class EmployeeService : IEmployeeService
 {

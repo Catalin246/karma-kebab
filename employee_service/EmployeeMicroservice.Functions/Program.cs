@@ -1,9 +1,10 @@
 using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.Extensions.Hosting;
-using employee_service.Controllers;
 using employee_service.Database;
 using employee_service.Services;
 using Microsoft.Extensions.DependencyInjection;
+using employee_service.Interfaces; 
+using employee_service.Repositories; 
 
 var builder = FunctionsApplication.CreateBuilder(args);
 
