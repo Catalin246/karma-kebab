@@ -16,8 +16,12 @@ func RegisterRoutes(serviceClient *aztables.ServiceClient) *mux.Router {
 	dutyRepository := repositories.NewDutyRepository(serviceClient)
 	dutyService := services.NewDutyService(dutyRepository)
 
+	dutyAssignmentRepository := repositories.NewDutyAssignmentRepository(serviceClient)
+	dutyAssignmentService := services.NewDutyAssignmentService(dutyAssignmentRepository)
+
 	// Create the duty handler and inject the service
 	dutyHandler := handlers.NewDutyHandler(dutyService)
+	dutyAssignmentHandler := handlers.NewDutyAssignmentHandler(dutyAssignmentService)
 
 	r := mux.NewRouter()
 
@@ -31,6 +35,9 @@ func RegisterRoutes(serviceClient *aztables.ServiceClient) *mux.Router {
 	r.HandleFunc("/duties", dutyHandler.CreateDuty).Methods(http.MethodPost)
 	r.HandleFunc("/duties/{PartitionKey}/{RowKey}", dutyHandler.UpdateDuty).Methods(http.MethodPut)    //TODO: make partitionkey default "Duty"????? 27/11
 	r.HandleFunc("/duties/{PartitionKey}/{RowKey}", dutyHandler.DeleteDuty).Methods(http.MethodDelete) //TODO: make partitionkey default "Duty"????? 27/11
+
+	// duty assignment routeS:
+	r.HandleFunc("/duty-assignments", dutyAssignmentHandler.GetAllDutyAssignmentsByShiftId).Methods(http.MethodGet) // example: http://localhost:5001/duty-assignments?shiftId=123e4567-e89b-12d3-a456-426614174000
 
 	return r
 }

@@ -23,12 +23,11 @@ func NewDutyAssignmentRepository(serviceClient *aztables.ServiceClient) *DutyAss
 }
 
 // GET ALL DUTY ASSIGNMENTS BY SHIFT ID
-func (r *DutyRepository) GetAllDutyAssignmentsByShiftId(ctx context.Context, shiftId uuid.UUID) ([]models.DutyAssignment, error) {
+func (r *DutyAssignmentRepository) GetAllDutyAssignmentsByShiftId(ctx context.Context, shiftId uuid.UUID) ([]models.DutyAssignment, error) {
 	tableClient := r.serviceClient.NewClient(r.tableName)
 
 	// Construct the filter to match the ShiftId
 	filter := fmt.Sprintf("PartitionKey eq '%s'", shiftId.String())
-	fmt.Printf("Filter: %s\n", filter) // Debug the filter
 
 	listOptions := &aztables.ListEntitiesOptions{
 		Filter: &filter,
@@ -53,17 +52,6 @@ func (r *DutyRepository) GetAllDutyAssignmentsByShiftId(ctx context.Context, shi
 				return nil, fmt.Errorf("failed to unmarshal duty assignment: %v", err)
 			}
 
-			// Parse the DutyAssignment properties
-			dutyIdUUID, err := uuid.Parse(dutyAssignmentData["DutyId"].(string))
-			if err != nil {
-				return nil, fmt.Errorf("failed to parse DutyId as UUID: %v", err)
-			}
-
-			shiftIdUUID, err := uuid.Parse(dutyAssignmentData["ShiftId"].(string))
-			if err != nil {
-				return nil, fmt.Errorf("failed to parse ShiftId as UUID: %v", err)
-			}
-
 			// Parse the optional fields (nullable fields like image URL and note)
 			var dutyAssignmentImageUrl *string
 			if imageUrl, ok := dutyAssignmentData["DutyAssignmentImageUrl"].(string); ok && imageUrl != "" {
@@ -79,8 +67,6 @@ func (r *DutyRepository) GetAllDutyAssignmentsByShiftId(ctx context.Context, shi
 			dutyAssignment := models.DutyAssignment{
 				PartitionKey:           dutyAssignmentData["PartitionKey"].(string),
 				RowKey:                 dutyAssignmentData["RowKey"].(string),
-				DutyId:                 dutyIdUUID,
-				ShiftId:                shiftIdUUID,
 				DutyAssignmentStatus:   models.DutyAssignmentStatus(dutyAssignmentData["DutyAssignmentStatus"].(string)),
 				DutyAssignmentImageUrl: dutyAssignmentImageUrl,
 				DutyAssignmentNote:     dutyAssignmentNote,

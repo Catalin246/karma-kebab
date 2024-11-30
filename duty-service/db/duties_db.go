@@ -17,7 +17,7 @@ var (
 
 // Models defines the list of tables to be created
 var Models = []string{
-	"duties",
+	"duties", "dutyAssignments",
 }
 
 // InitAzureTables initializes Azure Table Storage connections for all models
