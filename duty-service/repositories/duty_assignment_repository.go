@@ -79,6 +79,7 @@ func (r *DutyAssignmentRepository) GetAllDutyAssignmentsByShiftId(ctx context.Co
 	return dutyAssignments, nil
 }
 
+// UPDATE a duty assignment
 func (r *DutyAssignmentRepository) UpdateDutyAssignment(ctx context.Context, dutyAssignment models.DutyAssignment) error {
 	tableClient := r.serviceClient.NewClient(r.tableName)
 
@@ -101,6 +102,23 @@ func (r *DutyAssignmentRepository) UpdateDutyAssignment(ctx context.Context, dut
 	_, err = tableClient.UpdateEntity(ctx, entityBytes, nil)
 	if err != nil {
 		return fmt.Errorf("failed to update duty assignment: %v", err)
+	}
+
+	return nil
+}
+
+// DELETE a duty assignment by ShiftId and DutyId
+func (r *DutyAssignmentRepository) DeleteDutyAssignment(ctx context.Context, shiftId uuid.UUID, dutyId string) error {
+	tableClient := r.serviceClient.NewClient(r.tableName)
+
+	// Prepare the PartitionKey and RowKey
+	partitionKey := shiftId.String() // ShiftId
+	rowKey := dutyId                 // DutyId
+
+	// Delete the entity in Azure Table Storage
+	_, err := tableClient.DeleteEntity(ctx, partitionKey, rowKey, nil)
+	if err != nil {
+		return fmt.Errorf("failed to delete duty assignment: %v", err)
 	}
 
 	return nil
