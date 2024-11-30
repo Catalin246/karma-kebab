@@ -53,6 +53,31 @@ func (h *DutyHandler) GetDutyById(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(duty)
 }
 
+func (h *DutyHandler) GetDutiesByRole(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query()
+	roleId := query.Get("RoleId") // Extract the RoleId from query parameters
+
+	if roleId == "" {
+		http.Error(w, "Missing 'RoleId' query parameter", http.StatusBadRequest)
+		return
+	}
+
+	roleIdUUID, err := uuid.Parse(roleId) // Validate the UUID format
+	if err != nil {
+		http.Error(w, "Invalid 'RoleId' format: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	duties, err := h.service.GetDutiesByRole(context.Background(), roleIdUUID)
+	if err != nil {
+		http.Error(w, "Failed to retrieve duties by RoleId: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(duties)
+}
+
 func (h *DutyHandler) CreateDuty(w http.ResponseWriter, r *http.Request) {
 	var duty models.Duty
 	if err := json.NewDecoder(r.Body).Decode(&duty); err != nil {

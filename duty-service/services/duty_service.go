@@ -4,6 +4,8 @@ import (
 	"context"
 	"duty-service/models"
 	"duty-service/repositories"
+
+	"github.com/google/uuid"
 )
 
 type DutyService struct {
@@ -29,6 +31,11 @@ func (s *DutyService) GetAllDuties(ctx context.Context, name string) ([]models.D
 // GET duty by id
 func (s *DutyService) GetDutyById(ctx context.Context, partitionKey, rowKey string) (*models.Duty, error) {
 	return s.repo.GetDutyById(ctx, partitionKey, rowKey)
+}
+
+// GET duty by id
+func (s *DutyService) GetDutiesByRole(ctx context.Context, roleId uuid.UUID) ([]models.Duty, error) {
+	return s.repo.GetDutiesByRole(ctx, roleId)
 }
 
 // POST create duty

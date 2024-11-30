@@ -115,6 +115,64 @@ func (r *DutyRepository) GetDutyById(ctx context.Context, partitionKey, rowKey s
 	return &duty, nil
 }
 
+// GET DUTY BY ROLE retrieves a duty by RoleId
+func (r *DutyRepository) GetDutiesByRole(ctx context.Context, roleId uuid.UUID) ([]models.Duty, error) {
+	tableClient := r.serviceClient.NewClient(r.tableName)
+
+	// Construct the filter to match the RoleId
+	filter := fmt.Sprintf("RoleId eq '%s'", roleId.String())
+	fmt.Printf("Filter: %s\n", filter) // Debug the filter
+
+	listOptions := &aztables.ListEntitiesOptions{
+		Filter: &filter,
+	}
+
+	pager := tableClient.NewListEntitiesPager(listOptions)
+
+	var duties []models.Duty
+
+	// Loop through pages of events
+	for pager.More() {
+		page, err := pager.NextPage(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed to list duties by RoleId: %v", err)
+		}
+
+		// Unmarshal each entity and add to the events list
+		for _, entity := range page.Entities {
+			var dutyData map[string]interface{}
+
+			if err := json.Unmarshal(entity, &dutyData); err != nil {
+				return nil, fmt.Errorf("failed to unmarshal duty: %v", err)
+			}
+
+			// Parse RowKey as UUID
+			rowKeyUUID, err := uuid.Parse(dutyData["RowKey"].(string))
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse RowKey as UUID: %v", err)
+			}
+
+			// Parse RoleId as UUID
+			roleIdUUID, err := uuid.Parse(dutyData["RoleId"].(string))
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse Duty RoleId as UUID: %v", err)
+			}
+
+			duty := models.Duty{
+				PartitionKey:    dutyData["PartitionKey"].(string),
+				RowKey:          rowKeyUUID,
+				RoleId:          roleIdUUID,
+				DutyName:        dutyData["DutyName"].(string),
+				DutyDescription: dutyData["DutyDescription"].(string),
+			}
+
+			duties = append(duties, duty)
+		}
+	}
+
+	return duties, nil
+}
+
 // CREATE NEW DUTY (POST)
 func (r *DutyRepository) CreateDuty(ctx context.Context, duty models.Duty) error {
 	tableClient := r.serviceClient.NewClient(r.tableName)
