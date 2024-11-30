@@ -35,75 +35,74 @@ func NewAvailabilityHandler(service *service.AvailabilityService) *AvailabilityH
 }
 
 func (h *AvailabilityHandler) GetAll(w http.ResponseWriter, r *http.Request) {
-    startDateStr := r.URL.Query().Get("startDate")
-    endDateStr := r.URL.Query().Get("endDate")
-    
-    var startDate, endDate *time.Time
-    
-    // Define multiple date formats to try
-    dateFormats := []string{
-        time.RFC3339,
-        "2006-01-02T15:04:05Z07:00",
-        "2006-01-02T15:04:05Z",
-        "2006-01-02",
-    }
-    
-    if startDateStr != "" {
-        // Remove quotes if they exist
-        startDateStr = strings.Trim(startDateStr, "\"")
-        
-        var parsedStartDate time.Time
-        var err error
-        
-        // Try parsing with different formats
-        for _, format := range dateFormats {
-            parsedStartDate, err = time.Parse(format, startDateStr)
-            if err == nil {
-                break
-            }
-        }
-        
-        if err != nil {
-            http.Error(w, "Invalid startDate format. Use RFC3339 format.", http.StatusBadRequest)
-            return
-        }
-        
-        startDate = &parsedStartDate
-    }
-    
-    if endDateStr != "" {
-        // Remove quotes if they exist
-        endDateStr = strings.Trim(endDateStr, "\"")
-        
-        var parsedEndDate time.Time
-        var err error
-        
-        // Try parsing with different formats
-        for _, format := range dateFormats {
-            parsedEndDate, err = time.Parse(format, endDateStr)
-            if err == nil {
-                break
-            }
-        }
-        
-        if err != nil {
-            http.Error(w, "Invalid endDate format. Use RFC3339 format.", http.StatusBadRequest)
-            return
-        }
-        
-        endDate = &parsedEndDate
-    }
+	startDateStr := r.URL.Query().Get("startDate")
+	endDateStr := r.URL.Query().Get("endDate")
 
-    availabilities, err := h.service.GetAll(r.Context(), startDate, endDate)
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
+	var startDate, endDate *time.Time
 
-    w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(availabilities)
+	// Define multiple date formats to try
+	dateFormats := []string{
+		time.RFC3339,
+		"2006-01-02T15:04:05Z07:00",
+		"2006-01-02T15:04:05Z",
+		"2006-01-02",
+	}
+
+	if startDateStr != "" {
+		// Remove quotes if they exist
+		startDateStr = strings.Trim(startDateStr, "\"")
+
+		var parsedStartDate time.Time
+		var err error
+
+		// Try parsing with different formats
+		for _, format := range dateFormats {
+			parsedStartDate, err = time.Parse(format, startDateStr)
+			if err == nil {
+				break
+			}
+		}
+
+		if err != nil {
+			http.Error(w, "Invalid startDate format. Use RFC3339 format.", http.StatusBadRequest)
+			return
+		}
+
+		startDate = &parsedStartDate
+	}
+
+	if endDateStr != "" {
+		// Remove quotes if they exist
+		endDateStr = strings.Trim(endDateStr, "\"")
+
+		var parsedEndDate time.Time
+		var err error
+
+		// Try parsing with different formats
+		for _, format := range dateFormats {
+			parsedEndDate, err = time.Parse(format, endDateStr)
+			if err == nil {
+				break
+			}
+		}
+
+		if err != nil {
+			http.Error(w, "Invalid endDate format. Use RFC3339 format.", http.StatusBadRequest)
+			return
+		}
+
+		endDate = &parsedEndDate
+	}
+
+	availabilities, err := h.service.GetAll(r.Context(), startDate, endDate)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(availabilities)
 }
-
 
 // gets all availabilities of one employee
 func (h *AvailabilityHandler) GetByEmployeeID(w http.ResponseWriter, r *http.Request) {
@@ -151,49 +150,28 @@ func (h *AvailabilityHandler) GetByEmployeeID(w http.ResponseWriter, r *http.Req
 		http.Error(w, "Error encoding response", http.StatusInternalServerError)
 	}
 }
-
-// Create creates a new availability record.
 func (h *AvailabilityHandler) Create(w http.ResponseWriter, r *http.Request) {
-	var req CreateAvailabilityRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	var availability models.Availability
+	if err := json.NewDecoder(r.Body).Decode(&availability); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	startDate, err := time.Parse(time.RFC3339, req.StartDate)
+	// Capture the returned availability
+	createdAvailability, err := h.service.Create(r.Context(), availability)
 	if err != nil {
-		http.Error(w, "Invalid start date format", http.StatusBadRequest)
-		return
-	}
-
-	endDate, err := time.Parse(time.RFC3339, req.EndDate)
-	if err != nil {
-		http.Error(w, "Invalid end date format", http.StatusBadRequest)
-		return
-	}
-
-	availability := models.Availability{
-		EmployeeID: req.EmployeeID,
-		StartDate:  startDate,
-		EndDate:    endDate,
-	}
-
-	created, err := h.service.Create(r.Context(), availability)
-	if err != nil {
-		switch err {
-		case models.ErrInvalidAvailability:
-			http.Error(w, err.Error(), http.StatusBadRequest)
-		case models.ErrConflict:
+		if strings.Contains(err.Error(), "availability conflicts") {
 			http.Error(w, err.Error(), http.StatusConflict)
-		default:
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	// Respond with created availability
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(created)
+	json.NewEncoder(w).Encode(createdAvailability)
 }
 
 func (h *AvailabilityHandler) Update(w http.ResponseWriter, r *http.Request) {
