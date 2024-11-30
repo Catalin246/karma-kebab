@@ -63,6 +63,20 @@ services:
     networks:
       - karama-kebab-network
 
+  availability-service:
+    build:
+      context: ./availability-service
+      dockerfile: Dockerfile
+    volumes:
+      - ./availability-service/.env:/app/.env
+    depends_on:
+      - azurite
+      - keycloak
+    ports:
+      - "3002:3002"
+    networks:
+      - karama-kebab-network
+
   api-gateway:
     build:
       context: ./api-gateway
