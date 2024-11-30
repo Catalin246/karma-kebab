@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -33,39 +34,76 @@ func NewAvailabilityHandler(service *service.AvailabilityService) *AvailabilityH
 	}
 }
 
-// GetAll retrieves all availability records for all employees.
 func (h *AvailabilityHandler) GetAll(w http.ResponseWriter, r *http.Request) {
-	startDateStr := r.URL.Query().Get("startDate")
-	endDateStr := r.URL.Query().Get("endDate")
-	log.Println("Received GET all request:")
+    startDateStr := r.URL.Query().Get("startDate")
+    endDateStr := r.URL.Query().Get("endDate")
+    
+    var startDate, endDate *time.Time
+    
+    // Define multiple date formats to try
+    dateFormats := []string{
+        time.RFC3339,
+        "2006-01-02T15:04:05Z07:00",
+        "2006-01-02T15:04:05Z",
+        "2006-01-02",
+    }
+    
+    if startDateStr != "" {
+        // Remove quotes if they exist
+        startDateStr = strings.Trim(startDateStr, "\"")
+        
+        var parsedStartDate time.Time
+        var err error
+        
+        // Try parsing with different formats
+        for _, format := range dateFormats {
+            parsedStartDate, err = time.Parse(format, startDateStr)
+            if err == nil {
+                break
+            }
+        }
+        
+        if err != nil {
+            http.Error(w, "Invalid startDate format. Use RFC3339 format.", http.StatusBadRequest)
+            return
+        }
+        
+        startDate = &parsedStartDate
+    }
+    
+    if endDateStr != "" {
+        // Remove quotes if they exist
+        endDateStr = strings.Trim(endDateStr, "\"")
+        
+        var parsedEndDate time.Time
+        var err error
+        
+        // Try parsing with different formats
+        for _, format := range dateFormats {
+            parsedEndDate, err = time.Parse(format, endDateStr)
+            if err == nil {
+                break
+            }
+        }
+        
+        if err != nil {
+            http.Error(w, "Invalid endDate format. Use RFC3339 format.", http.StatusBadRequest)
+            return
+        }
+        
+        endDate = &parsedEndDate
+    }
 
-	var startDate, endDate *time.Time
-	if startDateStr != "" {
-		parsedStartDate, err := time.Parse(time.RFC3339, startDateStr)
-		if err != nil {
-			http.Error(w, "Invalid startDate format", http.StatusBadRequest)
-			return
-		}
-		startDate = &parsedStartDate
-	}
-	if endDateStr != "" {
-		parsedEndDate, err := time.Parse(time.RFC3339, endDateStr)
-		if err != nil {
-			http.Error(w, "Invalid endDate format", http.StatusBadRequest)
-			return
-		}
-		endDate = &parsedEndDate
-	}
+    availabilities, err := h.service.GetAll(r.Context(), startDate, endDate)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
 
-	availabilities, err := h.service.GetAll(r.Context(), startDate, endDate)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(availabilities)
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(availabilities)
 }
+
 
 // gets all availabilities of one employee
 func (h *AvailabilityHandler) GetByEmployeeID(w http.ResponseWriter, r *http.Request) {
