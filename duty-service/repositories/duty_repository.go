@@ -131,14 +131,14 @@ func (r *DutyRepository) GetDutiesByRole(ctx context.Context, roleId uuid.UUID) 
 
 	var duties []models.Duty
 
-	// Loop through pages of events
+	// Loop through pages of duties
 	for pager.More() {
 		page, err := pager.NextPage(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("failed to list duties by RoleId: %v", err)
 		}
 
-		// Unmarshal each entity and add to the events list
+		// Unmarshal each entity and add to the duties list
 		for _, entity := range page.Entities {
 			var dutyData map[string]interface{}
 
