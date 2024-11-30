@@ -57,18 +57,18 @@ func (h *EventHandler) GetEventByID(w http.ResponseWriter, r *http.Request) {
 	partitionKey := vars["partitionKey"]
 	rowKey := vars["rowKey"]
 
-	if partitionKey == "" || rowKey == "" {
-		http.Error(w, "Missing partitionKey or rowKey", http.StatusBadRequest)
-		return
-	}
-
-	event, err := h.service.GetByID(context.Background(), partitionKey, rowKey)
+	event, err := h.service.GetByID(r.Context(), partitionKey, rowKey)
 	if err != nil {
-		http.Error(w, "Failed to retrieve event: "+err.Error(), http.StatusInternalServerError)
+		if err.Error() == "event not found" {
+			http.Error(w, `{"error": "event not found"}`, http.StatusNotFound)
+		} else {
+			http.Error(w, `{"error": "internal server error"}`, http.StatusInternalServerError)
+		}
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(event)
 }
 
@@ -117,11 +117,17 @@ func (h *EventHandler) DeleteEvent(w http.ResponseWriter, r *http.Request) {
 	partitionKey := vars["partitionKey"]
 	rowKey := vars["rowKey"]
 
-	if err := h.service.Delete(context.Background(), partitionKey, rowKey); err != nil {
-		http.Error(w, "Failed to delete event: "+err.Error(), http.StatusInternalServerError)
+	err := h.service.Delete(r.Context(), partitionKey, rowKey)
+	if err != nil {
+		if err.Error() == "event not found" {
+			http.Error(w, `{"error": "event not found"}`, http.StatusNotFound)
+		} else {
+			http.Error(w, `{"error": "internal server error"}`, http.StatusInternalServerError)
+		}
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"message": "Event deleted successfully"})
 }
