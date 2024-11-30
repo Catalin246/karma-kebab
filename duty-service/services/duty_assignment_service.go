@@ -26,3 +26,8 @@ func (s *DutyAssignmentService) GetAllDutyAssignmentsByShiftId(ctx context.Conte
 func (s *DutyAssignmentService) UpdateDutyAssignment(ctx context.Context, dutyAssignment models.DutyAssignment) error {
 	return s.repo.UpdateDutyAssignment(ctx, dutyAssignment)
 }
+
+// DELETE a duty assignment by ShiftId and DutyId
+func (s *DutyAssignmentService) DeleteDutyAssignment(ctx context.Context, shiftId uuid.UUID, dutyId string) error {
+	return s.repo.DeleteDutyAssignment(ctx, shiftId, dutyId)
+}

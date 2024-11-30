@@ -38,7 +38,7 @@ func RegisterRoutes(serviceClient *aztables.ServiceClient) *mux.Router {
 
 	// duty assignment routes:
 	r.HandleFunc("/duty-assignments", dutyAssignmentHandler.GetAllDutyAssignmentsByShiftId).Methods(http.MethodGet) // example: http://localhost:5001/duty-assignments?shiftId=123e4567-e89b-12d3-a456-426614174000
-	r.HandleFunc("/duty-assignments/{ShiftId}/{DutyId}", dutyAssignmentHandler.UpdateDutyAssignment).Methods(http.MethodPut)
-
+	r.HandleFunc("/duty-assignments/{ShiftId}/{DutyId}", dutyAssignmentHandler.UpdateDutyAssignment).Methods(http.MethodPut) // example: http://localhost:5001/duty-assignments/6a033746-2fa1-4267-bc86-7ff90063c97a/75a4a953-2653-4b88-a11b-a7bc01b0db9f
+	r.HandleFunc("/duty-assignments/{ShiftId}/{DutyId}", dutyAssignmentHandler.DeleteDutyAssignment).Methods(http.MethodDelete) // 
 	return r
 }

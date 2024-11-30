@@ -57,6 +57,7 @@ func (h *DutyAssignmentHandler) GetAllDutyAssignmentsByShiftId(w http.ResponseWr
 	}
 }
 
+// UpdateDutyAssignment updates a duty assignment
 func (h *DutyAssignmentHandler) UpdateDutyAssignment(w http.ResponseWriter, r *http.Request) {
 	// Extract ShiftId and DutyId from path parameters
 	vars := mux.Vars(r)
@@ -102,5 +103,40 @@ func (h *DutyAssignmentHandler) UpdateDutyAssignment(w http.ResponseWriter, r *h
 
 	// Send a success message as JSON
 	response := map[string]string{"message": "Duty assignment updated successfully"}
+	json.NewEncoder(w).Encode(response)
+}
+
+// DeleteDutyAssignment deletes a duty assignment
+func (h *DutyAssignmentHandler) DeleteDutyAssignment(w http.ResponseWriter, r *http.Request) {
+	// Extract ShiftId and DutyId from path parameters
+	vars := mux.Vars(r)
+	shiftIdStr := vars["ShiftId"]
+	dutyIdStr := vars["DutyId"]
+
+	// Validate presence of path parameters
+	if shiftIdStr == "" || dutyIdStr == "" {
+		http.Error(w, "Missing 'ShiftId' or 'DutyId' path parameter", http.StatusBadRequest)
+		return
+	}
+
+	// Parse the shiftId from string to uuid.UUID
+	shiftIdUUID, err := uuid.Parse(shiftIdStr)
+	if err != nil {
+		http.Error(w, "Invalid 'shiftId' format: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Call the service method to delete the duty assignment
+	if err := h.service.DeleteDutyAssignment(context.Background(), shiftIdUUID, dutyIdStr); err != nil {
+		http.Error(w, "Failed to delete duty assignment: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Send success response
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK) // 200 OK
+
+	// Send a success message as JSON
+	response := map[string]string{"message": "Duty assignment deleted successfully"}
 	json.NewEncoder(w).Encode(response)
 }
