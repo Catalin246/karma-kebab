@@ -7,6 +7,7 @@ using Database;
 using employee_service.Interfaces;
 using employee_service.Models;
 using Npgsql;
+using Newtonsoft.Json;
 
 public class EmployeeRepository : IEmployeeRepository
 {
@@ -15,6 +16,105 @@ public class EmployeeRepository : IEmployeeRepository
     public EmployeeRepository(Database database)
     {
         _database = database;
+    }
+
+    public async Task<IEnumerable<Employee>> GetAllEmployeesAsync()
+    {
+        var employees = new List<Employee>();
+        var query = "SELECT * FROM employees";
+
+        using (var conn = _database.GetConnection())
+        {
+            await conn.OpenAsync();
+            using (var cmd = new NpgsqlCommand(query, conn))
+            {
+                var reader = await cmd.ExecuteReaderAsync();
+
+                while (await reader.ReadAsync())
+                {
+                    employees.Add(new Employee
+                    {
+                        EmployeeId = reader.GetGuid(0),
+                        DateOfBirth = DateOnly.FromDateTime(reader.GetDateTime(1)),  // Convert DateTime to DateOnly
+                        FirstName = reader.GetString(2),
+                        LastName = reader.GetString(3),
+                        Address = reader.GetString(4),
+                        Payrate = reader.GetDecimal(5),
+                        Role = (EmployeeRole)reader.GetInt32(6),
+                        Email = reader.GetString(7),
+                        Skills = reader.IsDBNull(8) ? null : JsonConvert.DeserializeObject<List<Skill>>(JsonConvert.SerializeObject(reader.GetFieldValue<string[]>(8)))
+                    });
+                }
+            }
+        }
+
+        return employees;
+    }
+
+    public async Task<Employee?> GetEmployeeByIdAsync(Guid id)
+    {
+        var query = "SELECT * FROM employees WHERE employee_id = @EmployeeId";
+        
+        using (var conn = _database.GetConnection())
+        {
+            await conn.OpenAsync();
+            using (var cmd = new NpgsqlCommand(query, conn))
+            {
+                cmd.Parameters.AddWithValue("EmployeeId", id);
+                var reader = await cmd.ExecuteReaderAsync();
+                
+                if (await reader.ReadAsync())
+                {
+                    return new Employee
+                    {
+                        EmployeeId = reader.GetGuid(0),
+                        DateOfBirth = DateOnly.FromDateTime(reader.GetDateTime(1)),  // Convert DateTime to DateOnly
+                        FirstName = reader.GetString(2),
+                        LastName = reader.GetString(3),
+                        Address = reader.GetString(4),
+                        Payrate = reader.GetDecimal(5),
+                        Role = (EmployeeRole)reader.GetInt32(6),
+                        Email = reader.GetString(7),
+                        Skills = reader.GetFieldValue<List<Skill>>(8)
+                    };
+                }
+                return null;
+            }
+        }
+    }
+
+    public async Task<IEnumerable<Employee>> GetEmployeesByRoleAsync(EmployeeRole role)
+    {
+        var employees = new List<Employee>();
+        var query = "SELECT * FROM employees WHERE role = @Role";
+
+        using (var conn = _database.GetConnection())
+        {
+            await conn.OpenAsync();
+            using (var cmd = new NpgsqlCommand(query, conn))
+            {
+                cmd.Parameters.AddWithValue("Role", (int)role);
+                var reader = await cmd.ExecuteReaderAsync();
+
+                while (await reader.ReadAsync())
+                {
+                    employees.Add(new Employee
+                    {
+                        EmployeeId = reader.GetGuid(0),
+                        DateOfBirth = DateOnly.FromDateTime(reader.GetDateTime(1)),  // Convert DateTime to DateOnly
+                        FirstName = reader.GetString(2),
+                        LastName = reader.GetString(3),
+                        Address = reader.GetString(4),
+                        Payrate = reader.GetDecimal(5),
+                        Role = (EmployeeRole)reader.GetInt32(6),
+                        Email = reader.GetString(7),
+                        Skills = reader.GetFieldValue<List<Skill>>(8)
+                    });
+                }
+            }
+        }
+
+        return employees;
     }
 
     public async Task<Employee> AddEmployeeAsync(Employee employee)
@@ -52,7 +152,7 @@ public class EmployeeRepository : IEmployeeRepository
                         Payrate = reader.GetDecimal(5),
                         Role = (EmployeeRole)reader.GetInt32(6),
                         Email = reader.GetString(7),
-                        Skills = reader.GetFieldValue<IEnumerable<Skill>>(8)
+                        Skills = reader.GetFieldValue<List<Skill>>(8)
                     };
                 }
                 return null;
@@ -97,7 +197,7 @@ public class EmployeeRepository : IEmployeeRepository
                         Payrate = reader.GetDecimal(5),
                         Role = (EmployeeRole)reader.GetInt32(6),
                         Email = reader.GetString(7),
-                        Skills = reader.GetFieldValue<IEnumerable<Skill>>(8)
+                        Skills = reader.GetFieldValue<List<Skill>>(8)
                     };
                 }
                 return null;
@@ -121,102 +221,5 @@ public class EmployeeRepository : IEmployeeRepository
         }
     }
 
-    public async Task<IEnumerable<Employee>> GetAllEmployeesAsync()
-    {
-        var employees = new List<Employee>();
-        var query = "SELECT * FROM employees";
-
-        using (var conn = _database.GetConnection())
-        {
-            await conn.OpenAsync();
-            using (var cmd = new NpgsqlCommand(query, conn))
-            {
-                var reader = await cmd.ExecuteReaderAsync();
-
-                while (await reader.ReadAsync())
-                {
-                    employees.Add(new Employee
-                    {
-                        EmployeeId = reader.GetGuid(0),
-                        DateOfBirth = DateOnly.FromDateTime(reader.GetDateTime(1)),  // Convert DateTime to DateOnly
-                        FirstName = reader.GetString(2),
-                        LastName = reader.GetString(3),
-                        Address = reader.GetString(4),
-                        Payrate = reader.GetDecimal(5),
-                        Role = (EmployeeRole)reader.GetInt32(6),
-                        Email = reader.GetString(7),
-                        Skills = reader.GetFieldValue<IEnumerable<Skill>>(8)
-                    });
-                }
-            }
-        }
-
-        return employees;
-    }
-
-    public async Task<Employee?> GetEmployeeByIdAsync(Guid id)
-    {
-        var query = "SELECT * FROM employees WHERE employee_id = @EmployeeId";
-        
-        using (var conn = _database.GetConnection())
-        {
-            await conn.OpenAsync();
-            using (var cmd = new NpgsqlCommand(query, conn))
-            {
-                cmd.Parameters.AddWithValue("EmployeeId", id);
-                var reader = await cmd.ExecuteReaderAsync();
-                
-                if (await reader.ReadAsync())
-                {
-                    return new Employee
-                    {
-                        EmployeeId = reader.GetGuid(0),
-                        DateOfBirth = DateOnly.FromDateTime(reader.GetDateTime(1)),  // Convert DateTime to DateOnly
-                        FirstName = reader.GetString(2),
-                        LastName = reader.GetString(3),
-                        Address = reader.GetString(4),
-                        Payrate = reader.GetDecimal(5),
-                        Role = (EmployeeRole)reader.GetInt32(6),
-                        Email = reader.GetString(7),
-                        Skills = reader.GetFieldValue<IEnumerable<Skill>>(8)
-                    };
-                }
-                return null;
-            }
-        }
-    }
-
-    public async Task<IEnumerable<Employee>> GetEmployeesByRoleAsync(EmployeeRole role)
-    {
-        var employees = new List<Employee>();
-        var query = "SELECT * FROM employees WHERE role = @Role";
-
-        using (var conn = _database.GetConnection())
-        {
-            await conn.OpenAsync();
-            using (var cmd = new NpgsqlCommand(query, conn))
-            {
-                cmd.Parameters.AddWithValue("Role", (int)role);
-                var reader = await cmd.ExecuteReaderAsync();
-
-                while (await reader.ReadAsync())
-                {
-                    employees.Add(new Employee
-                    {
-                        EmployeeId = reader.GetGuid(0),
-                        DateOfBirth = DateOnly.FromDateTime(reader.GetDateTime(1)),  // Convert DateTime to DateOnly
-                        FirstName = reader.GetString(2),
-                        LastName = reader.GetString(3),
-                        Address = reader.GetString(4),
-                        Payrate = reader.GetDecimal(5),
-                        Role = (EmployeeRole)reader.GetInt32(6),
-                        Email = reader.GetString(7),
-                        Skills = reader.GetFieldValue<IEnumerable<Skill>>(8)
-                    });
-                }
-            }
-        }
-
-        return employees;
-    }
+    
 }

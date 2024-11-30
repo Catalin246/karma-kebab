@@ -81,7 +81,7 @@ public class DatabaseService
                 payrate DECIMAL(10, 2) NOT NULL,
                 role INT NOT NULL,
                 email VARCHAR(100) NOT NULL,
-                skills JSONB NOT NULL
+                skills TEXT[] NULL
             )";
 
         var connStringWithDb = $"{_database.ConnectionString};Database={databaseName}";

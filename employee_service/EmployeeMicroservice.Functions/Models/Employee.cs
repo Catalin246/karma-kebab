@@ -10,5 +10,6 @@ public class Employee
     public decimal Payrate { get; set; }
     public EmployeeRole Role { get; set; }
     public string Email { get; set; } = default!;
-    public IEnumerable<Skill> Skills { get; set; } = default!;
+    // public IEnumerable<Skill> Skills { get; set; } = default!;
+    public List<Skill> Skills { get; set; } = default!;
 }

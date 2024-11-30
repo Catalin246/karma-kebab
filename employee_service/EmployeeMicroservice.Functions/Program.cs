@@ -14,13 +14,18 @@ builder.ConfigureFunctionsWebApplication();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
+// Get the connection string from the environment variables (local.settings.json)
+var connectionString = Environment.GetEnvironmentVariable("ConnectionString");
+
+if (string.IsNullOrEmpty(connectionString))
+{
+    throw new InvalidOperationException("The PostgreSQL connection string is missing.");
+}
+
 // Register Database and DatabaseService
 builder.Services.AddSingleton<Database>(serviceProvider =>
 {
-    var host = "localhost";
-    var username = "postgres";
-    var password = "password";
-    return new Database(host, username, password);
+    return new Database(connectionString);  // Pass the connection string to the Database constructor
 });
 builder.Services.AddSingleton<DatabaseService>();
 
