@@ -21,3 +21,8 @@ func NewDutyAssignmentService(repo repositories.InterfaceDutyAssignmentRepositor
 func (s *DutyAssignmentService) GetAllDutyAssignmentsByShiftId(ctx context.Context, shiftId uuid.UUID) ([]models.DutyAssignment, error) {
 	return s.repo.GetAllDutyAssignmentsByShiftId(ctx, shiftId)
 }
+
+// PUT update a duty
+func (s *DutyAssignmentService) UpdateDutyAssignment(ctx context.Context, dutyAssignment models.DutyAssignment) error {
+	return s.repo.UpdateDutyAssignment(ctx, dutyAssignment)
+}

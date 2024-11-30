@@ -78,3 +78,30 @@ func (r *DutyAssignmentRepository) GetAllDutyAssignmentsByShiftId(ctx context.Co
 
 	return dutyAssignments, nil
 }
+
+func (r *DutyAssignmentRepository) UpdateDutyAssignment(ctx context.Context, dutyAssignment models.DutyAssignment) error {
+	tableClient := r.serviceClient.NewClient(r.tableName)
+
+	// Prepare the updated entity
+	entity := map[string]interface{}{
+		"PartitionKey":           dutyAssignment.PartitionKey, // ShiftId
+		"RowKey":                 dutyAssignment.RowKey,       // DutyId
+		"DutyAssignmentStatus":   string(dutyAssignment.DutyAssignmentStatus),
+		"DutyAssignmentImageUrl": dutyAssignment.DutyAssignmentImageUrl,
+		"DutyAssignmentNote":     dutyAssignment.DutyAssignmentNote,
+	}
+
+	// Marshal the entity to JSON
+	entityBytes, err := json.Marshal(entity)
+	if err != nil {
+		return fmt.Errorf("failed to marshal updated entity: %v", err)
+	}
+
+	// Update the entity in Azure Table Storage
+	_, err = tableClient.UpdateEntity(ctx, entityBytes, nil)
+	if err != nil {
+		return fmt.Errorf("failed to update duty assignment: %v", err)
+	}
+
+	return nil
+}

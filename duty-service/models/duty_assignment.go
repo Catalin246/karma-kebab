@@ -19,3 +19,15 @@ const (
 	StatusCompleted  DutyAssignmentStatus = "Completed"
 	StatusIncomplete DutyAssignmentStatus = "Incomplete"
 )
+
+// ValidDutyAssignmentStatuses contains all valid status values
+var ValidDutyAssignmentStatuses = map[DutyAssignmentStatus]struct{}{
+	StatusCompleted:  {},
+	StatusIncomplete: {},
+}
+
+// ValidateDutyAssignmentStatus checks if the status is valid
+func ValidateDutyAssignmentStatus(status DutyAssignmentStatus) bool {
+	_, valid := ValidDutyAssignmentStatuses[status]
+	return valid
+}
