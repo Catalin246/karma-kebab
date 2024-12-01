@@ -57,6 +57,46 @@ func (h *DutyAssignmentHandler) GetAllDutyAssignmentsByShiftId(w http.ResponseWr
 	}
 }
 
+// CreateDutyAssignments creates duty assignments for a Shift based on Role
+func (h *DutyAssignmentHandler) CreateDutyAssignments(w http.ResponseWriter, r *http.Request) {
+	// Parse request body
+	var request struct {
+		ShiftId string `json:"ShiftId"`
+		RoleId  string `json:"RoleId"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		http.Error(w, "Invalid request body: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Validate and parse ShiftId and RoleId
+	shiftId, err := uuid.Parse(request.ShiftId)
+	if err != nil {
+		http.Error(w, "Invalid 'ShiftId' format: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	roleId, err := uuid.Parse(request.RoleId)
+	if err != nil {
+		http.Error(w, "Invalid 'RoleId' format: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Call service to create duty assignments
+	if err := h.service.CreateDutyAssignments(context.Background(), shiftId, roleId); err != nil {
+		http.Error(w, "Failed to create duty assignments: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Send success response
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+
+	response := map[string]string{"message": "Duty assignments created successfully"}
+	json.NewEncoder(w).Encode(response)
+}
+
 // UpdateDutyAssignment updates a duty assignment
 func (h *DutyAssignmentHandler) UpdateDutyAssignment(w http.ResponseWriter, r *http.Request) {
 	// Extract ShiftId and DutyId from path parameters

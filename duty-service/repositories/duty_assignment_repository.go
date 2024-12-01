@@ -79,6 +79,43 @@ func (r *DutyAssignmentRepository) GetAllDutyAssignmentsByShiftId(ctx context.Co
 	return dutyAssignments, nil
 }
 
+// POST - creates duty assignments for a Shift 
+func (r *DutyAssignmentRepository) CreateDutyAssignments(ctx context.Context, shiftId uuid.UUID, duties []models.Duty) error {
+    tableClient := r.serviceClient.NewClient(r.tableName)
+
+    for _, duty := range duties {
+        dutyAssignment := models.DutyAssignment{
+            PartitionKey:           shiftId.String(), // Use ShiftId as PartitionKey
+            RowKey:                 duty.RowKey.String(), // Use DutyId as RowKey
+            DutyAssignmentStatus:   models.StatusIncomplete, // Default to Incomplete
+            DutyAssignmentImageUrl: nil, // No image URL on creation
+            DutyAssignmentNote:     nil, // No note on creation
+        }
+
+        // Marshal the DutyAssignment into a JSON entity
+        entity := map[string]interface{}{
+            "PartitionKey":           dutyAssignment.PartitionKey,
+            "RowKey":                 dutyAssignment.RowKey,
+            "DutyAssignmentStatus":   string(dutyAssignment.DutyAssignmentStatus),
+            "DutyAssignmentImageUrl": dutyAssignment.DutyAssignmentImageUrl,
+            "DutyAssignmentNote":     dutyAssignment.DutyAssignmentNote,
+        }
+
+        entityBytes, err := json.Marshal(entity)
+        if err != nil {
+            return fmt.Errorf("failed to marshal duty assignment: %v", err)
+        }
+
+        // Insert the entity into Azure Table Storage
+        _, err = tableClient.AddEntity(ctx, entityBytes, nil)
+        if err != nil {
+            return fmt.Errorf("failed to create duty assignment for DutyId %s: %v", duty.RowKey, err)
+        }
+    }
+
+    return nil
+}
+
 // UPDATE a duty assignment
 func (r *DutyAssignmentRepository) UpdateDutyAssignment(ctx context.Context, dutyAssignment models.DutyAssignment) error {
 	tableClient := r.serviceClient.NewClient(r.tableName)
