@@ -134,7 +134,7 @@ public class ShiftDbContext : IShiftDbContext
 
 
     // Add a new shift
-public async Task<ShiftEntity> AddShift(ShiftEntity shift)
+    public async Task<ShiftEntity> AddShift(ShiftEntity shift)
 {
     try
     {

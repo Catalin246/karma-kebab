@@ -10,7 +10,7 @@ Accept: application/json
 
 
 ### Get Shift by ID
-GET http://localhost:5001/shifts/8b3db2c1-03e0-4736-aa74-c3f7547a8dd3
+GET http://localhost:5001/shifts/e2923af0-b60b-4c34-8e5d-cf1f06f3e1f0
 Accept: application/json
 # Authorization: Bearer <your-jwt-token-if-needed>
 
@@ -21,26 +21,26 @@ Accept: application/json
 # Authorization: Bearer <your-jwt-token-if-needed>
 
 {
-  "employeeId": "99714276-276e-4029-be84-f0165af4677f",
-  "startTime": "2024-11-26T09:00:00",
-  "endTime": "2024-11-26T17:00:00",
-  "shiftType": "Morning",
-  "status": "Scheduled",
+  "employeeId": "71c0da1e-f97d-412c-a951-41950a20f2fc",
+  "startTime": "2024-12-26T09:00:00",
+  "endTime": "2024-12-26T17:00:00",
+  "shiftType": "Normal",
+  "status": "Unconfirmed",
   "clockInTime": null,
   "clockOutTime": null,
   "shiftHours": 8.0
 }
 
 ### Update a Shift by ID
-PUT http://localhost:5001/shifts/8b3db2c1-03e0-4736-aa74-c3f7547a8dd3
+PUT http://localhost:5001/shifts/60477830-9bae-458b-b8ab-da64f3b86583
 Content-Type: application/json
 Accept: application/json
 # Authorization: Bearer <your-jwt-token-if-needed>
 
 {
   "employeeId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "startTime": "2024-11-26T10:00:00",
-  "endTime": "2024-11-26T18:00:00",
+  "startTime": "2024-12-24T10:00:00",
+  "endTime": "2024-12-26T18:00:00",
   "shiftType": "Normal",
   "status": "Confirmed",
   "clockInTime": "2024-11-26T9:00:00",
@@ -49,5 +49,5 @@ Accept: application/json
 }
 
 ### Delete a Shift by ID
-DELETE http://localhost:5001/shifts/8b3db2c1-03e0-4736-aa74-c3f7547a8dd3
+DELETE http://localhost:5001/shifts/e2923af0-b60b-4c34-8e5d-cf1f06f3e1f0
 # Authorization: Bearer <your-jwt-token-if-needed>

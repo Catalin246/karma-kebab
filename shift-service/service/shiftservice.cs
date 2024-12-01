@@ -21,6 +21,15 @@ public class ShiftService : IShiftService
     {
         try
         {
+            // Ensure all DateTime values are converted to UTC
+            shiftDto.StartTime = shiftDto.StartTime.ToUniversalTime();
+            shiftDto.EndTime = shiftDto.EndTime.ToUniversalTime();
+            
+            if (shiftDto.ClockInTime.HasValue)
+                shiftDto.ClockInTime = shiftDto.ClockInTime.Value.ToUniversalTime();
+            
+            if (shiftDto.ClockOutTime.HasValue)
+            shiftDto.ClockOutTime = shiftDto.ClockOutTime.Value.ToUniversalTime();
             // Generate a new ShiftId if not provided
             if (shiftDto.ShiftId == Guid.Empty)
             {
