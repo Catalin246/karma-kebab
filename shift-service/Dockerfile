@@ -24,4 +24,4 @@ EXPOSE 5001
 COPY --from=build /app/publish .
 
 # Define the entry point for the application
-ENTRYPOINT ["dotnet", "Shift-Service.dll"]
+ENTRYPOINT ["dotnet", "shift-service.dll"]

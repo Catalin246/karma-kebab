@@ -1,26 +1,17 @@
-using System;
-
-// Domain Model
 public class Shift
 {
     public Guid ShiftId { get; set; }
-    
     public DateTime StartTime { get; set; }
-    
     public DateTime EndTime { get; set; }
-    
     public Guid EmployeeId { get; set; }
-    
     public ShiftType ShiftType { get; set; }
-    
     public ShiftStatus Status { get; set; }
-    
     public DateTime? ClockInTime { get; set; }
-    
     public DateTime? ClockOutTime { get; set; }
-    
-    public decimal ShiftHours 
-    { 
+
+    // The ShiftHours should be a calculated property, not a stored one.
+    public decimal ShiftHours
+    {
         get
         {
             if (ClockInTime.HasValue && ClockOutTime.HasValue)

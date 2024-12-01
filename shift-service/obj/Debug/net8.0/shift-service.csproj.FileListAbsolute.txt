@@ -8,11 +8,6 @@ C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-keba
 C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\shift-service.sourcelink.json
 C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\appsettings.Development.json
 C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\appsettings.json
-C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\__azurite_db_blob_extent__.json
-C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\__azurite_db_blob__.json
-C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\__azurite_db_queue_extent__.json
-C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\__azurite_db_queue__.json
-C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\__azurite_db_table__.json
 C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\shift-service.exe
 C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\shift-service.deps.json
 C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\shift-service.runtimeconfig.json

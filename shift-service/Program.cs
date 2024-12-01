@@ -40,13 +40,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// Ensure the application listens for HTTPS in local development environment
-if (app.Environment.IsDevelopment())
-{
-    // Explicitly configure Kestrel to listen on both HTTP and HTTPS ports
-    app.UseHttpsRedirection(); // Automatically redirects HTTP to HTTPS
-}
-
 app.UseAuthorization();
 
 app.MapControllers();

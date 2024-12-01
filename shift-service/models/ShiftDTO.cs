@@ -1,5 +1,4 @@
-using System;
-// DTOs
+// DTO for Shift
 public class ShiftDto
 {
     public Guid ShiftId { get; set; }
@@ -13,6 +12,7 @@ public class ShiftDto
     public double ShiftHours { get; set; }
 }
 
+// DTO for creating a shift
 public class CreateShiftDto
 {
     public DateTime StartTime { get; set; }
@@ -21,6 +21,7 @@ public class CreateShiftDto
     public ShiftType ShiftType { get; set; }
 }
 
+// DTO for updating a shift
 public class UpdateShiftDto
 {
     public DateTime StartTime { get; set; }
@@ -29,6 +30,7 @@ public class UpdateShiftDto
     public ShiftStatus Status { get; set; }
 }
 
+// DTO for clocking in or clocking out
 public class ClockInOutDto
 {
     public DateTime TimeStamp { get; set; }

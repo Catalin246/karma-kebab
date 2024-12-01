@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "W46v7C5ibwkNJmZVvpnFeQwy6yvXZC7S/H1vxJ5Hn5Q=",
+  "Source": "shift-service",
+  "BasePath": "_content/shift-service",
+  "Mode": "Default",
+  "ManifestType": "Publish",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

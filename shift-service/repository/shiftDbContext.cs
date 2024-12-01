@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 public class AzureStorageConfig
 {
@@ -15,6 +16,7 @@ public class ShiftDbContext : IShiftDbContext
 {
     private readonly TableClient _tableClient;
     private const string TableName = "Shifts";
+    private readonly ILogger<ShiftService> _logger;
 
     public ShiftDbContext(IOptions<AzureStorageConfig> options)
     {
@@ -28,6 +30,8 @@ public class ShiftDbContext : IShiftDbContext
 
         _tableClient = new TableClient(connectionString, TableName);
         _tableClient.CreateIfNotExists();
+        
+        
     }
 
     public async Task<ShiftEntity> GetShift(string partitionKey, string rowKey)
@@ -130,12 +134,33 @@ public class ShiftDbContext : IShiftDbContext
 
 
     // Add a new shift
-    public async Task<ShiftEntity> AddShift(ShiftEntity shift)
+public async Task<ShiftEntity> AddShift(ShiftEntity shift)
+{
+    try
     {
+        // Validate required properties
+        if (string.IsNullOrEmpty(shift.PartitionKey))
+            throw new ArgumentException("PartitionKey must be set", nameof(shift));
+        
+        if (string.IsNullOrEmpty(shift.RowKey))
+            throw new ArgumentException("RowKey must be set", nameof(shift));
+
         await _tableClient.AddEntityAsync(shift);
-        // Return the same shift object as it was successfully added
         return shift;
     }
+    catch (Azure.RequestFailedException ex)
+    {
+        // Log the specific Azure storage error
+        _logger.LogError(ex, "Error adding shift to Azure Table Storage. Status Code: {StatusCode}", ex.Status);
+        throw; // Rethrow to allow higher-level error handling
+    }
+    catch (Exception ex)
+    {
+        // Log any other unexpected errors
+        _logger.LogError(ex, "Unexpected error when adding shift");
+        throw;
+    }
+}
 
     // Update an existing shift
     public async Task<ShiftEntity> UpdateShift(ShiftEntity shift)
