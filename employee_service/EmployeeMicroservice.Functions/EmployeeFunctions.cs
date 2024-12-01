@@ -69,6 +69,7 @@ namespace EmployeeMicroservice.Functions
             var log = executionContext.GetLogger("AddEmployee");
             log.LogInformation("Adding new employee");
 
+            // read body content of incoming Http request as string
             var content = await req.ReadAsStringAsync();
             var employee = JsonConvert.DeserializeObject<Employee>(content);
 
@@ -119,8 +120,8 @@ namespace EmployeeMicroservice.Functions
             var result = await _employeeService.DeleteEmployeeAsync(id);
 
             var response = req.CreateResponse(result ? HttpStatusCode.NoContent : HttpStatusCode.NotFound);
-
             return response;
         }
+
     }
 }

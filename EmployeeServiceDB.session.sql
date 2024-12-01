@@ -26,5 +26,27 @@ INSERT INTO employees (
     ARRAY['Cooking', 'Driving']
 );
 
+INSERT INTO employees (
+    employee_id,
+    date_of_birth,
+    first_name,
+    last_name,
+    address,
+    payrate,
+    role,
+    email,
+    skills
+) VALUES (
+    gen_random_uuid(), -- Automatically generates a unique UUID
+    '1995-03-15',
+    'Emily',
+    'Clark',
+    '456 Elm St, Metropolis, USA',
+    25.50,
+    2,
+    'emily.clark@example.com',
+    ARRAY['Cleaning', 'Waiter']
+);
+
 
 DROP TABLE employees;

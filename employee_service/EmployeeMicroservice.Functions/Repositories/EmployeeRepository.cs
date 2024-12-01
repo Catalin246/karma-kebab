@@ -17,7 +17,6 @@ public class EmployeeRepository : IEmployeeRepository
     {
         _database = database;
     }
-
     public async Task<IEnumerable<Employee>> GetAllEmployeesAsync()
     {
         var employees = new List<Employee>();
@@ -51,6 +50,7 @@ public class EmployeeRepository : IEmployeeRepository
         return employees;
     }
 
+
     public async Task<Employee?> GetEmployeeByIdAsync(Guid id)
     {
         var query = "SELECT * FROM employees WHERE employee_id = @EmployeeId";
@@ -75,7 +75,7 @@ public class EmployeeRepository : IEmployeeRepository
                         Payrate = reader.GetDecimal(5),
                         Role = (EmployeeRole)reader.GetInt32(6),
                         Email = reader.GetString(7),
-                        Skills = reader.GetFieldValue<List<Skill>>(8)
+                        Skills = reader.IsDBNull(8) ? null : JsonConvert.DeserializeObject<List<Skill>>(JsonConvert.SerializeObject(reader.GetFieldValue<string[]>(8)))
                     };
                 }
                 return null;
@@ -108,7 +108,7 @@ public class EmployeeRepository : IEmployeeRepository
                         Payrate = reader.GetDecimal(5),
                         Role = (EmployeeRole)reader.GetInt32(6),
                         Email = reader.GetString(7),
-                        Skills = reader.GetFieldValue<List<Skill>>(8)
+                        Skills = reader.IsDBNull(8) ? null : JsonConvert.DeserializeObject<List<Skill>>(JsonConvert.SerializeObject(reader.GetFieldValue<string[]>(8)))
                     });
                 }
             }
@@ -152,7 +152,7 @@ public class EmployeeRepository : IEmployeeRepository
                         Payrate = reader.GetDecimal(5),
                         Role = (EmployeeRole)reader.GetInt32(6),
                         Email = reader.GetString(7),
-                        Skills = reader.GetFieldValue<List<Skill>>(8)
+                        Skills = reader.IsDBNull(8) ? null : JsonConvert.DeserializeObject<List<Skill>>(JsonConvert.SerializeObject(reader.GetFieldValue<string[]>(8)))
                     };
                 }
                 return null;
@@ -197,7 +197,7 @@ public class EmployeeRepository : IEmployeeRepository
                         Payrate = reader.GetDecimal(5),
                         Role = (EmployeeRole)reader.GetInt32(6),
                         Email = reader.GetString(7),
-                        Skills = reader.GetFieldValue<List<Skill>>(8)
+                        Skills = reader.IsDBNull(8) ? null : JsonConvert.DeserializeObject<List<Skill>>(JsonConvert.SerializeObject(reader.GetFieldValue<string[]>(8)))
                     };
                 }
                 return null;

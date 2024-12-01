@@ -4,5 +4,6 @@ public enum Skill
 {
     Cooking,
     Driving,
-    Waiter
+    Waiter,
+    Cleaning,
 }
