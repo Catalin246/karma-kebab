@@ -23,7 +23,7 @@ ENV KEYCLOAK_IMPORT=/opt/keycloak/data/import/realm-config.json
 EXPOSE 8080
 
 # Use production mode with optimized settings and optional HTTPS configuration
-ENTRYPOINT ["/opt/keycloak/bin/kc.sh", "start", "--import-realm"]
+ENTRYPOINT ["/opt/keycloak/bin/kc.sh", "start", "--import-realm", "--dev"]
 
 # Optional: If using a keystore for HTTPS
 # Uncomment and add this argument to the ENTRYPOINT if providing HTTPS certificates:
