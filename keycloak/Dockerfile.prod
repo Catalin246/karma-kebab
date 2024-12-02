@@ -2,7 +2,7 @@
 FROM quay.io/keycloak/keycloak:latest
 
 # Switch to a non-root user for OpenShift compatibility
-USER 1000
+# USER 1000
 
 # Set environment variables for admin user
 ENV KEYCLOAK_ADMIN=admin
@@ -18,4 +18,4 @@ ENV KEYCLOAK_IMPORT=/opt/keycloak/data/import/realm-config.json
 EXPOSE 8080
 
 # Use production mode
-ENTRYPOINT ["kc.sh start", "start", "--import-realm"]
+ENTRYPOINT ["/opt/keycloak/bin/kc.sh", "start", "--import-realm"]
