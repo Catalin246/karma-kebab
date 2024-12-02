@@ -10,10 +10,10 @@ ENV KEYCLOAK_ADMIN=admin
 ENV KEYCLOAK_ADMIN_PASSWORD=admin
 
 # Copy realm configuration into the container with correct permissions
-COPY --chown=1000:1000 /realm-config/realm-config.json /opt/keycloak/data/import/realm-config.json
+# COPY --chown=1000:1000 /realm-config/realm-config.json /opt/keycloak/data/import/realm-config.json
 
 # Set environment variable for realm import
-ENV KEYCLOAK_IMPORT=/opt/keycloak/data/import/realm-config.json
+# ENV KEYCLOAK_IMPORT=/opt/keycloak/data/import/realm-config.json
 
 # If using HTTPS, copy the keystore file into the container (example: self-signed or production-ready certs)
 # Uncomment and add your keystore file
@@ -23,7 +23,7 @@ ENV KEYCLOAK_IMPORT=/opt/keycloak/data/import/realm-config.json
 EXPOSE 8080
 
 # Use production mode with optimized settings and optional HTTPS configuration
-ENTRYPOINT ["/opt/keycloak/bin/kc.sh", "start", "--import-realm", "--dev"]
+ENTRYPOINT ["/opt/keycloak/bin/kc.sh", "start", "--import-realm", "--dev", "--optimized"]
 
 # Optional: If using a keystore for HTTPS
 # Uncomment and add this argument to the ENTRYPOINT if providing HTTPS certificates:
