@@ -1,0 +1,21 @@
+# Use the official Keycloak image as the base
+FROM quay.io/keycloak/keycloak:latest
+
+# Switch to a non-root user for OpenShift compatibility
+USER 1000
+
+# Set environment variables for admin user
+ENV KEYCLOAK_ADMIN=admin
+ENV KEYCLOAK_ADMIN_PASSWORD=admin
+
+# Copy realm configuration into the container with the correct permissions
+COPY --chown=1000:1000 /realm-config/realm-config.json /opt/keycloak/data/import/realm-config.json
+
+# Set environment variable to import realm configuration
+ENV KEYCLOAK_IMPORT=/opt/keycloak/data/import/realm-config.json
+
+# Expose the default Keycloak port
+EXPOSE 8080
+
+# Use production mode
+ENTRYPOINT ["/opt/keycloak/bin/kc.sh", "start", "--import-realm"]

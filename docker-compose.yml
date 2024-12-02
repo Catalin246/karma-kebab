@@ -21,7 +21,7 @@ services:
   keycloak:
     build:
       context: ./keycloak
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     volumes:
       - ./keycloak/realm-config/:/opt/keycloak/data/import/
     environment:
