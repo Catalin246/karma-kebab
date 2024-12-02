@@ -34,7 +34,7 @@ public class EmployeeRepository : IEmployeeRepository
                     employees.Add(new Employee
                     {
                         EmployeeId = reader.GetGuid(0),
-                        DateOfBirth = DateOnly.FromDateTime(reader.GetDateTime(1)),  // Convert DateTime to DateOnly
+                        DateOfBirth = reader.GetDateTime(1),
                         FirstName = reader.GetString(2),
                         LastName = reader.GetString(3),
                         Address = reader.GetString(4),
@@ -68,7 +68,7 @@ public class EmployeeRepository : IEmployeeRepository
                     return new Employee
                     {
                         EmployeeId = reader.GetGuid(0),
-                        DateOfBirth = DateOnly.FromDateTime(reader.GetDateTime(1)),  // Convert DateTime to DateOnly
+                        DateOfBirth = reader.GetDateTime(1),
                         FirstName = reader.GetString(2),
                         LastName = reader.GetString(3),
                         Address = reader.GetString(4),
@@ -101,7 +101,7 @@ public class EmployeeRepository : IEmployeeRepository
                     employees.Add(new Employee
                     {
                         EmployeeId = reader.GetGuid(0),
-                        DateOfBirth = DateOnly.FromDateTime(reader.GetDateTime(1)),  // Convert DateTime to DateOnly
+                        DateOfBirth = reader.GetDateTime(1),
                         FirstName = reader.GetString(2),
                         LastName = reader.GetString(3),
                         Address = reader.GetString(4),
@@ -119,46 +119,55 @@ public class EmployeeRepository : IEmployeeRepository
 
     public async Task<Employee> AddEmployeeAsync(Employee employee)
     {
-        var query = @"
+        const string query = @"
             INSERT INTO employees (employee_id, date_of_birth, first_name, last_name, address, payrate, role, email, skills)
             VALUES (@EmployeeId, @DateOfBirth, @FirstName, @LastName, @Address, @Payrate, @Role, @Email, @Skills)
-            RETURNING *";
+            RETURNING employee_id, date_of_birth, first_name, last_name, address, payrate, role, email, skills";
 
         using (var conn = _database.GetConnection())
         {
             await conn.OpenAsync();
+
             using (var cmd = new NpgsqlCommand(query, conn))
             {
-                cmd.Parameters.AddWithValue("EmployeeId", employee.EmployeeId);
-                cmd.Parameters.AddWithValue("DateOfBirth", employee.DateOfBirth.ToDateTime(new TimeOnly(0, 0)));  // Converts DateOnly to DateTime at midnight.
-                cmd.Parameters.AddWithValue("FirstName", employee.FirstName);
-                cmd.Parameters.AddWithValue("LastName", employee.LastName);
-                cmd.Parameters.AddWithValue("Address", employee.Address);
-                cmd.Parameters.AddWithValue("Payrate", employee.Payrate);
-                cmd.Parameters.AddWithValue("Role", (int)employee.Role);
-                cmd.Parameters.AddWithValue("Email", employee.Email);
-                cmd.Parameters.AddWithValue("Skills", employee.Skills);
+                // Add parameters with explicit types
+                cmd.Parameters.AddWithValue("EmployeeId", NpgsqlTypes.NpgsqlDbType.Uuid, employee.EmployeeId);
+                cmd.Parameters.AddWithValue("DateOfBirth", NpgsqlTypes.NpgsqlDbType.Date, employee.DateOfBirth); 
+                cmd.Parameters.AddWithValue("FirstName", NpgsqlTypes.NpgsqlDbType.Text, employee.FirstName); 
+                cmd.Parameters.AddWithValue("LastName", NpgsqlTypes.NpgsqlDbType.Text, employee.LastName);
+                cmd.Parameters.AddWithValue("Address", NpgsqlTypes.NpgsqlDbType.Text, employee.Address);
+                cmd.Parameters.AddWithValue("Payrate", NpgsqlTypes.NpgsqlDbType.Numeric, employee.Payrate);
+                cmd.Parameters.AddWithValue("Role", NpgsqlTypes.NpgsqlDbType.Integer, (int)employee.Role);
+                cmd.Parameters.AddWithValue("Email", NpgsqlTypes.NpgsqlDbType.Text, employee.Email);
 
-                var reader = await cmd.ExecuteReaderAsync();
-                if (await reader.ReadAsync())
+                // Serialize the Skills list to JSON and store it as a JSONB column
+                string serializedSkills = JsonConvert.SerializeObject(employee.Skills);
+                cmd.Parameters.AddWithValue("Skills", NpgsqlTypes.NpgsqlDbType.Jsonb, serializedSkills);
+
+                using (var reader = await cmd.ExecuteReaderAsync())
                 {
-                    return new Employee
+                    if (await reader.ReadAsync())
                     {
-                        EmployeeId = reader.GetGuid(0),
-                        DateOfBirth = DateOnly.FromDateTime(reader.GetDateTime(1)),  // Convert DateTime to DateOnly
-                        FirstName = reader.GetString(2),
-                        LastName = reader.GetString(3),
-                        Address = reader.GetString(4),
-                        Payrate = reader.GetDecimal(5),
-                        Role = (EmployeeRole)reader.GetInt32(6),
-                        Email = reader.GetString(7),
-                        Skills = reader.IsDBNull(8) ? null : JsonConvert.DeserializeObject<List<Skill>>(JsonConvert.SerializeObject(reader.GetFieldValue<string[]>(8)))
-                    };
+                        return new Employee
+                        {
+                            EmployeeId = reader.GetGuid(0),
+                            DateOfBirth = reader.GetDateTime(1),
+                            FirstName = reader.GetString(2),
+                            LastName = reader.GetString(3),
+                            Address = reader.GetString(4),
+                            Payrate = reader.GetDecimal(5),
+                            Role = (EmployeeRole)reader.GetInt32(6),
+                            Email = reader.GetString(7),
+                            Skills = JsonConvert.DeserializeObject<List<Skill>>(reader.GetString(8)) // Deserialize JSON back to a List<Skill>
+                        };
+                    }
                 }
-                return null;
             }
         }
+
+        throw new Exception("Failed to insert employee into the database.");
     }
+
 
     public async Task<Employee?> UpdateEmployeeAsync(Guid id, Employee updatedEmployee)
     {
@@ -177,7 +186,7 @@ public class EmployeeRepository : IEmployeeRepository
                 cmd.Parameters.AddWithValue("EmployeeId", id);
                 cmd.Parameters.AddWithValue("FirstName", updatedEmployee.FirstName);
                 cmd.Parameters.AddWithValue("LastName", updatedEmployee.LastName);
-                cmd.Parameters.AddWithValue("DateOfBirth", updatedEmployee.DateOfBirth.ToDateTime(new TimeOnly(0, 0)));  // Convert DateOnly to DateTime at midnight.
+                cmd.Parameters.AddWithValue("DateOfBirth", updatedEmployee.DateOfBirth); 
                 cmd.Parameters.AddWithValue("Address", updatedEmployee.Address);
                 cmd.Parameters.AddWithValue("Payrate", updatedEmployee.Payrate);
                 cmd.Parameters.AddWithValue("Role", (int)updatedEmployee.Role);
@@ -190,7 +199,7 @@ public class EmployeeRepository : IEmployeeRepository
                     return new Employee
                     {
                         EmployeeId = reader.GetGuid(0),
-                        DateOfBirth = DateOnly.FromDateTime(reader.GetDateTime(1)),  // Convert DateTime to DateOnly
+                        DateOfBirth = reader.GetDateTime(1),
                         FirstName = reader.GetString(2),
                         LastName = reader.GetString(3),
                         Address = reader.GetString(4),

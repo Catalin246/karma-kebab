@@ -65,15 +65,17 @@ namespace EmployeeMicroservice.Functions
         public async Task<HttpResponseData> AddEmployee(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = "employees")] HttpRequestData req,
             FunctionContext executionContext)
-        {
+        {   
+            var logger = req.FunctionContext.GetLogger("AddEmployee");
             var log = executionContext.GetLogger("AddEmployee");
             log.LogInformation("Adding new employee");
 
             // read body content of incoming Http request as string
             var content = await req.ReadAsStringAsync();
-            var employee = JsonConvert.DeserializeObject<Employee>(content);
+            var employeeDto = JsonConvert.DeserializeObject<EmployeeDTO>(content);
 
-            var addedEmployee = await _employeeService.AddEmployeeAsync(employee);
+            logger.LogInformation($"Deserialized Employee: {JsonConvert.SerializeObject(employeeDto)}");
+            var addedEmployee = await _employeeService.AddEmployeeAsync(employeeDto);
 
             var response = req.CreateResponse(HttpStatusCode.Created);
             response.Headers.Add("Content-Type", "application/json");

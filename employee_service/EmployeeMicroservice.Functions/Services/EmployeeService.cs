@@ -27,10 +27,26 @@ public class EmployeeService : IEmployeeService
         return await _employeeRepository.GetEmployeesByRoleAsync(role);
     }
 
-    public async Task<Employee> AddEmployeeAsync(Employee employee)
+    public async Task<Employee> AddEmployeeAsync(EmployeeDTO employeeDto)
     {
+        // Map the DTO to the model
+        var employee = new Employee
+        {
+            EmployeeId = Guid.NewGuid(),
+            FirstName = employeeDto.FirstName,
+            LastName = employeeDto.LastName,
+            Role = employeeDto.Role,
+            DateOfBirth = null,  
+            Address = null,
+            Payrate = null,
+            Skills = null
+        };
+
+        System.Console.WriteLine(employee);
+        // Pass this model to the repository layer for saving
         return await _employeeRepository.AddEmployeeAsync(employee);
     }
+
 
     public async Task<Employee?> UpdateEmployeeAsync(Guid id, Employee updatedEmployee)
     {
