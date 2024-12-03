@@ -57,7 +57,8 @@ func (h *AvailabilityHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 
 		// Try parsing with different formats
 		for _, format := range dateFormats {
-			parsedStartDate, err = time.Parse(format, startDateStr)
+			parsedStartDate, err = time.Parse(
+				format, startDateStr)
 			if err == nil {
 				break
 			}

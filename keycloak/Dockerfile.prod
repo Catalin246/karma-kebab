@@ -1,30 +1,12 @@
-# Use the official Keycloak image as the base
-FROM quay.io/keycloak/keycloak:latest
+FROM jboss/keycloak:9.0.2
 
-# Switch to a non-root user for OpenShift compatibility
-USER 1000
+LABEL maintainer="Guilherme Albuquerque "heisendumb""
 
-# Set environment variables for admin user
-# These should be passed dynamically via OpenShift secrets during deployment
-ENV KEYCLOAK_ADMIN=admin
-ENV KEYCLOAK_ADMIN_PASSWORD=admin
+COPY ./default.cli /opt/jboss/tools/cli/jgroups/discovery/default.cli
 
-# Copy realm configuration into the container with correct permissions
-# COPY --chown=1000:1000 /realm-config/realm-config.json /opt/keycloak/data/import/realm-config.json
+COPY ./themes /opt/jboss/keycloak/themes/
 
-# Set environment variable for realm import
-# ENV KEYCLOAK_IMPORT=/opt/keycloak/data/import/realm-config.json
+USER root 
 
-# If using HTTPS, copy the keystore file into the container (example: self-signed or production-ready certs)
-# Uncomment and add your keystore file
-# COPY --chown=1000:1000 /path/to/keystore.jks /opt/keycloak/keystore.jks
-
-# Expose Keycloak's default port
-EXPOSE 8080
-
-# Use production mode with optimized settings and optional HTTPS configuration
-ENTRYPOINT ["/opt/keycloak/bin/kc.sh", "start", "--import-realm", "--dev", "--optimized"]
-
-# Optional: If using a keystore for HTTPS
-# Uncomment and add this argument to the ENTRYPOINT if providing HTTPS certificates:
-# "--https-key-store=/opt/keycloak/keystore.jks", "--https-key-store-password=yourPassword"
+RUN chown -R jboss:root /opt/jboss/keycloak/themes/* \
+    && sed -i 's/"$JAVA_OPTS -Djboss.modules.system.pkgs=$JBOSS_MODULES_SYSTEM_PKGS -Djava.awt.headless=true"/"$JAVA_OPTS -Djboss.modules.system.pkgs=$JBOSS_MODULES_SYSTEM_PKGS -Djava.awt.headless=true -Dkeycloak.profile.feature.scripts=enabled -Dkeycloak.profile.feature.admin_fine_grained_authz=enabled -Dkeycloak.profile.feature.token_exchange=enabled -Dkeycloak.profile.feature.authz_drools_policy=enabled"/g' /opt/jboss/keycloak/bin/standalone.conf
