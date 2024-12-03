@@ -85,18 +85,18 @@ func (h *DutyHandler) CreateDuty(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Set default PartitionKey if not provided
 	if duty.PartitionKey == "" {
 		duty.PartitionKey = "Duty"
 	}
 
-	duty.RowKey = uuid.New() //TODO: make these unique
+	duty.RowKey = uuid.New() // TODO: make these unique
 
 	if err := h.service.CreateDuty(context.Background(), duty); err != nil {
 		http.Error(w, "Failed to create duty: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(map[string]string{"message": "duty created successfully"})
 }
@@ -113,6 +113,9 @@ func (h *DutyHandler) UpdateDuty(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Set Content-Type to application/json for the response
+	w.Header().Set("Content-Type", "application/json")
+
 	if err := h.service.UpdateDuty(context.Background(), partitionKey, rowKey, duty); err != nil {
 		http.Error(w, "Failed to update duty: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -127,8 +130,16 @@ func (h *DutyHandler) DeleteDuty(w http.ResponseWriter, r *http.Request) {
 	partitionKey := vars["PartitionKey"]
 	rowKey := vars["RowKey"]
 
-	if err := h.service.DeleteDuty(context.Background(), partitionKey, rowKey); err != nil {
-		http.Error(w, "Failed to delete duty: "+err.Error(), http.StatusInternalServerError)
+	// Set the Content-Type header for JSON responses
+	w.Header().Set("Content-Type", "application/json")
+
+	err := h.service.DeleteDuty(context.Background(), partitionKey, rowKey)
+	if err != nil {
+		if err.Error() == "ResourceNotFound" {
+			http.Error(w, `{"error": "Duty not found"}`, http.StatusNotFound)
+			return
+		}
+		http.Error(w, `{"error": "Failed to delete duty: `+err.Error()+`"}`, http.StatusInternalServerError)
 		return
 	}
 
