@@ -181,7 +181,7 @@ public class ShiftDbContext : IShiftDbContext
         var shifts = await GetShiftsByEmployee(employeeId);
 
         var deleteTasks = shifts.Select(shift => 
-            _tableClient.DeleteEntityAsync(shift.PartitionKey, shift.RowKey));  // Use DeleteEntityAsync
+            _tableClient.DeleteEntityAsync(shift.PartitionKey, shift.RowKey));
         
         // Await all delete operations concurrently
         await Task.WhenAll(deleteTasks);

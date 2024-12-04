@@ -25,11 +25,11 @@ public class ShiftEntity : ITableEntity
 
     public DateTime StartTime { get; set; }
     public DateTime EndTime { get; set; }
-    public string ShiftType { get; set; }  // Will store as string representation
-    public string Status { get; set; }     // Will store as string representation
+    public required string ShiftType { get; set; }  // Will store as string representation
+    public required string Status { get; set; }     // Will store as string representation
     public DateTime? ClockInTime { get; set; }
     public DateTime? ClockOutTime { get; set; }
-    public decimal ShiftHours { get; set; }
+    public decimal? ShiftHours { get; set; }
 
     // Helper methods for enum conversion
     public ShiftType GetShiftTypeEnum()
@@ -37,7 +37,7 @@ public class ShiftEntity : ITableEntity
         return Enum.Parse<ShiftType>(ShiftType, ignoreCase: true);
     }
 
-    public void SetShiftTypeEnum(ShiftType shiftType)
+    public void SetShiftTypeEnum(ShiftType shiftType) //not used
     {
         ShiftType = shiftType.ToString();
     }
@@ -47,7 +47,7 @@ public class ShiftEntity : ITableEntity
         return Enum.Parse<ShiftStatus>(Status, ignoreCase: true);
     }
 
-    public void SetStatusEnum(ShiftStatus status)
+    public void SetStatusEnum(ShiftStatus status) //not used
     {
         Status = status.ToString();
     }

@@ -73,11 +73,11 @@ public class ShiftsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<ApiResponse>> CreateShift([FromBody] ShiftDto shiftDto)
+    public async Task<ActionResult<ApiResponse>> CreateShift([FromBody] CreateShiftDto createshiftDto)
     {
         try
         {
-            var createdShift = await _shiftService.CreateShift(shiftDto);
+            var createdShift = await _shiftService.CreateShift(createshiftDto);
             return CreatedAtAction(
                 nameof(GetShiftById),
                 new { shiftId = createdShift.ShiftId },
@@ -100,16 +100,18 @@ public class ShiftsController : ControllerBase
     }
 
     [HttpPut("{shiftId:guid}")]
-    public async Task<ActionResult<ApiResponse>> UpdateShift(Guid shiftId, [FromBody] ShiftDto shiftDto)
+    public async Task<ActionResult<ApiResponse>> UpdateShift(
+        Guid shiftId, 
+        [FromBody] UpdateShiftDto updateShiftDto) 
     {
         try
         {
-            var updatedShift = await _shiftService.UpdateShift(shiftId, shiftDto);
+            var updatedShift = await _shiftService.UpdateShift(shiftId, updateShiftDto);
             if (updatedShift == null)
                 return NotFound();
-
-            return Ok(new ApiResponse 
-            { 
+                
+            return Ok(new ApiResponse
+            {
                 Success = true,
                 Message = "Shift updated successfully",
                 Data = updatedShift
@@ -118,10 +120,10 @@ public class ShiftsController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating shift with ID: {ShiftId}", shiftId);
-            return StatusCode(500, new ApiResponse 
-            { 
+            return StatusCode(500, new ApiResponse
+            {
                 Success = false,
-                Message = "Internal server error occurred while updating shift" 
+                Message = "Internal server error occurred while updating shift"
             });
         }
     }

@@ -17,38 +17,29 @@ public class ShiftService : IShiftService
         _logger = logger;
     }
 
-    public async Task<ShiftDto> CreateShift(ShiftDto shiftDto)
+    public async Task<ShiftDto> CreateShift(CreateShiftDto createshiftDto)
     {
         try
         {
             // Ensure all DateTime values are converted to UTC
-            shiftDto.StartTime = shiftDto.StartTime.ToUniversalTime();
-            shiftDto.EndTime = shiftDto.EndTime.ToUniversalTime();
+            createshiftDto.StartTime = createshiftDto.StartTime.ToUniversalTime();
+            createshiftDto.EndTime = createshiftDto.EndTime.ToUniversalTime();
             
-            if (shiftDto.ClockInTime.HasValue)
-                shiftDto.ClockInTime = shiftDto.ClockInTime.Value.ToUniversalTime();
-            
-            if (shiftDto.ClockOutTime.HasValue)
-            shiftDto.ClockOutTime = shiftDto.ClockOutTime.Value.ToUniversalTime();
-            // Generate a new ShiftId if not provided
-            if (shiftDto.ShiftId == Guid.Empty)
-            {
-                shiftDto.ShiftId = Guid.NewGuid();
-            }
+            var ShiftId = Guid.NewGuid();
 
             // Convert ShiftDto to ShiftEntity
             var shiftEntity = new ShiftEntity
             {
-                PartitionKey = shiftDto.EmployeeId.ToString(), // Use EmployeeId as PartitionKey
-                RowKey = shiftDto.ShiftId.ToString(), // Use ShiftId as RowKey
-                EmployeeId = shiftDto.EmployeeId,
-                ShiftType = shiftDto.ShiftType,
-                Status = shiftDto.Status,
-                StartTime = shiftDto.StartTime,
-                EndTime = shiftDto.EndTime,
-                ClockInTime = shiftDto.ClockInTime,
-                ClockOutTime = shiftDto.ClockOutTime,
-                ShiftHours = (decimal)shiftDto.ShiftHours
+                PartitionKey = createshiftDto.EmployeeId.ToString(), // Use EmployeeId as PartitionKey
+                RowKey = ShiftId.ToString(),
+                EmployeeId = createshiftDto.EmployeeId,
+                ShiftType = createshiftDto.ShiftType.ToString(),
+                Status = ShiftStatus.Unconfirmed.ToString(),
+                StartTime = createshiftDto.StartTime,
+                EndTime = createshiftDto.EndTime,
+                ClockInTime = null,
+                ClockOutTime = null,
+                ShiftHours = null,
             };
 
             // Add the shift to the database
@@ -70,35 +61,28 @@ public class ShiftService : IShiftService
         return await _dbContext.GetShiftById(shiftId);
     }
 
-    public async Task<IEnumerable<ShiftDto>> GetShifts(DateTime? date = null, Guid? employeeId = null, 
-        ShiftType? shiftType = null, Guid? shiftId = null, Guid? eventId = null)
+    public async Task<IEnumerable<ShiftDto>> GetShifts(DateTime? date = null, Guid? employeeId = null, ShiftType? shiftType = null, Guid? shiftId = null, Guid? eventId = null)
     {
         var shifts = await _dbContext.GetShifts(date, employeeId, shiftType, shiftId, eventId);
         return ShiftDbContext.MapToDtos(shifts);
     }
-    public async Task<ShiftDto> UpdateShift(Guid shiftId, ShiftDto shiftDto)
+    public async Task<ShiftDto> UpdateShift(Guid shiftId, UpdateShiftDto updateShiftDto)
     {
-        try
-        {
-            var shift = await _dbContext.GetShiftById(shiftId);
-            if (shift == null) return null;
+        var existingShift = await _dbContext.GetShiftById(shiftId);
+        if (existingShift == null)
+            return null;
 
-            // Update the shift entity based on ShiftDto
-            shift.StartTime = shiftDto.StartTime;
-            shift.EndTime = shiftDto.EndTime;
-            shift.ShiftType = shiftDto.ShiftType;
-            shift.Status = shiftDto.Status;
-            shift.ClockInTime = shiftDto.ClockInTime;
-            shift.ClockOutTime = shiftDto.ClockOutTime;
+        // Map the DTO to the existing entity
+        existingShift.StartTime = updateShiftDto.StartTime;
+        existingShift.EndTime = updateShiftDto.EndTime;
+        existingShift.ShiftType = updateShiftDto.ShiftType.ToString();
+        existingShift.Status = updateShiftDto.Status.ToString();
+        existingShift.ClockInTime = updateShiftDto.ClockInTime;
+        existingShift.ClockOutTime = updateShiftDto.ClockOutTime;
+        _logger.LogError( "updating shift with ID: {ShiftId}", shiftId);
 
-            var updatedShift = await _dbContext.UpdateShift(MapToEntity(shift));
-            return MapToDto(updatedShift);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error updating shift with ID: {ShiftId}", shiftId);
-            throw;
-        }
+        await _dbContext.UpdateShift(MapToEntity(existingShift));
+        return existingShift;
     }
     public async Task<bool> DeleteShift(Guid shiftId)
         {
@@ -116,7 +100,7 @@ public class ShiftService : IShiftService
                 throw;
             }
         }
-            public async Task<decimal> GetTotalHoursByEmployee(Guid employeeId)
+    public async Task<decimal> GetTotalHoursByEmployee(Guid employeeId)
     {
         try
         {

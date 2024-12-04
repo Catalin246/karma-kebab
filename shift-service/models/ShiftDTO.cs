@@ -19,6 +19,7 @@ public class CreateShiftDto
     public DateTime EndTime { get; set; }
     public Guid EmployeeId { get; set; }
     public ShiftType ShiftType { get; set; }
+    public ShiftStatus Status { get; set; } = ShiftStatus.Unconfirmed; // Provide a default value
 }
 
 // DTO for updating a shift
@@ -28,6 +29,9 @@ public class UpdateShiftDto
     public DateTime EndTime { get; set; }
     public ShiftType ShiftType { get; set; }
     public ShiftStatus Status { get; set; }
+    public DateTime? ClockInTime { get; set; }
+    public DateTime? ClockOutTime { get; set; }
+    
 }
 
 // DTO for clocking in or clocking out
