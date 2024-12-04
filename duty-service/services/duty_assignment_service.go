@@ -45,6 +45,6 @@ func (s *DutyAssignmentService) UpdateDutyAssignment(ctx context.Context, dutyAs
 }
 
 // DELETE a duty assignment by ShiftId and DutyId
-func (s *DutyAssignmentService) DeleteDutyAssignment(ctx context.Context, shiftId uuid.UUID, dutyId string) error {
+func (s *DutyAssignmentService) DeleteDutyAssignment(ctx context.Context, shiftId uuid.UUID, dutyId uuid.UUID) error {
 	return s.repo.DeleteDutyAssignment(ctx, shiftId, dutyId)
 }

@@ -110,14 +110,25 @@ func (h *DutyAssignmentHandler) UpdateDutyAssignment(w http.ResponseWriter, r *h
 		return
 	}
 
+	// Parse the ShiftId and DutyId from string to uuid.UUID
+	shiftIdUUID, err := uuid.Parse(shiftIdStr)
+	if err != nil {
+		http.Error(w, "Invalid 'ShiftId' format: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	dutyIdUUID, err := uuid.Parse(dutyIdStr)
+	if err != nil {
+		http.Error(w, "Invalid 'DutyId' format: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	// Parse the request body to get the updated DutyAssignment
 	var updatedDutyAssignment models.DutyAssignment
 	if err := json.NewDecoder(r.Body).Decode(&updatedDutyAssignment); err != nil {
 		http.Error(w, "Invalid request body: "+err.Error(), http.StatusBadRequest)
 		return
 	}
-
-	//TODO: Make these validations in another function. 30/11
 
 	// Validate DutyAssignmentStatus
 	if !models.ValidateDutyAssignmentStatus(updatedDutyAssignment.DutyAssignmentStatus) {
@@ -126,7 +137,8 @@ func (h *DutyAssignmentHandler) UpdateDutyAssignment(w http.ResponseWriter, r *h
 	}
 
 	// Ensure ShiftId and DutyId match the updatedDutyAssignment object
-	if updatedDutyAssignment.PartitionKey != shiftIdStr || updatedDutyAssignment.RowKey != dutyIdStr {
+	// Compare UUID values instead of strings
+	if updatedDutyAssignment.PartitionKey != shiftIdUUID || updatedDutyAssignment.RowKey != dutyIdUUID {
 		http.Error(w, "Mismatched ShiftId or DutyId in request body. The ShiftId and DutyId in the request should match the ShiftId and DutyId in the body.", http.StatusBadRequest)
 		return
 	}
@@ -166,8 +178,14 @@ func (h *DutyAssignmentHandler) DeleteDutyAssignment(w http.ResponseWriter, r *h
 		return
 	}
 
+	dutyIdUUID, err := uuid.Parse(dutyIdStr)
+	if err != nil {
+		http.Error(w, "Invalid 'dutyId' format: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	// Call the service method to delete the duty assignment
-	if err := h.service.DeleteDutyAssignment(context.Background(), shiftIdUUID, dutyIdStr); err != nil {
+	if err := h.service.DeleteDutyAssignment(context.Background(), shiftIdUUID, dutyIdUUID); err != nil {
 		http.Error(w, "Failed to delete duty assignment: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
