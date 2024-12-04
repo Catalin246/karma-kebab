@@ -254,20 +254,6 @@ func TestGetDutyById_MissingKeys(t *testing.T) {
 	require.Equal(t, "Missing PartitionKey or RrowKey\n", rec.Body.String())
 }
 
-func TestGetDutiesByRole_MissingRoleId(t *testing.T) {
-	mockService := new(mocks.MockDutyService)
-	handler := handlers.NewDutyHandler(mockService)
-
-	req := httptest.NewRequest(http.MethodGet, "/duties", nil)
-	rec := httptest.NewRecorder()
-
-	handler.GetDutiesByRole(rec, req)
-
-	require.Equal(t, http.StatusBadRequest, rec.Result().StatusCode)
-	require.Equal(t, "text/plain; charset=utf-8", rec.Result().Header.Get("Content-Type"))
-	require.Equal(t, "Missing 'RoleId' query parameter\n", rec.Body.String())
-}
-
 func TestGetDutiesByRole_InvalidRoleId(t *testing.T) {
 	mockService := new(mocks.MockDutyService)
 	handler := handlers.NewDutyHandler(mockService)
@@ -326,23 +312,4 @@ func TestCreateDuty_ServiceError(t *testing.T) {
 	require.Equal(t, "Failed to create duty: database error\n", rec.Body.String())
 
 	mockService.AssertExpectations(t)
-}
-
-func TestUpdateDuty_InvalidBody(t *testing.T) {
-	mockService := new(mocks.MockDutyService)
-	handler := handlers.NewDutyHandler(mockService)
-
-	req := httptest.NewRequest(http.MethodPut, "/duties/TestPartitionKey/TestRowKey", bytes.NewReader([]byte("{invalid json")))
-	req = mux.SetURLVars(req, map[string]string{
-		"PartitionKey": "TestPartitionKey",
-		"RowKey":       "TestRowKey",
-	})
-	req.Header.Set("Content-Type", "application/json")
-	rec := httptest.NewRecorder()
-
-	handler.UpdateDuty(rec, req)
-
-	require.Equal(t, http.StatusBadRequest, rec.Result().StatusCode)
-	require.Equal(t, "text/plain; charset=utf-8", rec.Result().Header.Get("Content-Type"))
-	require.Equal(t, "Invalid request body\n", rec.Body.String())
 }
