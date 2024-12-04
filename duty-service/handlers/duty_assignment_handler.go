@@ -22,7 +22,6 @@ func NewDutyAssignmentHandler(service services.InterfaceDutyAssignmentService) *
 
 // GetAllDutyAssignmentsByShiftId fetches all duty assignments by shiftId
 func (h *DutyAssignmentHandler) GetAllDutyAssignmentsByShiftId(w http.ResponseWriter, r *http.Request) {
-
 	// Parse the ShiftId from the query parameters
 	query := r.URL.Query()
 	shiftIdStr := query.Get("shiftId") // Get the shiftId parameter from the query string
@@ -110,6 +109,8 @@ func (h *DutyAssignmentHandler) UpdateDutyAssignment(w http.ResponseWriter, r *h
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
+
 	// Parse the ShiftId and DutyId from string to uuid.UUID
 	shiftIdUUID, err := uuid.Parse(shiftIdStr)
 	if err != nil {
@@ -149,8 +150,6 @@ func (h *DutyAssignmentHandler) UpdateDutyAssignment(w http.ResponseWriter, r *h
 		return
 	}
 
-	// Send success response with a message
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK) // 200 OK
 
 	// Send a success message as JSON
