@@ -14,7 +14,6 @@ type DutyAssignmentService struct {
 	dutyRepo repositories.InterfaceDutyRepository
 }
 
-// NewDutyAssignmentService creates a new DutyAssignmentService
 func NewDutyAssignmentService(repo repositories.InterfaceDutyAssignmentRepository, dutyRepo repositories.InterfaceDutyRepository) *DutyAssignmentService {
 	return &DutyAssignmentService{
 		repo:     repo,
@@ -35,8 +34,7 @@ func (s *DutyAssignmentService) CreateDutyAssignments(ctx context.Context, shift
 		return fmt.Errorf("failed to fetch duties for RoleId %s: %v", roleId, err)
 	}
 
-	// Create duty assignments for the ShiftId
-	return s.repo.CreateDutyAssignments(ctx, shiftId, duties)
+	return s.repo.CreateDutyAssignments(ctx, shiftId, duties)	// Create duty assignments for the ShiftId
 }
 
 // PUT update a duty

@@ -26,7 +26,7 @@ func NewDutyAssignmentRepository(serviceClient *aztables.ServiceClient) *DutyAss
 func (r *DutyAssignmentRepository) GetAllDutyAssignmentsByShiftId(ctx context.Context, shiftId uuid.UUID) ([]models.DutyAssignment, error) {
 	tableClient := r.serviceClient.NewClient(r.tableName)
 
-	// Construct the filter to match the ShiftId
+	// filter to match the ShiftId
 	filter := fmt.Sprintf("PartitionKey eq '%s'", shiftId.String())
 
 	listOptions := &aztables.ListEntitiesOptions{
@@ -44,7 +44,7 @@ func (r *DutyAssignmentRepository) GetAllDutyAssignmentsByShiftId(ctx context.Co
 			return nil, fmt.Errorf("failed to list duty assignments by ShiftId: %v", err)
 		}
 
-		// Unmarshal each entity and add it to the list
+		// unmarshal entities and add it to the list
 		for _, entity := range page.Entities {
 			var dutyAssignmentData map[string]interface{}
 
@@ -63,7 +63,7 @@ func (r *DutyAssignmentRepository) GetAllDutyAssignmentsByShiftId(ctx context.Co
 				dutyAssignmentNote = &note
 			}
 
-			// Create the DutyAssignment struct
+			// Create the DutyAssignment
 			dutyAssignment := models.DutyAssignment{
 				PartitionKey:           uuid.MustParse(dutyAssignmentData["PartitionKey"].(string)),
 				RowKey:                 uuid.MustParse(dutyAssignmentData["RowKey"].(string)),

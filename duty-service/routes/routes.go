@@ -12,20 +12,18 @@ import (
 )
 
 func RegisterRoutes(serviceClient *aztables.ServiceClient) *mux.Router {
-	// Create the repository and service instances
 	dutyRepository := repositories.NewDutyRepository(serviceClient)
 	dutyService := services.NewDutyService(dutyRepository)
 
 	dutyAssignmentRepository := repositories.NewDutyAssignmentRepository(serviceClient)
 	dutyAssignmentService := services.NewDutyAssignmentService(dutyAssignmentRepository, dutyRepository)
 
-	// Create the duty handler and inject the service
 	dutyHandler := handlers.NewDutyHandler(dutyService)
 	dutyAssignmentHandler := handlers.NewDutyAssignmentHandler(dutyAssignmentService)
 
 	r := mux.NewRouter()
 
-	// Apply the middleware to all routes
+	// middleware for all routes
 	r.Use(middlewares.GatewayHeaderMiddleware)
 
 	// duty routes

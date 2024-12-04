@@ -12,7 +12,6 @@ type DutyService struct {
 	repo repositories.InterfaceDutyRepository
 }
 
-// NewDutyService creates a new DutyService
 func NewDutyService(repo repositories.InterfaceDutyRepository) *DutyService {
 	return &DutyService{repo: repo}
 }
@@ -33,7 +32,7 @@ func (s *DutyService) GetDutyById(ctx context.Context, partitionKey, rowKey stri
 	return s.repo.GetDutyById(ctx, partitionKey, rowKey)
 }
 
-// GET duty by id
+// GET duty by role id
 func (s *DutyService) GetDutiesByRole(ctx context.Context, roleId uuid.UUID) ([]models.Duty, error) {
 	return s.repo.GetDutiesByRole(ctx, roleId)
 }

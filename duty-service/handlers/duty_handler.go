@@ -15,7 +15,6 @@ type DutyHandler struct {
 	service services.InterfaceDutyService
 }
 
-// NewDutyHandler creates a new DutyHandler
 func NewDutyHandler(service services.InterfaceDutyService) *DutyHandler {
 	return &DutyHandler{service: service}
 }
