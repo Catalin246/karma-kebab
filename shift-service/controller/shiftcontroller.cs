@@ -2,6 +2,9 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using Azure;
+using System.Net.Http.Json;
+using System.Text.Json;
 
 [ApiController]
 [Route("[controller]")]
@@ -74,31 +77,80 @@ public class ShiftsController : ControllerBase
 
     [HttpPost]
     public async Task<ActionResult<ApiResponse>> CreateShift([FromBody] CreateShiftDto createshiftDto)
+{
+    try
     {
-        try
+        // Validate model state explicitly
+        if (!ModelState.IsValid)
         {
-            var createdShift = await _shiftService.CreateShift(createshiftDto);
-            return CreatedAtAction(
-                nameof(GetShiftById),
-                new { shiftId = createdShift.ShiftId },
-                new ApiResponse 
-                { 
-                    Success = true,
-                    Message = "Shift created successfully",
-                    Data = createdShift
-                });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error creating shift");
-            return StatusCode(500, new ApiResponse 
-            { 
+            return BadRequest(new ApiResponse
+            {
                 Success = false,
-                Message = "Internal server error occurred while creating shift" 
+                Message = "Invalid shift data",
+                Data = ModelState
             });
         }
-    }
 
+        _logger.LogInformation("Controller - object being passed is: {CreateShiftDto}", JsonSerializer.Serialize(createshiftDto, new JsonSerializerOptions { WriteIndented = true }));
+        var createdShift = await _shiftService.CreateShift(createshiftDto);
+        return CreatedAtAction(
+            nameof(GetShiftById),
+            new { shiftId = createdShift.ShiftId },
+            new ApiResponse 
+            { 
+                Success = true,
+                Message = "Shift created successfully",
+                Data = createdShift
+            });
+    }
+    catch (ArgumentException ex)
+    {
+        _logger.LogError(ex, "Validation error creating shift");
+        return BadRequest(new ApiResponse 
+        { 
+            Success = false,
+            Message = ex.Message
+        });
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Error creating shift");
+        return StatusCode(500, new ApiResponse 
+        { 
+            Success = false,
+            Message = "Internal server error occurred while creating shift",
+        });
+    }
+}
+
+    // [HttpPut("{shiftId:guid}")]
+    // public async Task<ActionResult<ApiResponse>> UpdateShift(
+    //     Guid shiftId, 
+    //     [FromBody] UpdateShiftDto updateShiftDto) 
+    // {
+    //     try
+    //     {
+    //         var updatedShift = await _shiftService.UpdateShift(shiftId, updateShiftDto);
+    //         if (updatedShift == null)
+    //             return NotFound();
+                
+    //         return Ok(new ApiResponse
+    //         {
+    //             Success = true,
+    //             Message = "Shift updated successfully",
+    //             Data = updatedShift
+    //         });
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         _logger.LogError(ex, "Error updating shift with ID: {ShiftId}", shiftId);
+    //         return StatusCode(500, new ApiResponse
+    //         {
+    //             Success = false,
+    //             Message = "Internal server error occurred while updating shift"
+    //         });
+    //     }
+    // }
     [HttpPut("{shiftId:guid}")]
     public async Task<ActionResult<ApiResponse>> UpdateShift(
         Guid shiftId, 
@@ -106,9 +158,23 @@ public class ShiftsController : ControllerBase
     {
         try
         {
+            // Validate input
+            if (updateShiftDto == null)
+            {
+                return BadRequest(new ApiResponse
+                {
+                    Success = false,
+                    Message = "Update shift data cannot be null"
+                });
+            }
+
             var updatedShift = await _shiftService.UpdateShift(shiftId, updateShiftDto);
             if (updatedShift == null)
-                return NotFound();
+                return NotFound(new ApiResponse
+                {
+                    Success = false,
+                    Message = $"Shift with ID {shiftId} not found"
+                });
                 
             return Ok(new ApiResponse
             {
@@ -117,13 +183,28 @@ public class ShiftsController : ControllerBase
                 Data = updatedShift
             });
         }
+        catch (RequestFailedException ex)
+        {
+            // Log the specific Azure Storage exception
+            _logger.LogError(ex, "Azure Storage error updating shift with ID: {ShiftId}. Status Code: {StatusCode}, Error Code: {ErrorCode}", 
+                shiftId, ex.Status, ex.ErrorCode);
+
+            return StatusCode(ex.Status, new ApiResponse
+            {
+                Success = false,
+                Message = $"Storage error: {ex.Message}"
+            });
+        }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating shift with ID: {ShiftId}", shiftId);
+            // More detailed logging for unexpected errors
+            _logger.LogError(ex, "Unexpected error updating shift with ID: {ShiftId}. Full Exception: {ExceptionMessage}", 
+                shiftId, ex.Message);
+
             return StatusCode(500, new ApiResponse
             {
                 Success = false,
-                Message = "Internal server error occurred while updating shift"
+                Message = $"Internal server error: {ex.Message}"
             });
         }
     }
@@ -188,32 +269,32 @@ public class ShiftsController : ControllerBase
         }
     }
 
-    [HttpPut("/events/{eventId:guid}")]
-    public async Task<ActionResult<ApiResponse>> UpdateShiftWithEventChanges(Guid eventId, [FromBody] EventDto eventDto)
-    {
-        try
-        {
-            var updatedShifts = await _shiftService.UpdateShiftWithEventChanges(eventId, eventDto);
-            if (updatedShifts == null)
-                return NotFound();
+    // [HttpPut("/events/{eventId:guid}")]
+    // public async Task<ActionResult<ApiResponse>> UpdateShiftWithEventChanges(Guid eventId, [FromBody] EventDto eventDto)
+    // {
+    //     try
+    //     {
+    //         var updatedShifts = await _shiftService.UpdateShiftWithEventChanges(eventId, eventDto);
+    //         if (updatedShifts == null)
+    //             return NotFound();
 
-            return Ok(new ApiResponse 
-            { 
-                Success = true,
-                Message = "Shifts updated successfully based on event changes",
-                Data = updatedShifts
-            });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error updating shifts for event: {EventId}", eventId);
-            return StatusCode(500, new ApiResponse 
-            { 
-                Success = false,
-                Message = "Internal server error occurred while updating shifts for event" 
-            });
-        }
-    }
+    //         return Ok(new ApiResponse 
+    //         { 
+    //             Success = true,
+    //             Message = "Shifts updated successfully based on event changes",
+    //             Data = updatedShifts
+    //         });
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         _logger.LogError(ex, "Error updating shifts for event: {EventId}", eventId);
+    //         return StatusCode(500, new ApiResponse 
+    //         { 
+    //             Success = false,
+    //             Message = "Internal server error occurred while updating shifts for event" 
+    //         });
+    //     }
+    // }
 }
 
 public class ApiResponse

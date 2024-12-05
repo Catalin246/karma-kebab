@@ -13,5 +13,5 @@ public interface IShiftService
     Task<bool> DeleteShift(Guid shiftId);
     Task<decimal> GetTotalHoursByEmployee(Guid employeeId);
     Task<bool> DeleteEmployeeAndShifts(Guid employeeId);
-    Task<IEnumerable<ShiftDto>> UpdateShiftWithEventChanges(Guid eventId, EventDto eventDto);
+    //Task<IEnumerable<ShiftDto>> UpdateShiftWithEventChanges(Guid eventId, EventDto eventDto);
 }

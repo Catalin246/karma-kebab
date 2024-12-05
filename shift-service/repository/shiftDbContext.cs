@@ -9,18 +9,20 @@ using Microsoft.Extensions.Logging;
 
 public class AzureStorageConfig
 {
-    public string ConnectionString { get; set; }
+    public required string ConnectionString { get; set; }
 }
 
 public class ShiftDbContext : IShiftDbContext
 {
     private readonly TableClient _tableClient;
     private const string TableName = "Shifts";
-    private readonly ILogger<ShiftService> _logger;
+    // private readonly ILogger<ShiftDbContext> _logger;
 
-    public ShiftDbContext(IOptions<AzureStorageConfig> options)
+    public ShiftDbContext(
+        IOptions<AzureStorageConfig> options) // Add logger parameter
     {
         if (options == null) throw new ArgumentNullException(nameof(options));
+        // if (logger == null) throw new ArgumentNullException(nameof(logger));
         
         var connectionString = options.Value.ConnectionString;
         if (string.IsNullOrEmpty(connectionString))
@@ -31,7 +33,7 @@ public class ShiftDbContext : IShiftDbContext
         _tableClient = new TableClient(connectionString, TableName);
         _tableClient.CreateIfNotExists();
         
-        
+        // _logger = logger; 
     }
 
     public async Task<ShiftEntity> GetShift(string partitionKey, string rowKey)
@@ -151,13 +153,13 @@ public class ShiftDbContext : IShiftDbContext
     catch (Azure.RequestFailedException ex)
     {
         // Log the specific Azure storage error
-        _logger.LogError(ex, "Error adding shift to Azure Table Storage. Status Code: {StatusCode}", ex.Status);
+        // _logger.LogError(ex, "Error adding shift to Azure Table Storage. Status Code: {StatusCode}", ex.Status);
         throw; // Rethrow to allow higher-level error handling
     }
     catch (Exception ex)
     {
         // Log any other unexpected errors
-        _logger.LogError(ex, "Unexpected error when adding shift");
+        // _logger.LogError(ex, "Unexpected error when adding shift");
         throw;
     }
 }
@@ -188,21 +190,22 @@ public class ShiftDbContext : IShiftDbContext
     }
 
     // Convert ShiftEntity to ShiftDto
-    public static ShiftDto MapToDto(ShiftEntity shift)
+public static ShiftDto MapToDto(ShiftEntity shift)
+{
+    return new ShiftDto
     {
-        return new ShiftDto
-        {
-            ShiftId = Guid.TryParse(shift.RowKey, out var shiftId) ? shiftId : Guid.Empty, 
-            ShiftType = shift.ShiftType.ToString(), // Convert Enum to string
-            Status = shift.Status.ToString(), // Convert Enum to string
-            StartTime = shift.StartTime,
-            EndTime = shift.EndTime,
-            EmployeeId = shift.EmployeeId,
-            ClockInTime = shift.ClockInTime,
-            ClockOutTime = shift.ClockOutTime,
-            ShiftHours = (double)shift.ShiftHours
-        };
-    }
+        ShiftId = shift.ShiftId,
+        EmployeeId = shift.EmployeeId,
+        ShiftType = Enum.Parse<ShiftType>(shift.ShiftType),
+        Status = Enum.Parse<ShiftStatus>(shift.Status),
+        StartTime = shift.StartTime, // Assuming StartTime cannot be null
+        EndTime = shift.EndTime,     // Assuming EndTime cannot be null
+        ClockInTime = shift.ClockInTime, // Nullable property
+        ClockOutTime = shift.ClockOutTime, // Nullable property
+        ShiftHours = shift.ShiftHours.HasValue ? shift.ShiftHours.Value : null // Handle nullable ShiftHours
+    };
+}
+
 
     // Convert a collection of ShiftEntities to ShiftDtos
     public static IEnumerable<ShiftDto> MapToDtos(IEnumerable<ShiftEntity> shifts)

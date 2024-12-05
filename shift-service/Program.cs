@@ -13,6 +13,7 @@ builder.Services.Configure<AzureStorageConfig>(
 // Register the DbContext
 builder.Services.AddScoped<IShiftDbContext, ShiftDbContext>();
 builder.Services.AddScoped<IShiftService, ShiftService>();
+builder.Services.AddLogging(); // Ensure logging is added
 
 
 // Add controllers
