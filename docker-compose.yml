@@ -87,6 +87,20 @@ services:
     networks:
       - karama-kebab-network
 
+  shift-service:
+    build:
+      context: ./shift-service
+      dockerfile: Dockerfile
+    volumes:
+      - ./shift-service/.env:/app/.env
+    depends_on:
+      - azurite
+      - keycloak
+    ports:
+      - "5001:5001"
+    networks:
+      - karama-kebab-network
+
 volumes:
   azurite-data:
 
