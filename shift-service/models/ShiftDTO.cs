@@ -33,7 +33,7 @@ public class UpdateShiftDto
     
 }
 
-// DTO for clocking in or clocking out - is currently done in just the update
+// DTO for clocking in or clocking out - is currently done in just the update - might implement?
 public class ClockInOutDto
 {
     public DateTime TimeStamp { get; set; }

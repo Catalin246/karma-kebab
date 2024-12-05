@@ -16,13 +16,10 @@ public class ShiftDbContext : IShiftDbContext
 {
     private readonly TableClient _tableClient;
     private const string TableName = "Shifts";
-    // private readonly ILogger<ShiftDbContext> _logger;
-
     public ShiftDbContext(
-        IOptions<AzureStorageConfig> options) // Add logger parameter
+        IOptions<AzureStorageConfig> options)
     {
         if (options == null) throw new ArgumentNullException(nameof(options));
-        // if (logger == null) throw new ArgumentNullException(nameof(logger));
         
         var connectionString = options.Value.ConnectionString;
         if (string.IsNullOrEmpty(connectionString))
@@ -32,9 +29,7 @@ public class ShiftDbContext : IShiftDbContext
 
         _tableClient = new TableClient(connectionString, TableName);
         _tableClient.CreateIfNotExists();
-        
-        // _logger = logger; 
-    }
+        }
 
     public async Task<ShiftEntity> GetShift(string partitionKey, string rowKey)
     {
@@ -45,7 +40,6 @@ public class ShiftDbContext : IShiftDbContext
         }
         catch (Azure.RequestFailedException ex) when (ex.Status == 404)
         {
-            // Return null if the entity is not found
             return null;
         }
     }
@@ -54,7 +48,7 @@ public class ShiftDbContext : IShiftDbContext
     {
         try
         {
-            var rowKey = shiftId.ToString(); // RowKey is the shiftId in string format
+            var rowKey = shiftId.ToString();
             var queryResults = _tableClient.QueryAsync<ShiftEntity>(e => e.RowKey == rowKey);
             await foreach (var shiftEntity in queryResults)
             {
@@ -68,8 +62,6 @@ public class ShiftDbContext : IShiftDbContext
             throw new InvalidOperationException("An error occurred while retrieving the shift.", ex);
         }
     }
-
-    // Get all shifts for a specific employee
     public async Task<IEnumerable<ShiftEntity>> GetShiftsByEmployee(Guid employeeId)
     {
         var filter = $"EmployeeId eq '{employeeId}'";
@@ -134,13 +126,10 @@ public class ShiftDbContext : IShiftDbContext
         return shifts;
     }
 
-
-    // Add a new shift
     public async Task<ShiftEntity> AddShift(ShiftEntity shift)
 {
     try
     {
-        // Validate required properties
         if (string.IsNullOrEmpty(shift.PartitionKey))
             throw new ArgumentException("PartitionKey must be set", nameof(shift));
         
@@ -152,32 +141,25 @@ public class ShiftDbContext : IShiftDbContext
     }
     catch (Azure.RequestFailedException ex)
     {
-        // Log the specific Azure storage error
-        // _logger.LogError(ex, "Error adding shift to Azure Table Storage. Status Code: {StatusCode}", ex.Status);
-        throw; // Rethrow to allow higher-level error handling
+        throw; 
     }
     catch (Exception ex)
     {
-        // Log any other unexpected errors
-        // _logger.LogError(ex, "Unexpected error when adding shift");
         throw;
     }
 }
 
-    // Update an existing shift
     public async Task<ShiftEntity> UpdateShift(ShiftEntity shift)
     {
         await _tableClient.UpdateEntityAsync(shift, shift.ETag);
         return shift;
     }
 
-    // Delete a shift by partition key and row key
     public async Task DeleteShift(string partitionKey, string rowKey)
     {
         await _tableClient.DeleteEntityAsync(partitionKey, rowKey);
-        // No return value as it's a delete operation
     }
-
+//DeleteShiftsByEmployee still to be fully implemented
     public async Task DeleteShiftsByEmployee(Guid employeeId)
     {
         var shifts = await GetShiftsByEmployee(employeeId);
@@ -185,11 +167,9 @@ public class ShiftDbContext : IShiftDbContext
         var deleteTasks = shifts.Select(shift => 
             _tableClient.DeleteEntityAsync(shift.PartitionKey, shift.RowKey));
         
-        // Await all delete operations concurrently
         await Task.WhenAll(deleteTasks);
     }
 
-    // Convert ShiftEntity to ShiftDto
 public static ShiftDto MapToDto(ShiftEntity shift)
 {
     return new ShiftDto
@@ -198,11 +178,11 @@ public static ShiftDto MapToDto(ShiftEntity shift)
         EmployeeId = shift.EmployeeId,
         ShiftType = Enum.Parse<ShiftType>(shift.ShiftType),
         Status = Enum.Parse<ShiftStatus>(shift.Status),
-        StartTime = shift.StartTime, // Assuming StartTime cannot be null
-        EndTime = shift.EndTime,     // Assuming EndTime cannot be null
-        ClockInTime = shift.ClockInTime, // Nullable property
-        ClockOutTime = shift.ClockOutTime, // Nullable property
-        ShiftHours = shift.ShiftHours.HasValue ? shift.ShiftHours.Value : null // Handle nullable ShiftHours
+        StartTime = shift.StartTime, 
+        EndTime = shift.EndTime,     
+        ClockInTime = shift.ClockInTime, 
+        ClockOutTime = shift.ClockOutTime, 
+        ShiftHours = shift.ShiftHours.HasValue ? shift.ShiftHours.Value : null
     };
 }
 

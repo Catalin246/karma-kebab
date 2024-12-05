@@ -1,8 +1,3 @@
-// using System;
-// using System.Collections.Generic;
-// using System.Linq;
-// using System.Threading.Tasks;
-// using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 using Azure;
@@ -22,30 +17,25 @@ public class ShiftService : IShiftService
 {
     try 
     {
-        // Validate input
         if (createshiftDto == null)
             throw new ArgumentNullException(nameof(createshiftDto), "Shift data cannot be null");
 
-        // Parse ShiftType
         if (!Enum.TryParse<ShiftType>(createshiftDto.ShiftType, out var shiftType))
             throw new ArgumentException("Invalid shift type", nameof(createshiftDto.ShiftType));
 
-        // Ensure all DateTime values are converted to UTC
         createshiftDto.StartTime = createshiftDto.StartTime.ToUniversalTime();
         createshiftDto.EndTime = createshiftDto.EndTime.ToUniversalTime();
 
         var shiftEntity = MapToEntity(createshiftDto);
 
-        // Add the shift to the database
         var savedShift = await _dbContext.AddShift(shiftEntity);
 
-        // Convert back to DTO to return
         return ShiftDbContext.MapToDto(savedShift);
     }
-    catch (Exception ex)
+    catch (Exception ex) 
     {
         _logger.LogError(ex, "Error creating shift");
-        throw; // Rethrow to allow global error handling in the controller
+        throw; 
     }
 }
 
@@ -54,38 +44,19 @@ public class ShiftService : IShiftService
         return await _dbContext.GetShiftById(shiftId);
     }
 
+//this one still needs to be tested (filtering by date for example)
     public async Task<IEnumerable<ShiftDto>> GetShifts(DateTime? date = null, Guid? employeeId = null, ShiftType? shiftType = null, Guid? shiftId = null, Guid? eventId = null)
     {
         var shifts = await _dbContext.GetShifts(date, employeeId, shiftType, shiftId, eventId);
         return ShiftDbContext.MapToDtos(shifts);
     }
-    // public async Task<ShiftDto> UpdateShift(Guid shiftId, UpdateShiftDto updateShiftDto)
-    // {
-    //     // Retrieve the existing shift with its ETag
-    //     var existingShift = await _dbContext.GetShiftById(shiftId);
-    //     if (existingShift == null)
-    //         return null;
 
-    //     // Map the DTO to the existing entity
-    //     existingShift.StartTime = updateShiftDto.StartTime.ToUniversalTime();
-    //     existingShift.EndTime = updateShiftDto.EndTime.ToUniversalTime();
-    //     existingShift.ShiftType = updateShiftDto.ShiftType.ToString();
-    //     existingShift.Status = updateShiftDto.Status.ToString();
-    //     existingShift.ClockInTime = updateShiftDto.ClockInTime?.ToUniversalTime();
-    //     existingShift.ClockOutTime = updateShiftDto.ClockOutTime?.ToUniversalTime();
-
-    //     _logger.LogInformation("Updating shift with ID: {ShiftId}", shiftId);
-
-    //     // Pass the ETag when updating
-    //     return await _dbContext.UpdateShift(MapToEntity(existingShift));
-    // }
     public async Task<ShiftDto> UpdateShift(Guid shiftId, UpdateShiftDto updateShiftDto)
     {
         try 
         {
             // Retrieve the existing entity
             var response = await _dbContext.GetShiftById(shiftId);
-            _logger.LogInformation("matching shift: {Shift}", response); // Use string interpolation
             var existingShift = MapToEntity(response);
 
             if (existingShift == null)
@@ -192,11 +163,8 @@ public class ShiftService : IShiftService
         StartTime = shift.StartTime,
         EndTime = shift.EndTime,
         EmployeeId = shift.EmployeeId,
-        
-         // Convert enum to string
         ShiftType = shift.GetShiftTypeEnum(),
         Status = shift.GetStatusEnum(),
-        
         ClockInTime = shift.ClockInTime,
         ClockOutTime = shift.ClockOutTime,
         ShiftHours = shift.ShiftHours
@@ -235,7 +203,7 @@ public class ShiftService : IShiftService
             EmployeeId = createShiftDto.EmployeeId,
             StartTime = createShiftDto.StartTime,
             EndTime = createShiftDto.EndTime,
-            ShiftType = createShiftDto.ShiftType, // Already a string
+            ShiftType = createShiftDto.ShiftType, 
             Status = ShiftStatus.Unconfirmed.ToString(), // Default status
             ClockInTime = null,
             ClockOutTime = null,
@@ -247,7 +215,7 @@ private static ShiftEntity MapToEntity(UpdateShiftDto updateShiftDto, ShiftEntit
     if (existingEntity == null)
         throw new ArgumentNullException(nameof(existingEntity), "Existing shift entity must be provided");
 
-    // Specify UTC Kind for all DateTime properties
+    // Specify UTC Kind for all DateTime properties 
     existingEntity.StartTime = updateShiftDto.StartTime.Kind == DateTimeKind.Unspecified 
         ? DateTime.SpecifyKind(updateShiftDto.StartTime, DateTimeKind.Utc) 
         : updateShiftDto.StartTime;
@@ -262,8 +230,6 @@ private static ShiftEntity MapToEntity(UpdateShiftDto updateShiftDto, ShiftEntit
     {
         existingEntity.Status = updateShiftDto.Status.ToString();
     }
-
-    // Handle nullable DateTime for ClockInTime and ClockOutTime
     existingEntity.ClockInTime = updateShiftDto.ClockInTime.HasValue
         ? (updateShiftDto.ClockInTime.Value.Kind == DateTimeKind.Unspecified 
             ? DateTime.SpecifyKind(updateShiftDto.ClockInTime.Value, DateTimeKind.Utc) 

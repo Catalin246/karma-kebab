@@ -36,19 +36,8 @@ public class ShiftEntity : ITableEntity
     {
         return Enum.Parse<ShiftType>(ShiftType, ignoreCase: true);
     }
-
-    public void SetShiftTypeEnum(ShiftType shiftType) //not used
-    {
-        ShiftType = shiftType.ToString();
-    }
-
     public ShiftStatus GetStatusEnum()
     {
         return Enum.Parse<ShiftStatus>(Status, ignoreCase: true);
-    }
-
-    public void SetStatusEnum(ShiftStatus status) //not used
-    {
-        Status = status.ToString();
     }
 }

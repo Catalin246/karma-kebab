@@ -8,8 +8,6 @@ public class Shift
     public ShiftStatus Status { get; set; }
     public DateTime? ClockInTime { get; set; }
     public DateTime? ClockOutTime { get; set; }
-
-    // The ShiftHours should be a calculated property, not a stored one.
     public decimal ShiftHours
     {
         get
