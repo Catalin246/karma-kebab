@@ -153,7 +153,7 @@ public class ShiftsController : ControllerBase
     // }
     [HttpPut("{shiftId:guid}")]
     public async Task<ActionResult<ApiResponse>> UpdateShift(
-        Guid shiftId, 
+        [FromRoute] Guid shiftId, 
         [FromBody] UpdateShiftDto updateShiftDto) 
     {
         try

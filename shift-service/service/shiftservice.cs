@@ -79,41 +79,41 @@ public class ShiftService : IShiftService
     //     // Pass the ETag when updating
     //     return await _dbContext.UpdateShift(MapToEntity(existingShift));
     // }
-public async Task<ShiftDto> UpdateShift(Guid shiftId, UpdateShiftDto updateShiftDto)
-{
-    try 
+    public async Task<ShiftDto> UpdateShift(Guid shiftId, UpdateShiftDto updateShiftDto)
     {
-        // Validate input
-        if (updateShiftDto == null)
-            throw new ArgumentNullException(nameof(updateShiftDto), "Update shift data cannot be null");
+        try 
+        {
+            // Retrieve the existing entity
+            var response = await _dbContext.GetShiftById(shiftId);
+            _logger.LogInformation("matching shift: {Shift}", response); // Use string interpolation
+            var existingShift = MapToEntity(response);
 
-        // Ensure the PartitionKey and RowKey are correctly set
-        string partitionKey = shiftId.ToString();
-        string rowKey = shiftId.ToString();
+            if (existingShift == null)
+                return null;
 
-        // Retrieve the existing entity
-        var response = await _dbContext.GetShift(partitionKey, rowKey);
-        var existingShift = response;
+            // Retrieve the full entity to get the current ETag
+            var tableEntity = await _dbContext.GetShift(existingShift.PartitionKey, existingShift.RowKey);
 
-        if (existingShift == null)
-            return null;
-                    
-        await _dbContext.UpdateShift(MapToEntity(updateShiftDto, existingShift));
+            var newShift = MapToEntity(updateShiftDto, existingShift);
+            // Use the ETag from the retrieved table entity
+            newShift.ETag = tableEntity.ETag;
 
-        return MapToDto(existingShift);
+            await _dbContext.UpdateShift(newShift);
+
+            return MapToDto(newShift);
+        }
+        catch (RequestFailedException ex)
+        {
+            _logger.LogError(ex, "Azure Storage error updating shift with ID: {ShiftId}. Status: {Status}, ErrorCode: {ErrorCode}",
+                shiftId, ex.Status, ex.ErrorCode);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error updating shift with ID: {ShiftId}", shiftId);
+            throw;
+        }
     }
-    catch (RequestFailedException ex)
-    {
-        _logger.LogError(ex, "Azure Storage error updating shift with ID: {ShiftId}. Status: {Status}, ErrorCode: {ErrorCode}", 
-            shiftId, ex.Status, ex.ErrorCode);
-        throw; // Rethrow to be handled by the controller
-    }
-    catch (Exception ex)
-    {
-        _logger.LogError(ex, "Unexpected error updating shift with ID: {ShiftId}", shiftId);
-        throw;
-    }
-}
     public async Task<bool> DeleteShift(Guid shiftId)
         {
             try
@@ -242,24 +242,42 @@ public async Task<ShiftDto> UpdateShift(Guid shiftId, UpdateShiftDto updateShift
             ShiftHours = null
         };
     }
-    private static ShiftEntity MapToEntity(UpdateShiftDto updateShiftDto, ShiftEntity existingEntity)
+private static ShiftEntity MapToEntity(UpdateShiftDto updateShiftDto, ShiftEntity existingEntity)
+{
+    if (existingEntity == null)
+        throw new ArgumentNullException(nameof(existingEntity), "Existing shift entity must be provided");
+
+    // Specify UTC Kind for all DateTime properties
+    existingEntity.StartTime = updateShiftDto.StartTime.Kind == DateTimeKind.Unspecified 
+        ? DateTime.SpecifyKind(updateShiftDto.StartTime, DateTimeKind.Utc) 
+        : updateShiftDto.StartTime;
+
+    existingEntity.EndTime = updateShiftDto.EndTime.Kind == DateTimeKind.Unspecified 
+        ? DateTime.SpecifyKind(updateShiftDto.EndTime, DateTimeKind.Utc) 
+        : updateShiftDto.EndTime;
+
+    existingEntity.ShiftType = updateShiftDto.ShiftType.ToString();
+    
+    if (updateShiftDto.Status != default)
     {
-        if (existingEntity == null)
-            throw new ArgumentNullException(nameof(existingEntity), "Existing shift entity must be provided");
-
-        existingEntity.StartTime = updateShiftDto.StartTime;
-        existingEntity.EndTime = updateShiftDto.EndTime;
-        
-        existingEntity.ShiftType = updateShiftDto.ShiftType.ToString();
-        if (updateShiftDto.Status != default)
-        {
-            existingEntity.Status = updateShiftDto.Status.ToString();
-        }
-        existingEntity.ClockInTime = updateShiftDto.ClockInTime;
-        existingEntity.ClockOutTime = updateShiftDto.ClockOutTime;
-
-        return existingEntity;
+        existingEntity.Status = updateShiftDto.Status.ToString();
     }
+
+    // Handle nullable DateTime for ClockInTime and ClockOutTime
+    existingEntity.ClockInTime = updateShiftDto.ClockInTime.HasValue
+        ? (updateShiftDto.ClockInTime.Value.Kind == DateTimeKind.Unspecified 
+            ? DateTime.SpecifyKind(updateShiftDto.ClockInTime.Value, DateTimeKind.Utc) 
+            : updateShiftDto.ClockInTime.Value)
+        : (DateTime?)null;
+
+    existingEntity.ClockOutTime = updateShiftDto.ClockOutTime.HasValue
+        ? (updateShiftDto.ClockOutTime.Value.Kind == DateTimeKind.Unspecified 
+            ? DateTime.SpecifyKind(updateShiftDto.ClockOutTime.Value, DateTimeKind.Utc) 
+            : updateShiftDto.ClockOutTime.Value)
+        : (DateTime?)null;
+
+    return existingEntity;
+}
 
 }
 

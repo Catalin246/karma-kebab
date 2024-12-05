@@ -10,7 +10,7 @@ Accept: application/json
 
 
 ### Get Shift by ID
-GET http://localhost:5001/shifts/7f1dcdb0-89d4-4733-b358-7811681a283f
+GET http://localhost:5001/shifts/60477830-9bae-458b-b8ab-da64f3b86583
 Accept: application/json
 # Authorization: Bearer <your-jwt-token-if-needed>
 
@@ -28,7 +28,7 @@ Accept: application/json
 }
 
 ### Update a Shift by ID
-PUT http://localhost:5001/shifts/4d217bd9-6a69-4f51-a730-08e8058decff
+PUT http://localhost:5001/shifts/290822dd-b5f6-46fe-9682-d3d010ed0d8f
 Content-Type: application/json
 Accept: application/json
 
@@ -38,12 +38,12 @@ Accept: application/json
     "shiftType": "Normal", 
     "status": "Confirmed",
     "clockInTime": "2024-12-24T10:15:00",
-    "clockOutTime": "2024-12-26T17:45:00"
+    "clockOutTime": null
 }
     
 
 ### Delete a Shift by ID
-DELETE http://localhost:5001/shifts/7f1dcdb0-89d4-4733-b358-7811681a283f
+DELETE http://localhost:5001/shifts/60477830-9bae-458b-b8ab-da64f3b86583
 # Authorization: Bearer <your-jwt-token-if-needed>
 
 ### DOESNT WORK Delete a Shifts by Employee ID - needs to be discussed
