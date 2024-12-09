@@ -1,11 +1,12 @@
 {
   "Version": 1,
-  "Hash": "iHZfG/MyIvyOg9mSaSGgwDp90yiQ/16/CSrLwRHqkow=",
+  "Hash": "DIJJ/VWxYO/xP5hWduFVlhUcte7OKwqhjBeSd2aEk+E=",
   "Source": "shift-service",
   "BasePath": "_content/shift-service",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],
   "DiscoveryPatterns": [],
-  "Assets": []
+  "Assets": [],
+  "Endpoints": []
 }

@@ -1,25 +1,25 @@
 # Get All Shifts
-GET http://localhost:5001/shifts
+GET http://localhost:3003/shifts
 Accept: application/json
 #Authorization: Bearer <your-jwt-token-if-needed>
 
 ### Get Shifts by Employee ID
-GET http://localhost:5001/shifts?employeeId=71c0da1e-f97d-412c-a951-41950a20f2fc
+GET http://localhost:3003/shifts?employeeId=71c0da1e-f97d-412c-a951-41950a20f2fc
 Accept: application/json
 #Authorization: Bearer <your-jwt-token-if-needed>
 
 ###get total hours by employee
 
-GET http://localhost:5001/shifts/71c0da1e-f97d-412c-a951-41950a20f2fc/hours
+GET http://localhost:3003/shifts/71c0da1e-f97d-412c-a951-41950a20f2fc/hours
 Accept: application/json
 
 ### Get Shift by ID
-GET http://localhost:5001/shifts/60477830-9bae-458b-b8ab-da64f3b86583
+GET http://localhost:3003/shifts/60477830-9bae-458b-b8ab-da64f3b86583
 Accept: application/json
 # Authorization: Bearer <your-jwt-token-if-needed>
 
 ### Create a new Shift
-POST http://localhost:5001/shifts
+POST http://localhost:3003/shifts
 Content-Type: application/json
 Accept: application/json
 # Authorization: Bearer <your-jwt-token-if-needed>
@@ -32,7 +32,7 @@ Accept: application/json
 }
 
 ### Update a Shift by ID
-PUT http://localhost:5001/shifts/290822dd-b5f6-46fe-9682-d3d010ed0d8f
+PUT http://localhost:3003/shifts/290822dd-b5f6-46fe-9682-d3d010ed0d8f
 Content-Type: application/json
 Accept: application/json
 
@@ -47,9 +47,9 @@ Accept: application/json
     
 
 ### Delete a Shift by ID
-DELETE http://localhost:5001/shifts/60477830-9bae-458b-b8ab-da64f3b86583
+DELETE http://localhost:3003/shifts/60477830-9bae-458b-b8ab-da64f3b86583
 # Authorization: Bearer <your-jwt-token-if-needed>
 
 ### DOESNT WORK Delete a Shifts by Employee ID - needs to be discussed
-DELETE http://localhost:5001/shifts/delete/e2923af0-b60b-4c34-8e5d-cf1f06f3e1f0
+DELETE http://localhost:3003/shifts/delete/e2923af0-b60b-4c34-8e5d-cf1f06f3e1f0
 # Authorization: Bearer <your-jwt-token-if-needed>
