@@ -28,11 +28,11 @@ func RegisterRoutes(serviceClient *aztables.ServiceClient) *mux.Router {
 
 	// duty routes
 	r.HandleFunc("/duties", dutyHandler.GetAllDuties).Methods(http.MethodGet)
-	r.HandleFunc("/duties/{PartitionKey}/{RowKey}", dutyHandler.GetDutyById).Methods(http.MethodGet) //TODO: make partitionkey default "Duty"????? 27/11
+	r.HandleFunc("/duties/{PartitionKey}/{RowKey}", dutyHandler.GetDutyById).Methods(http.MethodGet) 
 	r.HandleFunc("/duties/role", dutyHandler.GetDutiesByRole).Methods(http.MethodGet)
 	r.HandleFunc("/duties", dutyHandler.CreateDuty).Methods(http.MethodPost)
-	r.HandleFunc("/duties/{PartitionKey}/{RowKey}", dutyHandler.UpdateDuty).Methods(http.MethodPut)    //TODO: make partitionkey default "Duty"????? 27/11
-	r.HandleFunc("/duties/{PartitionKey}/{RowKey}", dutyHandler.DeleteDuty).Methods(http.MethodDelete) //TODO: make partitionkey default "Duty"????? 27/11
+	r.HandleFunc("/duties/{PartitionKey}/{RowKey}", dutyHandler.UpdateDuty).Methods(http.MethodPut)    
+	r.HandleFunc("/duties/{PartitionKey}/{RowKey}", dutyHandler.DeleteDuty).Methods(http.MethodDelete) 
 
 	// duty assignment routes:
 	r.HandleFunc("/duty-assignments", dutyAssignmentHandler.GetAllDutyAssignmentsByShiftId).Methods(http.MethodGet) // example: http://localhost:5001/duty-assignments?shiftId=123e4567-e89b-12d3-a456-426614174000
