@@ -160,10 +160,8 @@ public class ShiftDbContext : IShiftDbContext
         await _tableClient.DeleteEntityAsync(partitionKey, rowKey);
     }
 //DeleteShiftsByEmployee still to be fully implemented
-    public async Task DeleteShiftsByEmployee(Guid employeeId)
+    public async Task DeleteShiftsByEmployee(List<ShiftEntity> shift)
     {
-        var shifts = await GetShiftsByEmployee(employeeId);
-
         var deleteTasks = shifts.Select(shift => 
             _tableClient.DeleteEntityAsync(shift.PartitionKey, shift.RowKey));
         

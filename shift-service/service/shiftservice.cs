@@ -117,13 +117,12 @@ public class ShiftService : IShiftService
     }
 
     public async Task<bool> DeleteEmployeeAndShifts(Guid employeeId)
-    {
         try
         {
             var shifts = await _dbContext.GetShiftsByEmployee(employeeId);
             if (!shifts.Any()) return false;
 
-            await _dbContext.DeleteShiftsByEmployee(employeeId);
+            await _dbContext.DeleteShiftsByEmployee(shifts);
             return true;
         }
         catch (Exception ex)

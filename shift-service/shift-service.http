@@ -4,7 +4,7 @@ Accept: application/json
 #Authorization: Bearer <your-jwt-token-if-needed>
 
 ### Get Shifts by Employee ID
-GET http://localhost:5001/shifts?employeeId=71c0da1e-f97d-412c-a951-41950a20f2fc
+GET http://localhost:5001/shifts?employeeId=2dc142cb-c95d-4ab5-a258-1d04c2d6c244
 Accept: application/json
 #Authorization: Bearer <your-jwt-token-if-needed>
 
@@ -51,5 +51,5 @@ DELETE http://localhost:5001/shifts/60477830-9bae-458b-b8ab-da64f3b86583
 # Authorization: Bearer <your-jwt-token-if-needed>
 
 ### DOESNT WORK Delete a Shifts by Employee ID - needs to be discussed
-DELETE http://localhost:5001/shifts/delete/e2923af0-b60b-4c34-8e5d-cf1f06f3e1f0
+DELETE http://localhost:5001/shifts/employee/2dc142cb-c95d-4ab5-a258-1d04c2d6c244
 # Authorization: Bearer <your-jwt-token-if-needed>

@@ -216,7 +216,7 @@ public class ShiftsController : ControllerBase
         }
     }
 
-    [HttpDelete("delete/{employeeId:guid}")]
+    [HttpDelete("/employee/{employeeId:guid}")]
     public async Task<ActionResult> DeleteEmployeeAndShifts(Guid employeeId)
     {
         try
