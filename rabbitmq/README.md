@@ -8,3 +8,18 @@ This directory contains the necessary configuration for running a RabbitMQ servi
   - `5672`: RabbitMQ messaging port.
   - `15672`: RabbitMQ management console.
 
+
+## Key points:
+
+**IMessagePublisher** defines the contract for publishing messages
+**IMessageConsumer** defines the contract for consuming messages
+**RabbitMqConstants** provides centralized constants for queues and routing keys
+**RabbitMqService** implements both interfaces with RabbitMQ-specific logic
+
+The implementation includes:
+
+Synchronous and asynchronous methods
+Error handling
+Logging (currently using Console)
+Flexibility for different message types
+Proper resource management with IDisposable
