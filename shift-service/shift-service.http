@@ -13,7 +13,7 @@ GET http://localhost:5001/shifts/71c0da1e-f97d-412c-a951-41950a20f2fc/hours
 Accept: application/json
 
 ### Get Shift by ID
-GET http://localhost:5001/shifts/4d217bd9-6a69-4f51-a730-08e8058decff
+GET http://localhost:5001/shifts/6aa95d50-eea3-4364-8e0e-c0a09f287b9b
 Accept: application/json
 # Authorization: Bearer <your-jwt-token-if-needed>
 
@@ -46,5 +46,5 @@ Accept: application/json
     
 
 ### Delete a Shift by ID
-DELETE http://localhost:5001/shifts/c27305af-1faa-46f8-8dba-160a2d476d64
+DELETE http://localhost:5001/shifts/6aa95d50-eea3-4364-8e0e-c0a09f287b9b
 # Authorization: Bearer <your-jwt-token-if-needed>

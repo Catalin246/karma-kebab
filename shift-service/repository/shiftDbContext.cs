@@ -159,14 +159,6 @@ public class ShiftDbContext : IShiftDbContext
     {
         await _tableClient.DeleteEntityAsync(partitionKey, rowKey);
     }
-//DeleteShiftsByEmployee still to be fully implemented
-    // public async Task DeleteShiftsByEmployee(IEnumerable<ShiftEntity> shifts)
-    // {
-    //     var deleteTasks = shifts.Select(shift => 
-    //         _tableClient.DeleteEntityAsync(shift.PartitionKey, shift.RowKey));
-        
-    //     await Task.WhenAll(deleteTasks);
-    // }
 
 public static ShiftDto MapToDto(ShiftEntity shift)
 {
