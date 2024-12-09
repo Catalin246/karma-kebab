@@ -2,7 +2,7 @@ package models
 
 import "github.com/google/uuid"
 
-// Duty represents a duty assigned to a role
+// represents a duty assigned to a role
 type Duty struct {
 	PartitionKey    string    `json:"PartitionKey"`    // Azure Table Storage PartitionKey
 	RowKey          uuid.UUID `json:"RowKey"`          // THIS IS ID OF THE TASK Rowkey - Primary Key (string representation of UUID)

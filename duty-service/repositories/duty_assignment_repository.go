@@ -26,7 +26,7 @@ func NewDutyAssignmentRepository(serviceClient *aztables.ServiceClient) *DutyAss
 func (r *DutyAssignmentRepository) GetAllDutyAssignmentsByShiftId(ctx context.Context, shiftId uuid.UUID) ([]models.DutyAssignment, error) {
 	tableClient := r.serviceClient.NewClient(r.tableName)
 
-	// Construct the filter to match the ShiftId
+	// filter to match the ShiftId
 	filter := fmt.Sprintf("PartitionKey eq '%s'", shiftId.String())
 
 	listOptions := &aztables.ListEntitiesOptions{
@@ -44,7 +44,7 @@ func (r *DutyAssignmentRepository) GetAllDutyAssignmentsByShiftId(ctx context.Co
 			return nil, fmt.Errorf("failed to list duty assignments by ShiftId: %v", err)
 		}
 
-		// Unmarshal each entity and add it to the list
+		// unmarshal entities and add it to the list
 		for _, entity := range page.Entities {
 			var dutyAssignmentData map[string]interface{}
 
@@ -63,10 +63,10 @@ func (r *DutyAssignmentRepository) GetAllDutyAssignmentsByShiftId(ctx context.Co
 				dutyAssignmentNote = &note
 			}
 
-			// Create the DutyAssignment struct
+			// Create the DutyAssignment
 			dutyAssignment := models.DutyAssignment{
-				PartitionKey:           dutyAssignmentData["PartitionKey"].(string),
-				RowKey:                 dutyAssignmentData["RowKey"].(string),
+				PartitionKey:           uuid.MustParse(dutyAssignmentData["PartitionKey"].(string)),
+				RowKey:                 uuid.MustParse(dutyAssignmentData["RowKey"].(string)),
 				DutyAssignmentStatus:   models.DutyAssignmentStatus(dutyAssignmentData["DutyAssignmentStatus"].(string)),
 				DutyAssignmentImageUrl: dutyAssignmentImageUrl,
 				DutyAssignmentNote:     dutyAssignmentNote,
@@ -79,14 +79,51 @@ func (r *DutyAssignmentRepository) GetAllDutyAssignmentsByShiftId(ctx context.Co
 	return dutyAssignments, nil
 }
 
+// POST - creates duty assignments for a Shift
+func (r *DutyAssignmentRepository) CreateDutyAssignments(ctx context.Context, shiftId uuid.UUID, duties []models.Duty) error {
+	tableClient := r.serviceClient.NewClient(r.tableName)
+
+	for _, duty := range duties {
+		dutyAssignment := models.DutyAssignment{
+			PartitionKey:           shiftId,                 // Use ShiftId as PartitionKey
+			RowKey:                 uuid.New(),              // Generate new UUID for DutyId TODO: make unique
+			DutyAssignmentStatus:   models.StatusIncomplete, // Default to Incomplete
+			DutyAssignmentImageUrl: nil,                     // No image URL on creation
+			DutyAssignmentNote:     nil,                     // No note on creation
+		}
+
+		// Marshal the DutyAssignment into a JSON entity
+		entity := map[string]interface{}{
+			"PartitionKey":           dutyAssignment.PartitionKey.String(),
+			"RowKey":                 dutyAssignment.RowKey.String(),
+			"DutyAssignmentStatus":   string(dutyAssignment.DutyAssignmentStatus),
+			"DutyAssignmentImageUrl": dutyAssignment.DutyAssignmentImageUrl,
+			"DutyAssignmentNote":     dutyAssignment.DutyAssignmentNote,
+		}
+
+		entityBytes, err := json.Marshal(entity)
+		if err != nil {
+			return fmt.Errorf("failed to marshal duty assignment: %v", err)
+		}
+
+		// Insert the entity into Azure Table Storage
+		_, err = tableClient.AddEntity(ctx, entityBytes, nil)
+		if err != nil {
+			return fmt.Errorf("failed to create duty assignment for DutyId %s: %v", duty.RowKey, err)
+		}
+	}
+
+	return nil
+}
+
 // UPDATE a duty assignment
 func (r *DutyAssignmentRepository) UpdateDutyAssignment(ctx context.Context, dutyAssignment models.DutyAssignment) error {
 	tableClient := r.serviceClient.NewClient(r.tableName)
 
 	// Prepare the updated entity
 	entity := map[string]interface{}{
-		"PartitionKey":           dutyAssignment.PartitionKey, // ShiftId
-		"RowKey":                 dutyAssignment.RowKey,       // DutyId
+		"PartitionKey":           dutyAssignment.PartitionKey.String(),
+		"RowKey":                 dutyAssignment.RowKey.String(),
 		"DutyAssignmentStatus":   string(dutyAssignment.DutyAssignmentStatus),
 		"DutyAssignmentImageUrl": dutyAssignment.DutyAssignmentImageUrl,
 		"DutyAssignmentNote":     dutyAssignment.DutyAssignmentNote,
@@ -108,12 +145,12 @@ func (r *DutyAssignmentRepository) UpdateDutyAssignment(ctx context.Context, dut
 }
 
 // DELETE a duty assignment by ShiftId and DutyId
-func (r *DutyAssignmentRepository) DeleteDutyAssignment(ctx context.Context, shiftId uuid.UUID, dutyId string) error {
+func (r *DutyAssignmentRepository) DeleteDutyAssignment(ctx context.Context, shiftId uuid.UUID, dutyId uuid.UUID) error {
 	tableClient := r.serviceClient.NewClient(r.tableName)
 
 	// Prepare the PartitionKey and RowKey
 	partitionKey := shiftId.String() // ShiftId
-	rowKey := dutyId                 // DutyId
+	rowKey := dutyId.String()        // DutyId
 
 	// Delete the entity in Azure Table Storage
 	_, err := tableClient.DeleteEntity(ctx, partitionKey, rowKey, nil)

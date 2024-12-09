@@ -121,7 +121,6 @@ func (r *DutyRepository) GetDutiesByRole(ctx context.Context, roleId uuid.UUID) 
 
 	// Construct the filter to match the RoleId
 	filter := fmt.Sprintf("RoleId eq '%s'", roleId.String())
-	fmt.Printf("Filter: %s\n", filter) // Debug the filter
 
 	listOptions := &aztables.ListEntitiesOptions{
 		Filter: &filter,
