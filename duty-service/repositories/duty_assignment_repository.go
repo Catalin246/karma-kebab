@@ -85,10 +85,10 @@ func (r *DutyAssignmentRepository) CreateDutyAssignments(ctx context.Context, sh
 	for _, duty := range duties {
 		dutyAssignment := models.DutyAssignment{
 			PartitionKey:           shiftId,
-			RowKey:                 uuid.New(),              // TODO: make unique
-			DutyAssignmentStatus:   models.StatusIncomplete, // Default to Incomplete
-			DutyAssignmentImageUrl: nil,                     // No image URL on creation
-			DutyAssignmentNote:     nil,                     // No note on creation
+			RowKey:                 uuid.New(),              // generate a new UUID for the RowKey (it's EXTREMELY unlikely for new generated UUIDS to collide with existing ones. source: https://stackoverflow.com/questions/24876188/how-big-is-the-chance-to-get-a-java-uuid-randomuuid-collision)
+			DutyAssignmentStatus:   models.StatusIncomplete, // default: Incomplete
+			DutyAssignmentImageUrl: nil,                     // no image URL on creation
+			DutyAssignmentNote:     nil,                     // no note on creation
 		}
 
 		// marshal to a json
