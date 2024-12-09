@@ -118,21 +118,32 @@ func (r *DutyAssignmentRepository) CreateDutyAssignments(ctx context.Context, sh
 func (r *DutyAssignmentRepository) UpdateDutyAssignment(ctx context.Context, dutyAssignment models.DutyAssignment) error {
 	tableClient := r.serviceClient.NewClient(r.tableName)
 
-	// Prepare the updated entity //TODO check for nulls
+	// preparing the updated entity (only include fields that are non-nil or non-empty)
 	entity := map[string]interface{}{
-		"PartitionKey":           dutyAssignment.PartitionKey.String(),
-		"RowKey":                 dutyAssignment.RowKey.String(),
-		"DutyAssignmentStatus":   string(dutyAssignment.DutyAssignmentStatus),
-		"DutyAssignmentImageUrl": dutyAssignment.DutyAssignmentImageUrl,
-		"DutyAssignmentNote":     dutyAssignment.DutyAssignmentNote,
+		"PartitionKey": dutyAssignment.PartitionKey.String(),
+		"RowKey":       dutyAssignment.RowKey.String(),
 	}
 
-	entityBytes, err := json.Marshal(entity) // Marshal to json
+	// add fields if they have values
+	if dutyAssignment.DutyAssignmentStatus != "" {
+		entity["DutyAssignmentStatus"] = string(dutyAssignment.DutyAssignmentStatus)
+	}
+
+	if dutyAssignment.DutyAssignmentImageUrl != nil && *dutyAssignment.DutyAssignmentImageUrl != "" {
+		entity["DutyAssignmentImageUrl"] = dutyAssignment.DutyAssignmentImageUrl
+	}
+
+	if dutyAssignment.DutyAssignmentNote != nil && *dutyAssignment.DutyAssignmentNote != "" {
+		entity["DutyAssignmentNote"] = dutyAssignment.DutyAssignmentNote
+	}
+
+	entityBytes, err := json.Marshal(entity) // marshal to JSON
 	if err != nil {
 		return fmt.Errorf("failed to marshal updated entity: %v", err)
 	}
 
-	_, err = tableClient.UpdateEntity(ctx, entityBytes, nil) // Update the entity in Azure Table Storage
+	// using Merge Update to avoid overwriting other fields!!!
+	_, err = tableClient.UpdateEntity(ctx, entityBytes, &aztables.UpdateEntityOptions{UpdateMode: aztables.UpdateModeMerge}) // aztables.UpdateModeMerge specifies a merge update
 	if err != nil {
 		return fmt.Errorf("failed to update duty assignment: %v", err)
 	}
