@@ -101,6 +101,20 @@ services:
     networks:
       - karama-kebab-network
 
+  duty-service:
+    build:
+      context: ./duty-service
+      dockerfile: Dockerfile
+    volumes:
+      - ./duty-service/.env:/app/.env
+    depends_on:
+      - azurite
+      - keycloak
+    ports:
+      - "3004:3004"
+    networks:
+      - karama-kebab-network
+
 volumes:
   azurite-data:
 

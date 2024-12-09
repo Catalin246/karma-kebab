@@ -31,7 +31,7 @@ COPY .env .env
 RUN chmod +x /app/duty-service
 
 # Expose the application port
-EXPOSE 5001
+EXPOSE 3004
 
 # Command to run the application
 CMD ["./duty-service"]
