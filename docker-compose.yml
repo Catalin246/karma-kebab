@@ -91,13 +91,13 @@ services:
     build:
       context: ./shift-service
       dockerfile: Dockerfile
-    volumes:
-      - ./shift-service/.env:/app/.env
+    environment:
+      - AZURE_STORAGE_CONNECTION_STRING="AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;DefaultEndpointsProtocol=http;BlobEndpoint=http://azurite:10000/devstoreaccount1;QueueEndpoint=http://azurite:10001/devstoreaccount1;TableEndpoint=http://azurite:10002/devstoreaccount1;"
     depends_on:
       - azurite
       - keycloak
     ports:
-      - "5001:5001"
+      - "3003:3003"
     networks:
       - karama-kebab-network
 
