@@ -181,6 +181,7 @@ public class ShiftsController : ControllerBase
         {
             var result = await _shiftService.DeleteShift(shiftId);
             if (!result)
+                _logger.LogInformation("controller class error");
                 return NotFound();
 
             return NoContent();
@@ -216,23 +217,25 @@ public class ShiftsController : ControllerBase
         }
     }
 
-    [HttpDelete("/employee/{employeeId:guid}")]
-    public async Task<ActionResult> DeleteEmployeeAndShifts(Guid employeeId)
-    {
-        try
-        {
-            var result = await _shiftService.DeleteEmployeeAndShifts(employeeId);
-            if (!result)
-                return NotFound();
-
-            return NoContent();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error deleting employee and shifts for employee ID: {EmployeeId}", employeeId);
-            return StatusCode(500);
-        }
-    }
+//    [HttpDelete("employee/{employeeId:guid}")]
+//     public async Task<ActionResult> DeleteEmployeeShifts(Guid employeeId)
+//     {
+//         try 
+//         {
+//             var result = await _shiftService.DeleteEmployeeAndShifts(employeeId);
+            
+//             if (!result)
+//                 return NotFound($"No shifts found for employee ID: {employeeId}");
+            
+//             return NoContent();
+//         }
+//         catch (Exception ex)
+//         {
+//             _logger.LogError(ex, "Error deleting shifts for employee ID: {EmployeeId}", employeeId);
+//             return StatusCode(StatusCodes.Status500InternalServerError, 
+//                 "An error occurred while deleting employee shifts");
+//         }
+//     }
 
     // [HttpPut("/events/{eventId:guid}")]
     // public async Task<ActionResult<ApiResponse>> UpdateShiftWithEventChanges(Guid eventId, [FromBody] EventDto eventDto)

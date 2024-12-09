@@ -116,21 +116,21 @@ public class ShiftService : IShiftService
         }
     }
 
-    public async Task<bool> DeleteEmployeeAndShifts(Guid employeeId)
-        try
-        {
-            var shifts = await _dbContext.GetShiftsByEmployee(employeeId);
-            if (!shifts.Any()) return false;
+    // public async Task<bool> DeleteEmployeeAndShifts(Guid employeeId){
+    //     try
+    //     {
+    //         var shifts = await _dbContext.GetShiftsByEmployee(employeeId);
+    //         if (!shifts.Any()) return false;
 
-            await _dbContext.DeleteShiftsByEmployee(shifts);
-            return true;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error deleting employee and shifts for employee ID: {EmployeeId}", employeeId);
-            throw;
-        }
-    }
+    //         await _dbContext.DeleteShiftsByEmployee(shifts);
+    //         return true;
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         _logger.LogError(ex, "Error deleting employee and shifts for employee ID: {EmployeeId}", employeeId);
+    //         throw;
+    //     }
+    // }
 
     // public async Task<IEnumerable<ShiftDto>> UpdateShiftWithEventChanges(Guid eventId, EventDto eventDto) //THIS ONE NEEDS TO BE DISCUSSED
     // {
