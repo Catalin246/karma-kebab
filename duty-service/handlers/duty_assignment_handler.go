@@ -119,6 +119,7 @@ func (h *DutyAssignmentHandler) UpdateDutyAssignment(w http.ResponseWriter, r *h
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)                                                     //200
 	response := map[string]string{"message": "Duty assignment updated successfully"} // if it is updated and the resposne is 200
 	json.NewEncoder(w).Encode(response)
