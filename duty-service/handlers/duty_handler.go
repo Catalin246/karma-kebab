@@ -112,7 +112,6 @@ func (h *DutyHandler) UpdateDuty(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Set Content-Type to application/json for the response
 	w.Header().Set("Content-Type", "application/json")
 
 	if err := h.service.UpdateDuty(context.Background(), partitionKey, rowKey, duty); err != nil {
@@ -129,7 +128,6 @@ func (h *DutyHandler) DeleteDuty(w http.ResponseWriter, r *http.Request) {
 	partitionKey := vars["PartitionKey"]
 	rowKey := vars["RowKey"]
 
-	// Set the Content-Type header for JSON responses
 	w.Header().Set("Content-Type", "application/json")
 
 	err := h.service.DeleteDuty(context.Background(), partitionKey, rowKey)
