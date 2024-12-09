@@ -9,11 +9,13 @@ Accept: application/json
 #Authorization: Bearer <your-jwt-token-if-needed>
 
 ###get total hours by employee
+GET http://localhost:5001/shifts/71c0da1e-f97d-412c-a951-41950a20f2fc/hours
 
 GET http://localhost:3007/shifts/71c0da1e-f97d-412c-a951-41950a20f2fc/hours
 Accept: application/json
 
 ### Get Shift by ID
+GET http://localhost:5001/shifts/6aa95d50-eea3-4364-8e0e-c0a09f287b9b
 GET http://localhost:3007/shifts/60477830-9bae-458b-b8ab-da64f3b86583
 Accept: application/json
 # Authorization: Bearer <your-jwt-token-if-needed>
@@ -47,6 +49,7 @@ Accept: application/json
     
 
 ### Delete a Shift by ID
+DELETE http://localhost:5001/shifts/6aa95d50-eea3-4364-8e0e-c0a09f287b9b
 DELETE http://localhost:3007/shifts/60477830-9bae-458b-b8ab-da64f3b86583
 # Authorization: Bearer <your-jwt-token-if-needed>
 
