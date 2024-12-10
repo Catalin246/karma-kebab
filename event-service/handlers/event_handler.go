@@ -11,17 +11,17 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
-	amqp "github.com/rabbitmq/amqp091-go"
 )
 
+// EventHandler struct now includes RabbitMQService
 type EventHandler struct {
-	service services.EventServiceInteface
-	ch      *amqp.Channel
+	service         services.EventServiceInteface
+	rabbitMQService *services.RabbitMQService
 }
 
 // NewEventHandler creates a new EventHandler
-func NewEventHandler(service services.EventServiceInteface, ch *amqp.Channel) *EventHandler {
-	return &EventHandler{service: service, ch: ch}
+func NewEventHandler(service services.EventServiceInteface, rabbitMQService *services.RabbitMQService) *EventHandler {
+	return &EventHandler{service: service, rabbitMQService: rabbitMQService}
 }
 
 func (h *EventHandler) GetEvents(w http.ResponseWriter, r *http.Request) {
@@ -90,35 +90,9 @@ func (h *EventHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Declare the exchange
-	q, err := h.ch.QueueDeclare(
-		"eventCreated", // name
-		false,          // durable
-		false,          // delete when unused
-		false,          // exclusive
-		false,          // no-wait
-		nil,            // arguments
-	)
-	if err != nil {
-		http.Error(w, "Failed to declare a queue: "+err.Error(), http.StatusInternalServerError)
-		return
+	if err := h.rabbitMQService.PublishMessage("eventCreated", "Event Created!"); err != nil {
+		log.Println("Failed to publish message:", err)
 	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	body := "Event Created!"
-	err = h.ch.PublishWithContext(ctx,
-		"",     // exchange
-		q.Name, // routing key
-		false,  // mandatory
-		false,  // immediate
-		amqp.Publishing{
-			ContentType: "text/plain",
-			Body:        []byte(body),
-		})
-	//failOnError(err, "Failed to publish a message")
-	log.Printf(" [x] Sent %s\n", body)
 
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(map[string]string{"message": "Event created successfully"})
@@ -141,6 +115,10 @@ func (h *EventHandler) UpdateEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := h.rabbitMQService.PublishMessage("eventUpdated", "Event Updated!"); err != nil {
+		log.Println("Failed to publish message:", err)
+	}
+
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"message": "Event updated successfully"})
 }
@@ -160,7 +138,10 @@ func (h *EventHandler) DeleteEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	if err := h.rabbitMQService.PublishMessage("eventDeleted", "Event Deleted!"); err != nil {
+		log.Println("Failed to publish message:", err)
+	}
+
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"message": "Event deleted successfully"})
 }

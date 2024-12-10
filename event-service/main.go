@@ -3,6 +3,7 @@ package main
 import (
 	"event-service/db"
 	"event-service/routes"
+	"event-service/services"
 	"log"
 	"net/http"
 	"os"
@@ -41,13 +42,15 @@ func main() {
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()
 
-	// Create a new channel
 	ch, err := conn.Channel()
 	failOnError(err, "Failed to open a channel")
 	defer ch.Close()
 
-	// Register routes with the service client
-	router := routes.RegisterRoutes(client, ch)
+	// Initialize RabbitMQService
+	rabbitMQService := services.NewRabbitMQService(ch)
+
+	// Register routes with the service client and RabbitMQService
+	router := routes.RegisterRoutes(client, rabbitMQService)
 
 	// Start the server
 	log.Println("Server is running on port 3001")
