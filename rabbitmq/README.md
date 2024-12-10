@@ -8,3 +8,7 @@ This directory contains the necessary configuration for running a RabbitMQ servi
   - `5672`: RabbitMQ messaging port.
   - `15672`: RabbitMQ management console.
 
+## Depoyment
+
+`oc apply -f rabbitmq-pvc.yaml; oc apply -f rabbitmq-configmap.yaml; oc apply -f rabbitmq-deploymentconfig.yaml; oc apply -f rabbitmq-service.yaml; oc apply -f rabbitmq-route.yaml`
+
