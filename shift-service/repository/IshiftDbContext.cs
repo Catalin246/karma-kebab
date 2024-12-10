@@ -14,5 +14,4 @@ public interface IShiftDbContext
     Task<ShiftEntity> UpdateShift(ShiftEntity shift);
     Task DeleteShift(string partitionKey, string rowKey);
     Task<IEnumerable<ShiftEntity>> GetShiftsByEmployee(Guid employeeId);
-    Task DeleteShiftsByEmployee(Guid employeeId);
 }

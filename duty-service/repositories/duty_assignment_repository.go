@@ -26,8 +26,7 @@ func NewDutyAssignmentRepository(serviceClient *aztables.ServiceClient) *DutyAss
 func (r *DutyAssignmentRepository) GetAllDutyAssignmentsByShiftId(ctx context.Context, shiftId uuid.UUID) ([]models.DutyAssignment, error) {
 	tableClient := r.serviceClient.NewClient(r.tableName)
 
-	// filter to match the ShiftId
-	filter := fmt.Sprintf("PartitionKey eq '%s'", shiftId.String())
+	filter := fmt.Sprintf("PartitionKey eq '%s'", shiftId.String()) // filter to match the ShiftId
 
 	listOptions := &aztables.ListEntitiesOptions{
 		Filter: &filter,
@@ -85,14 +84,14 @@ func (r *DutyAssignmentRepository) CreateDutyAssignments(ctx context.Context, sh
 
 	for _, duty := range duties {
 		dutyAssignment := models.DutyAssignment{
-			PartitionKey:           shiftId,                 // Use ShiftId as PartitionKey
-			RowKey:                 uuid.New(),              // Generate new UUID for DutyId TODO: make unique
-			DutyAssignmentStatus:   models.StatusIncomplete, // Default to Incomplete
-			DutyAssignmentImageUrl: nil,                     // No image URL on creation
-			DutyAssignmentNote:     nil,                     // No note on creation
+			PartitionKey:           shiftId,
+			RowKey:                 uuid.New(),              // generate a new UUID for the RowKey (it's EXTREMELY unlikely for new generated UUIDS to collide with existing ones. source: https://stackoverflow.com/questions/24876188/how-big-is-the-chance-to-get-a-java-uuid-randomuuid-collision)
+			DutyAssignmentStatus:   models.StatusIncomplete, // default: Incomplete
+			DutyAssignmentImageUrl: nil,                     // no image URL on creation
+			DutyAssignmentNote:     nil,                     // no note on creation
 		}
 
-		// Marshal the DutyAssignment into a JSON entity
+		// marshal to a json
 		entity := map[string]interface{}{
 			"PartitionKey":           dutyAssignment.PartitionKey.String(),
 			"RowKey":                 dutyAssignment.RowKey.String(),
@@ -106,8 +105,7 @@ func (r *DutyAssignmentRepository) CreateDutyAssignments(ctx context.Context, sh
 			return fmt.Errorf("failed to marshal duty assignment: %v", err)
 		}
 
-		// Insert the entity into Azure Table Storage
-		_, err = tableClient.AddEntity(ctx, entityBytes, nil)
+		_, err = tableClient.AddEntity(ctx, entityBytes, nil) // Insert the entity into Azure Table Storage
 		if err != nil {
 			return fmt.Errorf("failed to create duty assignment for DutyId %s: %v", duty.RowKey, err)
 		}
@@ -120,23 +118,32 @@ func (r *DutyAssignmentRepository) CreateDutyAssignments(ctx context.Context, sh
 func (r *DutyAssignmentRepository) UpdateDutyAssignment(ctx context.Context, dutyAssignment models.DutyAssignment) error {
 	tableClient := r.serviceClient.NewClient(r.tableName)
 
-	// Prepare the updated entity
+	// preparing the updated entity (only include fields that are non-nil or non-empty)
 	entity := map[string]interface{}{
-		"PartitionKey":           dutyAssignment.PartitionKey.String(),
-		"RowKey":                 dutyAssignment.RowKey.String(),
-		"DutyAssignmentStatus":   string(dutyAssignment.DutyAssignmentStatus),
-		"DutyAssignmentImageUrl": dutyAssignment.DutyAssignmentImageUrl,
-		"DutyAssignmentNote":     dutyAssignment.DutyAssignmentNote,
+		"PartitionKey": dutyAssignment.PartitionKey.String(),
+		"RowKey":       dutyAssignment.RowKey.String(),
 	}
 
-	// Marshal the entity to JSON
-	entityBytes, err := json.Marshal(entity)
+	// add fields if they have values
+	if dutyAssignment.DutyAssignmentStatus != "" {
+		entity["DutyAssignmentStatus"] = string(dutyAssignment.DutyAssignmentStatus)
+	}
+
+	if dutyAssignment.DutyAssignmentImageUrl != nil && *dutyAssignment.DutyAssignmentImageUrl != "" {
+		entity["DutyAssignmentImageUrl"] = dutyAssignment.DutyAssignmentImageUrl
+	}
+
+	if dutyAssignment.DutyAssignmentNote != nil && *dutyAssignment.DutyAssignmentNote != "" {
+		entity["DutyAssignmentNote"] = dutyAssignment.DutyAssignmentNote
+	}
+
+	entityBytes, err := json.Marshal(entity) // marshal to JSON
 	if err != nil {
 		return fmt.Errorf("failed to marshal updated entity: %v", err)
 	}
 
-	// Update the entity in Azure Table Storage
-	_, err = tableClient.UpdateEntity(ctx, entityBytes, nil)
+	// using Merge Update to avoid overwriting other fields!!!
+	_, err = tableClient.UpdateEntity(ctx, entityBytes, &aztables.UpdateEntityOptions{UpdateMode: aztables.UpdateModeMerge}) // aztables.UpdateModeMerge specifies a merge update
 	if err != nil {
 		return fmt.Errorf("failed to update duty assignment: %v", err)
 	}
@@ -152,8 +159,7 @@ func (r *DutyAssignmentRepository) DeleteDutyAssignment(ctx context.Context, shi
 	partitionKey := shiftId.String() // ShiftId
 	rowKey := dutyId.String()        // DutyId
 
-	// Delete the entity in Azure Table Storage
-	_, err := tableClient.DeleteEntity(ctx, partitionKey, rowKey, nil)
+	_, err := tableClient.DeleteEntity(ctx, partitionKey, rowKey, nil) // Delete the entity in Azure Table Storage
 	if err != nil {
 		return fmt.Errorf("failed to delete duty assignment: %v", err)
 	}

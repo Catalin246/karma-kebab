@@ -88,7 +88,11 @@ func (h *DutyHandler) CreateDuty(w http.ResponseWriter, r *http.Request) {
 		duty.PartitionKey = "Duty"
 	}
 
-	duty.RowKey = uuid.New() // TODO: make these unique
+	// create a new UUID for the RowKey
+	duty.RowKey = uuid.New()
+	// I wanted to make these UUIDS so that they do not collide
+	// but i searched and it's EXTREMELY unlikely for them to colldie.
+	// source: https://stackoverflow.com/questions/24876188/how-big-is-the-chance-to-get-a-java-uuid-randomuuid-collision
 
 	if err := h.service.CreateDuty(context.Background(), duty); err != nil {
 		http.Error(w, "Failed to create duty: "+err.Error(), http.StatusInternalServerError)
@@ -112,7 +116,6 @@ func (h *DutyHandler) UpdateDuty(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Set Content-Type to application/json for the response
 	w.Header().Set("Content-Type", "application/json")
 
 	if err := h.service.UpdateDuty(context.Background(), partitionKey, rowKey, duty); err != nil {
@@ -129,7 +132,6 @@ func (h *DutyHandler) DeleteDuty(w http.ResponseWriter, r *http.Request) {
 	partitionKey := vars["PartitionKey"]
 	rowKey := vars["RowKey"]
 
-	// Set the Content-Type header for JSON responses
 	w.Header().Set("Content-Type", "application/json")
 
 	err := h.service.DeleteDuty(context.Background(), partitionKey, rowKey)

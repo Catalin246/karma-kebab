@@ -18,6 +18,9 @@ func main() {
 
 	// Get environment variables
 	connectionString := os.Getenv("AZURE_STORAGE_CONNECTION_STRING")
+	if connectionString == "" {
+		log.Fatal("Error: AZURE_STORAGE_CONNECTION_STRING is not set")
+	}
 
 	// Initialize Azure Table Storage
 	client, err := db.InitAzureTables(connectionString)
@@ -29,6 +32,6 @@ func main() {
 	router := routes.RegisterRoutes(client)
 
 	// Start the server
-	log.Println("Server is running on port 5001")
-	log.Fatal(http.ListenAndServe(":5001", router))
+	log.Println("Server is running on port 3004")
+	log.Fatal(http.ListenAndServe(":3004", router))
 }

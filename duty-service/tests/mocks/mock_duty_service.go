@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-// MockDutyService is a full mock implementation of InterfaceDutyService
+// full mock implementation of InterfaceDutyService
 type MockDutyService struct {
 	mock.Mock
 }

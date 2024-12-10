@@ -40,7 +40,6 @@ func (r *DutyRepository) GetAllDuties(ctx context.Context, filter string) ([]mod
 			return nil, fmt.Errorf("failed to list duties: %v", err)
 		}
 
-		// Unmarshal each entity and add duties[]
 		for _, entity := range page.Entities {
 			var dutyData map[string]interface{}
 
@@ -48,25 +47,9 @@ func (r *DutyRepository) GetAllDuties(ctx context.Context, filter string) ([]mod
 				return nil, fmt.Errorf("failed to unmarshal duty: %v", err)
 			}
 
-			//TODO BETH: put these parsing to another method 26/11
-			// Parse RowKey as UUID
-			rowKeyUUID, err := uuid.Parse(dutyData["RowKey"].(string))
+			duty, err := parseDuty(dutyData)
 			if err != nil {
-				return nil, fmt.Errorf("failed to parse Duty RowKey as UUID: %v", err)
-			}
-
-			// Parse RoleId as UUID
-			roleIdUUID, err := uuid.Parse(dutyData["RoleId"].(string))
-			if err != nil {
-				return nil, fmt.Errorf("failed to parse Duty RoleId as UUID: %v", err)
-			}
-
-			duty := models.Duty{
-				PartitionKey:    dutyData["PartitionKey"].(string),
-				RowKey:          rowKeyUUID,
-				RoleId:          roleIdUUID,
-				DutyName:        dutyData["DutyName"].(string),
-				DutyDescription: dutyData["DutyDescription"].(string),
+				return nil, err
 			}
 
 			duties = append(duties, duty)
@@ -75,51 +58,32 @@ func (r *DutyRepository) GetAllDuties(ctx context.Context, filter string) ([]mod
 	return duties, nil
 }
 
-// GET DUTY BY ID retrieves a duty by PartitionKey and RowKey
+// GET DUTY BY ID (PartitionKey and RowKey)
 func (r *DutyRepository) GetDutyById(ctx context.Context, partitionKey, rowKey string) (*models.Duty, error) {
 	tableClient := r.serviceClient.NewClient(r.tableName)
 
-	// Retrieve the entity by PartitionKey and RowKey
 	resp, err := tableClient.GetEntity(ctx, partitionKey, rowKey, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get duty: %v", err)
 	}
 
-	// Parse the entity into a map
 	var dutyData map[string]interface{}
 	if err := json.Unmarshal(resp.Value, &dutyData); err != nil {
 		return nil, fmt.Errorf("failed to decode duty: %v", err)
 	}
 
-	// Parse RowKey as UUID
-	rowKeyUUID, err := uuid.Parse(dutyData["RowKey"].(string))
+	duty, err := parseDuty(dutyData)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse RowKey as UUID: %v", err)
-	}
-
-	// Parse RoleId as UUID
-	roleIdUUID, err := uuid.Parse(dutyData["RoleId"].(string))
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse RoleId as UUID: %v", err)
-	}
-
-	// Return the duty object
-	duty := models.Duty{
-		PartitionKey:    dutyData["PartitionKey"].(string),
-		RowKey:          rowKeyUUID, // Assign UUID here
-		RoleId:          roleIdUUID,
-		DutyName:        dutyData["DutyName"].(string),
-		DutyDescription: dutyData["DutyDescription"].(string),
+		return nil, err
 	}
 
 	return &duty, nil
 }
 
-// GET DUTY BY ROLE retrieves a duty by RoleId
+// GET DUTIES BY ROLE ID (using RoleId as filter)
 func (r *DutyRepository) GetDutiesByRole(ctx context.Context, roleId uuid.UUID) ([]models.Duty, error) {
 	tableClient := r.serviceClient.NewClient(r.tableName)
 
-	// Construct the filter to match the RoleId
 	filter := fmt.Sprintf("RoleId eq '%s'", roleId.String())
 
 	listOptions := &aztables.ListEntitiesOptions{
@@ -130,14 +94,12 @@ func (r *DutyRepository) GetDutiesByRole(ctx context.Context, roleId uuid.UUID) 
 
 	var duties []models.Duty
 
-	// Loop through pages of duties
 	for pager.More() {
 		page, err := pager.NextPage(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("failed to list duties by RoleId: %v", err)
 		}
 
-		// Unmarshal each entity and add to the duties list
 		for _, entity := range page.Entities {
 			var dutyData map[string]interface{}
 
@@ -145,24 +107,9 @@ func (r *DutyRepository) GetDutiesByRole(ctx context.Context, roleId uuid.UUID) 
 				return nil, fmt.Errorf("failed to unmarshal duty: %v", err)
 			}
 
-			// Parse RowKey as UUID
-			rowKeyUUID, err := uuid.Parse(dutyData["RowKey"].(string))
+			duty, err := parseDuty(dutyData)
 			if err != nil {
-				return nil, fmt.Errorf("failed to parse RowKey as UUID: %v", err)
-			}
-
-			// Parse RoleId as UUID
-			roleIdUUID, err := uuid.Parse(dutyData["RoleId"].(string))
-			if err != nil {
-				return nil, fmt.Errorf("failed to parse Duty RoleId as UUID: %v", err)
-			}
-
-			duty := models.Duty{
-				PartitionKey:    dutyData["PartitionKey"].(string),
-				RowKey:          rowKeyUUID,
-				RoleId:          roleIdUUID,
-				DutyName:        dutyData["DutyName"].(string),
-				DutyDescription: dutyData["DutyDescription"].(string),
+				return nil, err
 			}
 
 			duties = append(duties, duty)
@@ -239,4 +186,28 @@ func (r *DutyRepository) DeleteDuty(ctx context.Context, partitionKey, rowKey st
 	}
 
 	return nil
+}
+
+// parseDuty is a helper function to parse duty data into a models.Duty object.
+func parseDuty(dutyData map[string]interface{}) (models.Duty, error) {
+	// Parse RowKey as UUID
+	rowKeyUUID, err := uuid.Parse(dutyData["RowKey"].(string))
+	if err != nil {
+		return models.Duty{}, fmt.Errorf("failed to parse RowKey as UUID: %v", err)
+	}
+
+	// Parse RoleId as UUID
+	roleIdUUID, err := uuid.Parse(dutyData["RoleId"].(string))
+	if err != nil {
+		return models.Duty{}, fmt.Errorf("failed to parse RoleId as UUID: %v", err)
+	}
+
+	// Create and return the duty object
+	return models.Duty{
+		PartitionKey:    dutyData["PartitionKey"].(string),
+		RowKey:          rowKeyUUID,
+		RoleId:          roleIdUUID,
+		DutyName:        dutyData["DutyName"].(string),
+		DutyDescription: dutyData["DutyDescription"].(string),
+	}, nil
 }
