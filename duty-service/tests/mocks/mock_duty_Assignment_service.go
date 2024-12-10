@@ -3,6 +3,7 @@ package mocks
 import (
 	"context"
 	"duty-service/models"
+	"mime/multipart"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
@@ -22,8 +23,8 @@ func (m *MockDutyAssignmentService) CreateDutyAssignments(ctx context.Context, s
 	return args.Error(0)
 }
 
-func (m *MockDutyAssignmentService) UpdateDutyAssignment(ctx context.Context, dutyAssignment models.DutyAssignment) error {
-	args := m.Called(ctx, dutyAssignment)
+func (m *MockDutyAssignmentService) UpdateDutyAssignment(ctx context.Context, dutyAssignment models.DutyAssignment, file multipart.File) error {
+	args := m.Called(ctx, dutyAssignment, file)
 	return args.Error(0)
 }
 
