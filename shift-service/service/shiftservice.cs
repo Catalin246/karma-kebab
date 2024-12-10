@@ -19,12 +19,16 @@ public class ShiftService : IShiftService
     {
         if (createshiftDto == null)
             throw new ArgumentNullException(nameof(createshiftDto), "Shift data cannot be null");
-
-        if (!Enum.TryParse<ShiftType>(createshiftDto.ShiftType, out var shiftType))
-            throw new ArgumentException("Invalid shift type", nameof(createshiftDto.ShiftType));
-
         createshiftDto.StartTime = createshiftDto.StartTime.ToUniversalTime();
         createshiftDto.EndTime = createshiftDto.EndTime.ToUniversalTime();
+        // TO HAPPEN HERE: 
+        // call to Availability MS - retrieve a list of available employees
+        // call to employee MS - retrieve a list of employees with that role
+        // (in shifts) make a list of employees that have a shift that day
+        // make list of emps that are in availableEmps AND EmpWithRequiredRole 
+        // rnd number (length = list length) to pick a random employee
+        // validate they dont have another shift that day
+        // createshiftDto.empID = that employee
 
         var shiftEntity = MapToEntity(createshiftDto);
 
@@ -160,11 +164,12 @@ public class ShiftService : IShiftService
         return new ShiftEntity 
         {
             ShiftId = newShiftId,
-            EmployeeId = createShiftDto.EmployeeId,
+            // EmployeeId = createShiftDto.EmployeeId,
+            EmployeeId = Guid.Parse("774f1a2b-b09b-4498-944f-fdb3db260fac"), //temporary hardcoded guid while figuring out rabbitmq
             StartTime = createShiftDto.StartTime,
             EndTime = createShiftDto.EndTime,
-            ShiftType = createShiftDto.ShiftType, 
-            Status = ShiftStatus.Unconfirmed.ToString(), // Default status
+            ShiftType = ShiftType.Normal.ToString(), // by default is 'normal' 
+            Status = ShiftStatus.Unconfirmed.ToString(), // Default status is 'unconfirmed'
             ClockInTime = null,
             ClockOutTime = null,
             ShiftHours = null

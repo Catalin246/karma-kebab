@@ -15,10 +15,11 @@ public class ShiftDto
 // DTO for creating a shift
 public class CreateShiftDto
 {
-    public DateTime StartTime { get; set; }
-    public DateTime EndTime { get; set; }
-    public Guid EmployeeId { get; set; }
-    public String ShiftType { get; set; }
+    public DateTime StartTime { get; set; } //should be event start time
+    public DateTime EndTime { get; set; } // event endtime
+    // public Guid EmployeeId { get; set; } // NEED TO DELETE THIS
+    // public String ShiftType { get; set; } //this one should default to 'Normal'
+    public Guid RoleID { get;set; }
     }
 
 // DTO for updating a shift
