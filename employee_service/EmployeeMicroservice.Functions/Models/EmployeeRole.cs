@@ -2,7 +2,7 @@ namespace employee_service.Models;
 
 public enum EmployeeRole
 {
-    Admin,
+    Admin, 
     HeadTrucker,
     Chef,
     Staff

@@ -22,28 +22,38 @@ public class EmployeeService : IEmployeeService
         return await _employeeRepository.GetEmployeeByIdAsync(id);
     }
 
-    public async Task<IEnumerable<Employee>> GetEmployeesByRoleAsync(EmployeeRole role)
+    public async Task<IEnumerable<Employee>> GetEmployeesByRoleAsync(EmployeeRole role, EmployeeDTO employeeDTO)
     {
-        return await _employeeRepository.GetEmployeesByRoleAsync(role);
+        // Map EmployeeDTO to Employee
+        var employee = new Employee
+        {
+            FirstName = employeeDTO.FirstName,
+            LastName = employeeDTO.LastName,
+            Role = employeeDTO.Role
+        };
+
+        // Call repository method with role and employee
+        return await _employeeRepository.GetEmployeesByRoleAsync(role, employee);
     }
+
 
     public async Task<Employee> AddEmployeeAsync(EmployeeDTO employeeDto)
     {
-        // Map the DTO to the model
-        var employee = new Employee
+        // Map EmployeeDTO to Employee
+        Employee employee = new Employee
         {
-            EmployeeId = Guid.NewGuid(),
+            EmployeeId = Guid.NewGuid(), 
             FirstName = employeeDto.FirstName,
             LastName = employeeDto.LastName,
             Role = employeeDto.Role,
-            DateOfBirth = null,  
+            DateOfBirth = null, 
             Address = null,
             Payrate = null,
-            Skills = null
+            Skills = new List<Skill>(), // Initialize empty list
+            Email = null
         };
 
-        System.Console.WriteLine(employee);
-        // Pass this model to the repository layer for saving
+        // Call repository method with mapped Employee
         return await _employeeRepository.AddEmployeeAsync(employee);
     }
 

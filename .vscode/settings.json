@@ -10,6 +10,17 @@
             "username": "postgres",
             "password": "password",
             "connectionTimeout": 30
+        },
+        {
+            "previewLimit": 50,
+            "server": "localhostef",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "name": "PostgresEfDb",
+            "database": "employeedbef",
+            "username": "postgresef",
+            "password": "password",
+            "connectionTimeout": 30
         }
     ],
     "azureFunctions.deploySubpath": "employee_service\\EmployeeMicroservice.Functions/bin/Release/net8.0/publish",

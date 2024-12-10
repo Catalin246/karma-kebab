@@ -1,16 +1,14 @@
 {
   "ExpandedNodes": [
     "",
-    "\\employee-service",
-    "\\employee-service\\bin",
-    "\\employee-service\\bin\\Debug",
-    "\\employee-service\\bin\\Debug\\net8.0",
-    "\\employee-service\\bin\\Release",
     "\\employee_service",
     "\\employee_service\\EmployeeMicroservice.Functions",
+    "\\employee_service\\EmployeeMicroservice.Functions\\Database",
+    "\\employee_service\\EmployeeMicroservice.Functions\\Migrations",
+    "\\employee_service\\EmployeeMicroservice.Functions\\Models",
     "\\employee_service\\EmployeeMicroservice.Functions\\Repositories",
     "\\employee_service\\EmployeeMicroservice.Functions\\Services"
   ],
-  "SelectedNode": "\\employee_service\\EmployeeMicroservice.Functions\\Dockerfile",
+  "SelectedNode": "\\employee_service\\EmployeeMicroservice.Functions\\Models\\Skill.cs",
   "PreviewInSolutionExplorer": false
 }

@@ -31,12 +31,23 @@ namespace EmployeeMicroservice.Functions
 
             var employees = await _employeeService.GetAllEmployeesAsync();
 
+            // Handle the empty case explicitly
+            if (employees == null || !employees.Any())
+            {
+                log.LogInformation("No employees found.");
+                var emptyResponse = req.CreateResponse(HttpStatusCode.OK);
+                await emptyResponse.WriteStringAsync("[]"); // Return an empty JSON array
+                return emptyResponse;
+            }
+
             var response = req.CreateResponse(HttpStatusCode.OK);
             response.Headers.Add("Content-Type", "application/json");
             await response.WriteStringAsync(JsonConvert.SerializeObject(employees));
 
             return response;
         }
+
+
 
         // Get Employee by ID
         [Function("GetEmployeeById")]
@@ -72,6 +83,7 @@ namespace EmployeeMicroservice.Functions
 
             // read body content of incoming Http request as string
             var content = await req.ReadAsStringAsync();
+            System.Console.WriteLine(content);
             var employeeDto = JsonConvert.DeserializeObject<EmployeeDTO>(content);
 
             logger.LogInformation($"Deserialized Employee: {JsonConvert.SerializeObject(employeeDto)}");

@@ -1,41 +1,38 @@
-using Microsoft.Azure.Functions.Worker.Builder;
-using Microsoft.Extensions.Hosting;
-using employee_service.Database;
-using employee_service.Services;
-using Microsoft.Extensions.DependencyInjection;
-using employee_service.Interfaces; 
-using employee_service.Repositories; 
+using employee_service.Models;  
+using employee_service.Database;  
+using employee_service.Interfaces;  
+using employee_service.Services;  
+using employee_service.Repositories;  
+using Microsoft.Azure.Functions.Extensions.DependencyInjection;  
+using Microsoft.Extensions.Hosting;  
+using Microsoft.Extensions.Configuration;  
+using Microsoft.EntityFrameworkCore;  
+using Microsoft.Extensions.DependencyInjection;  
 
-var builder = FunctionsApplication.CreateBuilder(args);
+var host = new HostBuilder()
+    .ConfigureFunctionsWebApplication()
+    .ConfigureAppConfiguration((context, configBuilder) =>  
+    {
+        // Add local.settings.json explicitly for local development
+        configBuilder.AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)  
+                     .AddEnvironmentVariables();  // Environment variables for other deployment environments
+    })
+    .ConfigureServices((context, services) =>  
+    {
+        var configuration = context.Configuration;
 
-builder.ConfigureFunctionsWebApplication();
+        // Register DbContextFactory for PostgreSQL with DI
+        services.AddDbContextFactory<ApplicationDatabase>(options =>
+        {
+            // Read the connection string from local.settings.json or environment variables
+            var connectionString = configuration["ConnectionStrings:PostgreSQLEntityFramework"];
+            options.UseNpgsql(connectionString);
+        });
 
-// Register services
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
+        // Register application services and repositories
+        services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+        services.AddScoped<IEmployeeService, EmployeeService>();
+    })
+    .Build();
 
-// Get the connection string from the environment variables (local.settings.json)
-var connectionString = Environment.GetEnvironmentVariable("ConnectionString");
-
-if (string.IsNullOrEmpty(connectionString))
-{
-    throw new InvalidOperationException("The PostgreSQL connection string is missing.");
-}
-
-// Register Database and DatabaseService
-builder.Services.AddSingleton<Database>(serviceProvider =>
-{
-    return new Database(connectionString);  // Pass the connection string to the Database constructor
-});
-builder.Services.AddSingleton<DatabaseService>();
-
-// Register repositories and services
-builder.Services.AddSingleton<IEmployeeRepository, EmployeeRepository>(); 
-builder.Services.AddSingleton<IEmployeeService, EmployeeService>(); 
-
-// Ensure the database and tables are created on startup
-var databaseService = builder.Services.BuildServiceProvider().GetRequiredService<DatabaseService>();
-databaseService.EnsureDatabaseExists("employeedb");
-databaseService.CreateTables("employeedb");
-
-builder.Build().Run();
+host.Run();

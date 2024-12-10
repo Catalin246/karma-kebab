@@ -1,19 +1,22 @@
-Select * FROM employees
+Select * FROM "Employees"
 
 
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
+ALTER TABLE "Employees"
+ALTER COLUMN "Skills" TYPE text[];
 
-INSERT INTO employees (
-    employee_id,
-    date_of_birth,
-    first_name,
-    last_name,
-    address,
-    payrate,
-    role,
-    email,
-    skills
+
+INSERT INTO "Employees" (
+    "EmployeeId",
+    "DateOfBirth",
+    "FirstName",
+    "LastName",
+    "Address",
+    "Payrate",
+    "Role",
+    "Email",
+    "Skills"
 ) VALUES (
     gen_random_uuid(), -- Automatically generates a unique UUID
     '1997-11-28',
@@ -26,16 +29,16 @@ INSERT INTO employees (
     ARRAY['Cooking', 'Driving']
 );
 
-INSERT INTO employees (
-    employee_id,
-    date_of_birth,
-    first_name,
-    last_name,
-    address,
-    payrate,
-    role,
-    email,
-    skills
+INSERT INTO "Employees" (
+    "EmployeeId",
+    "DateOfBirth",
+    "FirstName",
+    "LastName",
+    "Address",
+    "Payrate",
+    "Role",
+    "Email",
+    "Skills"
 ) VALUES (
     gen_random_uuid(), -- Automatically generates a unique UUID
     '1995-03-15',
@@ -50,3 +53,24 @@ INSERT INTO employees (
 
 
 DROP TABLE employees;
+
+INSERT INTO "Employees" ("EmployeeId", "DateOfBirth", "FirstName", "LastName", "Address", "Payrate", "Role", "Email", "Skills")
+SELECT "employee_id", "date_of_birth", "first_name", "last_name", "address", "payrate", "role", "email", "skills"::integer[]
+FROM employees;
+
+SELECT "Skills" FROM "Employees";
+
+ALTER TABLE "Employees"
+ALTER COLUMN "Skills" TYPE text[];
+
+ALTER TABLE "employeesbefore" RENAME TO "employees";
+
+ALTER TABLE "Employees" ALTER COLUMN "Skills" TYPE integer[];
+
+
+DELETE FROM "Employees"
+WHERE "EmployeeId" IN (
+    -- Provide the exact UUIDs here
+    '2240799a-b126-43d1-b00e-d51e181f053d', 
+    'db5f466a-a152-46e6-93b6-0a7d0b5ad918'
+);

@@ -1,8 +1,0 @@
-C:\Users\Aizaz Ahsan\Inholland Year 4 minor\KarmaKebabProject\karma-kebab\employee-service\obj\Debug\net8.0\employee-service.csproj.AssemblyReference.cache
-C:\Users\Aizaz Ahsan\Inholland Year 4 minor\KarmaKebabProject\karma-kebab\employee-service\obj\Debug\net8.0\employee-service.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\Aizaz Ahsan\Inholland Year 4 minor\KarmaKebabProject\karma-kebab\employee-service\obj\Debug\net8.0\employee-service.AssemblyInfoInputs.cache
-C:\Users\Aizaz Ahsan\Inholland Year 4 minor\KarmaKebabProject\karma-kebab\employee-service\obj\Debug\net8.0\employee-service.AssemblyInfo.cs
-C:\Users\Aizaz Ahsan\Inholland Year 4 minor\KarmaKebabProject\karma-kebab\employee-service\obj\Debug\net8.0\employee-service.csproj.CoreCompileInputs.cache
-C:\Users\Aizaz Ahsan\Inholland Year 4 minor\KarmaKebabProject\karma-kebab\employee-service\obj\Debug\net8.0\employee-service.MvcApplicationPartsAssemblyInfo.cs
-C:\Users\Aizaz Ahsan\Inholland Year 4 minor\KarmaKebabProject\karma-kebab\employee-service\obj\Debug\net8.0\employee-service.MvcApplicationPartsAssemblyInfo.cache
-C:\Users\Aizaz Ahsan\Inholland Year 4 minor\KarmaKebabProject\karma-kebab\employee-service\obj\Debug\net8.0\employee-service.sourcelink.json
