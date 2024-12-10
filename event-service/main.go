@@ -8,7 +8,15 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
+
+// failOnError logs the error and exits the program if the error is not nil
+func failOnError(err error, msg string) {
+	if err != nil {
+		log.Fatalf("%s: %s", msg, err)
+	}
+}
 
 func main() {
 	// Try loading the .env file (optional for production)
@@ -28,8 +36,18 @@ func main() {
 		log.Fatal("Error initializing Azure Table Storage: ", err)
 	}
 
+	// Initialize RabbitMQ
+	conn, err := amqp.Dial("amqp://guest:guest@rabbitmq:5672/")
+	failOnError(err, "Failed to connect to RabbitMQ")
+	defer conn.Close()
+
+	// Create a new channel
+	ch, err := conn.Channel()
+	failOnError(err, "Failed to open a channel")
+	defer ch.Close()
+
 	// Register routes with the service client
-	router := routes.RegisterRoutes(client)
+	router := routes.RegisterRoutes(client, ch)
 
 	// Start the server
 	log.Println("Server is running on port 3001")

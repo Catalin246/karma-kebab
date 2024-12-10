@@ -9,15 +9,16 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/data/aztables"
 	"github.com/gorilla/mux"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-func RegisterRoutes(serviceClient *aztables.ServiceClient) *mux.Router {
+func RegisterRoutes(serviceClient *aztables.ServiceClient, ch *amqp.Channel) *mux.Router {
 	// Create the repository and service instances
 	eventRepository := repositories.NewEventRepository(serviceClient)
 	eventService := services.NewEventService(eventRepository)
 
 	// Create the event handler and inject the service
-	eventHandler := handlers.NewEventHandler(eventService)
+	eventHandler := handlers.NewEventHandler(eventService, ch)
 
 	r := mux.NewRouter()
 

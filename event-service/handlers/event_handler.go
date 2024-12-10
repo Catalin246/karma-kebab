@@ -5,20 +5,23 @@ import (
 	"encoding/json"
 	"event-service/models"
 	"event-service/services"
+	"log"
 	"net/http"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 type EventHandler struct {
 	service services.EventServiceInteface
+	ch      *amqp.Channel
 }
 
 // NewEventHandler creates a new EventHandler
-func NewEventHandler(service services.EventServiceInteface) *EventHandler {
-	return &EventHandler{service: service}
+func NewEventHandler(service services.EventServiceInteface, ch *amqp.Channel) *EventHandler {
+	return &EventHandler{service: service, ch: ch}
 }
 
 func (h *EventHandler) GetEvents(w http.ResponseWriter, r *http.Request) {
@@ -86,6 +89,36 @@ func (h *EventHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to create event: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	// Declare the exchange
+	q, err := h.ch.QueueDeclare(
+		"eventCreated", // name
+		false,          // durable
+		false,          // delete when unused
+		false,          // exclusive
+		false,          // no-wait
+		nil,            // arguments
+	)
+	if err != nil {
+		http.Error(w, "Failed to declare a queue: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	body := "Event Created!"
+	err = h.ch.PublishWithContext(ctx,
+		"",     // exchange
+		q.Name, // routing key
+		false,  // mandatory
+		false,  // immediate
+		amqp.Publishing{
+			ContentType: "text/plain",
+			Body:        []byte(body),
+		})
+	//failOnError(err, "Failed to publish a message")
+	log.Printf(" [x] Sent %s\n", body)
 
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(map[string]string{"message": "Event created successfully"})
