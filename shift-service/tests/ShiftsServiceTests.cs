@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Moq;
 using Microsoft.Extensions.Logging;
-
+//Service layer test : Business logic, data transformations, core functionality
 public class ShiftServiceTests
 {
     private readonly Mock<IShiftDbContext> _mockDbContext;
@@ -35,11 +35,10 @@ public async Task CreateShift_ValidInput_ReturnsShiftDto()
         StartTime = createShiftDto.StartTime,
         EndTime = createShiftDto.EndTime,
         EmployeeId = createShiftDto.EmployeeId,
-        // Explicitly set required properties
         ShiftType = createShiftDto.ShiftType,
         Status = ShiftStatus.Unconfirmed.ToString(),
-        PartitionKey = createShiftDto.EmployeeId.ToString(), // If this is a required property
-        RowKey = Guid.NewGuid().ToString() // If this is a required property
+        PartitionKey = createShiftDto.EmployeeId.ToString(), // required property
+        RowKey = Guid.NewGuid().ToString() //  required property
     };
 
     var expectedShiftDto = new ShiftDto { ShiftId = expectedShiftEntity.ShiftId };
