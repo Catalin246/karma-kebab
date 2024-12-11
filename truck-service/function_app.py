@@ -237,7 +237,7 @@ class TableOperations(object):
             cursor = conn.cursor()
             cursor.execute("""
                             CREATE VIEW Available_Trucks AS
-                                SELECT plate_number, A.ITEM_NUMBER,UNIT_COST, SUPPLIER_COST
+                                SELECT plate_number, A.name, B.BusyDate
                                     FROM trucks A, TruckAvailability B
                                     WHERE NOT BusyDate= %s;", (date,) 
                                     AND 
