@@ -1,0 +1,11 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "python",
+    "AzureTableName": "trucks",
+    "TABLES_PRIMARY_STORAGE_ACCOUNT_KEY": "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==",
+    "TABLES_STORAGE_ACCOUNT_NAME": "devstoreaccount1",
+    "TABLES_STORAGE_ENDPOINT_SUFFIX": "localhost:10002"
+  }
+}

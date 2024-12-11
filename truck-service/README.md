@@ -1,1 +1,2 @@
-# truck-service
+hello
+run : func start
