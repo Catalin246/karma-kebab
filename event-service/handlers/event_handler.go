@@ -83,14 +83,27 @@ func (h *EventHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	event.RowKey = uuid.New()
-	event.Date = time.Now()
 
 	if err := h.service.Create(context.Background(), event); err != nil {
 		http.Error(w, "Failed to create event: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	if err := h.rabbitMQService.PublishMessage("eventCreated", "Event Created!"); err != nil {
+	// Create the JSON message you want to send
+	message := map[string]interface{}{
+		"shiftsNumber": event.ShiftsNumber,
+		"eventID":      event.RowKey,
+		"startTime":    event.StartTime,
+		"endTime":      event.EndTime,
+	}
+
+	messageBytes, err := json.Marshal(message)
+	if err != nil {
+		log.Println("Failed to marshal message:", err)
+		return
+	}
+
+	if err := h.rabbitMQService.PublishMessage("eventCreated", string(messageBytes)); err != nil {
 		log.Println("Failed to publish message:", err)
 	}
 
@@ -104,7 +117,6 @@ func (h *EventHandler) UpdateEvent(w http.ResponseWriter, r *http.Request) {
 	rowKey := vars["rowKey"]
 
 	var event models.Event
-	event.Date = time.Now()
 	if err := json.NewDecoder(r.Body).Decode(&event); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
