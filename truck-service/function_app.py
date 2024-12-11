@@ -1,173 +1,309 @@
-
-import os
-import json
-
-# Function to load environment variables from local.settings.json
-def load_local_settings():
-    settings_file = "local.settings.json"
-    
-    with open(settings_file, "r") as file:
-        settings = json.load(file)
-    
-    if "Values" in settings:
-        values = settings["Values"]
-        for key, value in values.items():
-            os.environ[key] = value
-            print(f"{key} loaded successfully: {value}")
-    else:
-        print("No 'Values' found in local.settings.json")
-
-# Load environment variables before any other logic
-load_local_settings()
-
-
 import azure.functions as func
 import logging
-import sys
+import psycopg
+#from get_conn import get_connection_uri
+import os
+import urllib.parse
 import json
 from enum import Enum
-import os
-from azure.data.tables import TableClient, TableServiceClient, TableEntity
-from dotenv import find_dotenv, load_dotenv
-from typing_extensions import TypedDict
 
 
+#store arrays of dates- when not available 
+#DEFAULT AVAILABLE - TRUE
 
 app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
-class Status(Enum):
-    AVAILABLE= "available"
-    ON_DUTY = "on_duty"
-    MAINTENANCE= "maintenance"
+#class Status(Enum):
+    #AVAILABLE= "available"
+    #ON_DUTY = "on_duty"
+    #MAINTENANCE= "maintenance"
 
-class TruckEntity(TypedDict, total=False):
-    PartitionKey: str
-    RowKey: str
-    plate_number: str
-    name: str
-    status: str
-    description: str
-    note: str
+class TruckEntity:
+    def __init__(self, plate_number, name, available, description, note):
+        self.plate_number = plate_number
+        self.name = name
+        self.available = available
+        self.description = description
+        self.note = note
 
-from azure.data.tables import TableClient
-from azure.core.exceptions import ResourceExistsError, HttpResponseError
+os.environ['DBHOST'] = "localhost"
+os.environ['DBNAME'] = "truck"
+os.environ['DBUSER'] = "postgres"
+os.environ['DBPASS'] = "Cica08"
+os.environ['SSLMODE'] = "disable"
+
 
 class TableOperations(object):
     def __init__(self):
         #load_dotenv(find_dotenv())
-        print("Environment variables loaded:")
-        print(os.environ) 
-        self.access_key = os.environ["TABLES_PRIMARY_STORAGE_ACCOUNT_KEY"]
-        self.endpoint_suffix = os.environ.get("TABLES_STORAGE_ENDPOINT_SUFFIX", "table.core.windows.net")
-        self.account_name = os.environ["TABLES_STORAGE_ACCOUNT_NAME"]
+        self.dbhost = os.environ['DBHOST']
+        self.dbname = os.environ['DBNAME']
+        self.dbuser = urllib.parse.quote(os.environ['DBUSER'])
+        self.dbpass = os.environ['DBPASS']
+        self.sslmode = os.environ['SSLMODE']
 
-        if not self.access_key:
-            raise ValueError("Missing TABLES_PRIMARY_STORAGE_ACCOUNT_KEY")
-        #self.endpoint = f"{self.account_name}.table.{self.endpoint_suffix}"
-        #self.connection_string = f"DefaultEndpointsProtocol=https;AccountName={self.account_name};AccountKey={self.access_key};EndpointSuffix={self.endpoint_suffix}"
+
         #self.table_name = "trucks"
 
-        if "localhost" in self.endpoint_suffix:
-            self.endpoint = f"http://{self.endpoint_suffix}/{self.account_name}"
-        else:
-            self.endpoint = f"https://{self.account_name}.table.{self.endpoint_suffix}"
-
-        self.connection_string = (
-            f"DefaultEndpointsProtocol=http;"
-            f"AccountName={self.account_name};"
-            f"AccountKey={self.access_key};"
-            f"TableEndpoint={self.endpoint};"
-        )
-        self.table_name = "trucks"
-
-        """self.entity: TruckEntity = {
-            "PartitionKey": "status",
-            "RowKey": "plate_number",
-            "plate_number": "1-ABC-23",
-            "name": "Karma King",
-            "status": "available",
-            "description": "can carry 120kg kebab",
-            "note": "fix front right lamp"
-        }
-        """
-    def create_entity(self, entity: TruckEntity):
-
-        service_client = TableServiceClient.from_connection_string(self.connection_string)
-        
+    def get_connection(self):
         try:
-            tables = list(service_client.list_tables())
-            if self.table_name not in tables:
-                service_client.create_table(self.table_name)
+            db_uri = f"postgresql://{self.dbuser}:{self.dbpass}@{self.dbhost}/{self.dbname}?sslmode={self.sslmode}"
+            return psycopg.connect(db_uri)
+        except Exception as e:
+            logging.error(f"Error connecting to PostgreSQL: {e}")
+            raise
+
+    def create_table(self):
+        try:
+            with self.get_connection() as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS trucks (
+                        plate_number VARCHAR(255) PRIMARY KEY,
+                        name VARCHAR(255) NOT NULL,
+                        available BOOLEAN DEFAULT TRUE,
+                        description TEXT,
+                        note TEXT
+                    );
+                    """)
+
+                    conn.commit()
+                return True
             
-            with TableClient.from_connection_string(self.connection_string, self.table_name) as table_client:
-                resp = table_client.create_entity(entity=entity)
-                
-                if resp is None:
-                    logging.error("Failed to create entity: Response was None.")
-                    return None
-                return resp
-        except ResourceExistsError:
-            logging.warning("Entity already exists")
-            return None
-        except HttpResponseError as e:
-            logging.error(f"HTTP Response Error: {e}")
-            return None
+        except Exception as e:
+            logging.error(f"Error creating trucks table or it already exists: {e}")
+            
+
+
+    #second table for truck availability
+    def create_table_truck_sched(self):
+        try:
+            with self.get_connection() as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS TruckAvailability (
+                        id bigint GENERATED BY DEFAULT AS IDENTITY,
+                        plate_number VARCHAR(255) PRIMARY KEY,
+                        BusyDate DATE NOT NULL,
+                        FOREIGN KEY (plate_number) REFERENCES trucks(plate_number)
+                    );
+                    """)
+
+                    conn.commit()
+                return True
+            
+        except Exception as e:
+            logging.error(f"Error creating trucks table or it already exists: {e}") 
+
+
+
+
+    def create_entity(self, entity: TruckEntity):
+        conn= None
+        try:
+            with self.get_connection() as conn:
+                with conn.cursor() as cursor:
+
+                    cursor.execute("""INSERT INTO trucks (plate_number, name, available, description, note) VALUES (%s, %s, %s, %s, %s);""", 
+                                   (entity.plate_number, entity.name, entity.available, entity.description, entity.note))
+                    
+                    conn.commit()
+                return True
+
+        except Exception as e:
+            logging.error(f"Error creating truck: {e}")
+            if conn:
+                conn.rollback()
+            return False
+
 
     def list_all_entities(self):
-        from azure.data.tables import TableClient
 
-        with TableClient.from_connection_string(self.connection_string, self.table_name) as table_client:
-            return list(table_client.list_entities())
+        try:
+            conn = self.get_connection()
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM trucks;")
+            rows = cursor.fetchall()
 
-    def return_one_entity(self, partition_key: str, row_key: str):
-        from azure.data.tables import TableClient
+            cursor.close()
+            conn.close()
+            return rows
 
-        with TableClient.from_connection_string(self.connection_string, self.table_name) as table_client:
-            return table_client.get_entity(partition_key=partition_key, row_key=row_key)
+        except Exception as e:
+            logging.error(f"Error returning all trucks: {e}")
+            raise
+        
+            
+
+    def return_one_entity(self, plate_number: str):
+        try:
+            conn = self.get_connection()
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM trucks WHERE plate_number = %s;", (plate_number,))
+            row = cursor.fetchone()
+
+            if row:
+                    return {
+                        "plate_number": row[0],
+                        "name": row[1],
+                        "available": row[2],
+                        "description": row[3],
+                        "note": row[4]
+                    }
+            else:
+                return None
+
+        except Exception as e:
+            logging.error(f"Error returning truck by ID: {e}")
+            raise
+
+        finally:
+            cursor.close()
+            conn.close()
+
 
     def update_entity(self, entity: TruckEntity):
-        from azure.data.tables import TableClient
-        from azure.data.tables import UpdateMode
+        conn= None
+        try:
+            conn = self.get_connection()
+            cursor = conn.cursor()
+            cursor.execute("UPDATE trucks SET name = %s, available = %s, description = %s, note = %s WHERE plate_number = %s;", 
+                           (entity.name, entity.available, entity.description, entity.note, entity.plate_number))
+            conn.commit()
 
-        with TableClient.from_connection_string(self.connection_string, self.table_name) as table_client:
-            table_client.update_entity(entity=entity, mode=UpdateMode.REPLACE)
+            cursor.close()
+            conn.close()
 
-    def delete_entity(self, partition_key: str, row_key: str):
-        from azure.data.tables import TableClient
+        except Exception as e:
+            logging.error(f"Error updating truck: {e}")
+            conn.rollback()
+            return False
 
-        with TableClient.from_connection_string(self.connection_string, self.table_name) as table_client:
-            table_client.delete_entity(partition_key=partition_key, row_key=row_key)
+
+    def delete_entity(self, plate_number: str):
+        conn= None
+        try:
+            conn = self.get_connection()
+            cursor = conn.cursor()
+
+            cursor.execute("DELETE FROM trucks WHERE plate_number = %s;", (plate_number,))
+            conn.commit()
+
+            cursor.close()
+            conn.close()
+
+
+        except Exception as e:
+            logging.error(f"Error deleting truck: {e}")
+            conn.rollback()
+            return False
+        
+    
+    def two_table_set_availability(self, date): #
+        conn= None
+        try:
+            conn = self.get_connection()
+            cursor = conn.cursor()
+            cursor.execute("""
+                            CREATE VIEW TruckAvailability AS
+                            SELECT
+                                t.plate_number,
+                                t.name,
+                                t.description,
+                                t.note,
+                                NOT EXISTS (
+                                    SELECT 1
+                                    FROM truck_schedule ts
+                                    WHERE ts.plate_number = t.plate_number
+                                    AND ts.on_duty_date = date
+                                ) AS is_available
+                            FROM trucks t;""")
+            conn.commit()
+
+            cursor.close()
+            conn.close()
+
+        except Exception as e:
+            logging.error(f"Error updating avaiability: {e}")
+            conn.rollback()
+            return False
+
+
+    
+    def get_availability(self, date):
+        conn= None
+        try:
+            conn = self.get_connection()
+            cursor = conn.cursor()
+            cursor.execute("""
+                            CREATE VIEW Available_Trucks AS
+                                SELECT plate_number, A.ITEM_NUMBER,UNIT_COST, SUPPLIER_COST
+                                    FROM trucks A, TruckAvailability B
+                                    WHERE NOT BusyDate= %s;", (date,) 
+                                    AND 
+                           
+
+
+                            SELECT * FROM TruckAvailability WHERE NOT BusyDate= %s;", (date,)
+
+
+                            """)
+            
+                        #select plate number from where date is not in busydate
+                        #do i need view???????? - dont think so
+            conn.commit()
+
+            cursor.close()
+            conn.close()
+
+
+        except Exception as e:
+            logging.error(f"Error updating avaiability: {e}")
+            conn.rollback()
+            return False
+
+
+
+#focus on all trucks available and no trucks too
+
+#should i choose the available ones and set the bool in the other table????????
+
+        
+
+
 
 
 #create new truck
 @app.route(route="trucks", methods=["POST"])
 def create_truck(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP trigger function processed a request to create a new truck')
+    
     try:
 
         req_body= req.get_json()
-        status =req_body.get("status")
-        if status not in {member.value for member in Status}:
+        plate_number = req_body.get("plate_number")
+        name = req_body.get("name")
+        available = req_body.get("available", True)
+        description = req_body.get("description")
+        note = req_body.get("note")
 
-            return func.HttpResponse("Invalid status.", status_code=400)
-        #id = plate_number
+        #if status not in {member.value for member in Status}:
+        #    return func.HttpResponse("Invalid status.", status_code=400)
 
-        truck = {
-            "PartitionKey": req_body.get("status", "available"),
-            "RowKey": req_body.get("plate_number"),
-            "plate_number": req_body.get("plate_number"),
-            "name": req_body.get("name"),
-            "status": status,
-            "description": req_body.get("description"),
-            "note": req_body.get("note"),
-        }
-
-        if not all([truck['plate_number'], truck['name']]):
+        if not plate_number or not name:
             return func.HttpResponse("Missing required fields", status_code=400)
+        
+        truck = TruckEntity(plate_number, name, available, description, note)
+
         TableOperations().create_entity(truck)
-        #return func.HttpResponse(f"Truck created.", status_code=201)
         return func.HttpResponse(
-                json.dumps(truck),
+                json.dumps({
+                    "plate_number": plate_number,
+                    "name": name,
+                    "available": available,
+                    "description": description,
+                    "note": note
+                }),
                 status_code=201,
                 mimetype="application/json"
             )
@@ -194,13 +330,12 @@ def return_all_truck(req: func.HttpRequest) -> func.HttpResponse:
 def return_truck(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP trigger function processed a request to list a truck searched by plate number')
 
-    #truck_id = req.params["plate_number"]
     truck_id = req.route_params.get("id")
     if not truck_id:
         return func.HttpResponse("Truck ID missing", status_code=400)
     
     try:
-        truck= TableOperations().return_one_entity(partition_key="available", row_key=truck_id)
+        truck= TableOperations().return_one_entity(truck_id)
         if not truck:
             return func.HttpResponse(f"Truck with ID {truck_id} not found", status_code=404)
         return func.HttpResponse(json.dumps(truck), status_code=200, mimetype="application/json")
@@ -219,22 +354,26 @@ def update_truck(req: func.HttpRequest) -> func.HttpResponse:
         return func.HttpResponse("Truck ID missing", status_code=400)
     
     try:
-        truck = TableOperations().return_one_entity(partition_key="available", row_key=truck_id)
+        truck = TableOperations().return_one_entity(truck_id)
         if not truck:
             return func.HttpResponse(f"Truck with ID {truck_id} not found", status_code=404)
         
         req_body = req.get_json()
         new_status =req_body.get("status")
-        if new_status and new_status not in Status.__members__:
-            return func.HttpResponse("Invalid status.", status_code=400)
+        #if new_status and new_status not in Status.__members__:
+        #if new_status and new_status not in [status.value for status in Status]:
+        #    return func.HttpResponse("Invalid status.", status_code=400)
     
-        truck.update({
-            "name": req_body.get("name", truck["name"]),
-            "status": new_status or truck["status"],
-            "description": req_body.get("description", truck["description"]),
-            "note": req_body.get("note", truck["note"]),
-        })
-        TableOperations().update_entity(truck)
+        updatedtruck = TruckEntity(
+            plate_number=truck_id,
+            name=req_body.get("name", truck["name"]),
+            status=new_status,
+            description=req_body.get("description", truck["description"]),
+            note=req_body.get("note", truck["note"])
+        )
+
+        
+        TableOperations().update_entity(updatedtruck)
         return func.HttpResponse("Truck updated successfully.", status_code=200)
     
     except Exception as e:
@@ -247,19 +386,35 @@ def update_truck(req: func.HttpRequest) -> func.HttpResponse:
 def delete_truck(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP trigger function processed a request to delete truck by id.')
 
-    #truck_id = req.params["plate_number"]
     truck_id = req.route_params.get("id")
     if not truck_id:
         return func.HttpResponse("Truck ID missing", status_code=400)
     
     try:
-        truck = TableOperations().return_one_entity(partition_key="available", row_key=truck_id)
+        truck = TableOperations().return_one_entity(truck_id)
         if not truck:
             return func.HttpResponse(f"Truck with ID {truck_id} not found", status_code=404)
 
-        TableOperations().delete_entity(partition_key="status", row_key=truck_id)
+        TableOperations().delete_entity(truck_id)
         return func.HttpResponse(f"Truck with ID {truck_id} successfully deleted.", status_code=200)
     except Exception as e:
         logging.error(f"Error deleting truck with ID {truck_id}: {e}")
         return func.HttpResponse("Failed to delete truck.", status_code=500)
     
+
+#filter available trucksa based on date
+@app.route(route="trucks/{date}", methods=["GET"])
+def get_available_trucks_date(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info('Python HTTP trigger function processed a request to list available trucks')
+    truck_avalable_date= req.route_params("date")
+
+    #check format?? 2006-01-31
+
+    if not truck_avalable_date:
+        return func.HttpResponse("Availability date missing", status_code=400)
+    try:
+        available = TableOperations().get_availability(truck_avalable_date)
+        return func.HttpResponse(json.dumps(available), status_code=200, mimetype="application/json")
+    except Exception as e:
+        logging.error(f"Error filtering available  trucks: {e}")
+        return func.HttpResponse("Failed to return trucks", status_code=500)
