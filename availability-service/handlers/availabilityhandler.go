@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"availability-service/models"
-	"availability-service/service"
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -12,8 +12,17 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// AvailabilityServiceInterface defines the methods that the service must implement
+type IAvailability interface {
+	GetAll(ctx context.Context, startDate, endDate *time.Time) ([]models.Availability, error)
+	GetByEmployeeID(ctx context.Context, employeeID string) ([]models.Availability, error)
+	Create(ctx context.Context, availability models.Availability) (*models.Availability, error)
+	Update(ctx context.Context, employeeID, id string, availability models.Availability) error
+	Delete(ctx context.Context, employeeID, id string) error
+}
+
 type AvailabilityHandler struct {
-	service *service.AvailabilityService
+	service IAvailability
 }
 
 type CreateAvailabilityRequest struct {
@@ -28,7 +37,8 @@ type UpdateAvailabilityRequest struct {
 	EndDate    string `json:"endDate"`
 }
 
-func NewAvailabilityHandler(service *service.AvailabilityService) *AvailabilityHandler {
+// NewAvailabilityHandler now accepts the interface instead of a pointer to the concrete service
+func NewAvailabilityHandler(service IAvailability) *AvailabilityHandler {
 	return &AvailabilityHandler{
 		service: service,
 	}
