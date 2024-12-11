@@ -9,7 +9,7 @@ namespace employee_service.Interfaces
         Task<Employee?> GetEmployeeByIdAsync(Guid id);
         Task<IEnumerable<Employee>> GetEmployeesByRoleAsync(EmployeeRole role, Employee employee);
         Task<Employee> AddEmployeeAsync(Employee employee);
-        Task<Employee?> UpdateEmployeeAsync(Guid id, Employee updatedEmployee);
+        Task<Employee?> UpdateEmployeeAsync(Employee updatedEmployee);
         Task<bool> DeleteEmployeeAsync(Guid id);
     }
 }

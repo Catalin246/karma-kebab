@@ -52,6 +52,20 @@ INSERT INTO "Employees" (
 );
 
 
+UPDATE "Employees"
+SET 
+    "DateOfBirth" = '1990-05-20',
+    "FirstName" = 'John',
+    "LastName" = 'Doe',
+    "Address" = '123 Maple St, Gotham, USA',
+    "Payrate" = 30.00,
+    "Role" = 3,
+    "Email" = 'john.doe@example.com',
+    "Skills" = ARRAY['Cleaning', 'Cooking']
+WHERE 
+    "EmployeeId" = '27044b39-df22-4d32-8f0e-d96cc3963750';
+
+
 DROP TABLE employees;
 
 INSERT INTO "Employees" ("EmployeeId", "DateOfBirth", "FirstName", "LastName", "Address", "Payrate", "Role", "Email", "Skills")

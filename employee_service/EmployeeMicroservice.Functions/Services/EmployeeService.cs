@@ -57,10 +57,33 @@ public class EmployeeService : IEmployeeService
         return await _employeeRepository.AddEmployeeAsync(employee);
     }
 
-
-    public async Task<Employee?> UpdateEmployeeAsync(Guid id, Employee updatedEmployee)
+    public async Task<Employee> UpdateEmployeeAsync(Guid id, EmployeeDTO employeeDto)
     {
-        return await _employeeRepository.UpdateEmployeeAsync(id, updatedEmployee);
+        try
+        {
+            var existingEmployee = await _employeeRepository.GetEmployeeByIdAsync(id);
+
+            if (existingEmployee == null)
+            {
+                Console.WriteLine($"Employee with ID: {id} not found.");
+                return null;
+            }
+
+            // Update fields based on the DTO
+            existingEmployee.FirstName = employeeDto.FirstName;
+            existingEmployee.LastName = employeeDto.LastName;
+            existingEmployee.Role = employeeDto.Role;
+
+            // Save changes
+            var updatedEmployee = await _employeeRepository.UpdateEmployeeAsync(existingEmployee);
+            Console.WriteLine($"Successfully updated employee with ID: {id}");
+            return updatedEmployee;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating employee with ID: {id}. Exception: {ex.Message}");
+            throw;
+        }
     }
 
     public async Task<bool> DeleteEmployeeAsync(Guid id)

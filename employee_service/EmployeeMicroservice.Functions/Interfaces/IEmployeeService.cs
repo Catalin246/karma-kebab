@@ -8,6 +8,6 @@ public interface IEmployeeService
     Task<Employee?> GetEmployeeByIdAsync(Guid id);
     Task<IEnumerable<Employee>> GetEmployeesByRoleAsync(EmployeeRole role, EmployeeDTO employeeDTO);
     Task<Employee> AddEmployeeAsync(EmployeeDTO employeeDto);
-    Task<Employee?> UpdateEmployeeAsync(Guid id, Employee updatedEmployee);
+    Task<Employee?> UpdateEmployeeAsync(Guid id, EmployeeDTO updatedEmployee);
     Task<bool> DeleteEmployeeAsync(Guid id);
 }

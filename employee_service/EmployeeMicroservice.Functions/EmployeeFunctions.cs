@@ -47,8 +47,6 @@ namespace EmployeeMicroservice.Functions
             return response;
         }
 
-
-
         // Get Employee by ID
         [Function("GetEmployeeById")]
         public async Task<HttpResponseData> GetEmployeeById(
@@ -106,21 +104,23 @@ namespace EmployeeMicroservice.Functions
             var log = executionContext.GetLogger("UpdateEmployee");
             log.LogInformation($"Updating employee with ID: {id}");
 
-            var content = await req.ReadAsStringAsync();
-            var updatedEmployee = JsonConvert.DeserializeObject<Employee>(content);
+            var requestBody = await req.ReadAsStringAsync();
+            var updatedEmployeeDto = JsonConvert.DeserializeObject<EmployeeDTO>(requestBody);
 
-            var result = await _employeeService.UpdateEmployeeAsync(id, updatedEmployee);
+            var updatedEmployee = await _employeeService.UpdateEmployeeAsync(id, updatedEmployeeDto);
 
-            var response = req.CreateResponse(result != null ? HttpStatusCode.OK : HttpStatusCode.NotFound);
-            if (result != null)
+            var response = req.CreateResponse(updatedEmployee != null ? HttpStatusCode.OK : HttpStatusCode.NotFound);
+
+            if (updatedEmployee != null)
             {
                 response.Headers.Add("Content-Type", "application/json");
-                await response.WriteStringAsync(JsonConvert.SerializeObject(result));
+                await response.WriteStringAsync(JsonConvert.SerializeObject(updatedEmployee));
             }
 
             return response;
         }
 
+    
         // Delete Employee
         [Function("DeleteEmployee")]
         public async Task<HttpResponseData> DeleteEmployee(

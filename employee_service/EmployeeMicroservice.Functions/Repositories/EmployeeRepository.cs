@@ -51,24 +51,17 @@ namespace employee_service.Repositories
             return employee;
         }
 
-        public async Task<Employee?> UpdateEmployeeAsync(Guid id, Employee updatedEmployee)
+        public async Task<Employee> UpdateEmployeeAsync(Employee employee)
         {
             await using var context = await _dbContextFactory.CreateDbContextAsync();
-            var employee = await context.Employees.FindAsync(id);
-            if (employee == null) return null;
 
-            employee.FirstName = updatedEmployee.FirstName;
-            employee.LastName = updatedEmployee.LastName;
-            employee.DateOfBirth = updatedEmployee.DateOfBirth;
-            employee.Address = updatedEmployee.Address;
-            employee.Payrate = updatedEmployee.Payrate;
-            employee.Role = updatedEmployee.Role;
-            employee.Email = updatedEmployee.Email;
-            employee.Skills = updatedEmployee.Skills;
-
+            // Attach and update the entity
+            context.Employees.Update(employee);
             await context.SaveChangesAsync();
+
             return employee;
         }
+
 
         public async Task<bool> DeleteEmployeeAsync(Guid id)
         {
