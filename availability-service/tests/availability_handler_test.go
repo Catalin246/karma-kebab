@@ -112,7 +112,7 @@ func TestGetByEmployeeID(t *testing.T) {
 		mockService.On("GetByEmployeeID", mock.Anything, "emp1").
 			Return(mockAvailabilities, nil)
 
-		req := createRequestWithVars("GET", "/employees/emp1/availabilities", 
+		req := createRequestWithVars("GET", "/employees/emp1/availabilities",
 			map[string]string{"partitionKey": "emp1"}, nil)
 
 		w := httptest.NewRecorder()
@@ -133,7 +133,7 @@ func TestGetByEmployeeID(t *testing.T) {
 		mockService.On("GetByEmployeeID", mock.Anything, "emp1").
 			Return([]models.Availability{}, models.ErrNotFound)
 
-		req := createRequestWithVars("GET", "/employees/emp1/availabilities", 
+		req := createRequestWithVars("GET", "/employees/emp1/availabilities",
 			map[string]string{"partitionKey": "emp1"}, nil)
 
 		w := httptest.NewRecorder()
@@ -148,19 +148,36 @@ func TestCreate(t *testing.T) {
 		mockService := new(MockAvailabilityService)
 		handler := handlers.NewAvailabilityHandler(mockService)
 
+		startTime := time.Date(2025, 2, 15, 22, 0, 0, 0, time.UTC)
+		endTime := startTime.Add(24 * time.Hour)
+
 		availability := models.Availability{
-			EmployeeID: "emp1",
-			StartDate:  time.Now(),
-			EndDate:    time.Now().Add(24 * time.Hour),
+			EmployeeID: "d536770f-12c9-4de4-8583-4a6bd2a302b4",
+			StartDate:  startTime,
+			EndDate:    endTime,
 		}
 
 		createdAvailability := availability
 		createdAvailability.ID = "1"
 
-		mockService.On("Create", mock.Anything, availability).
-			Return(&createdAvailability, nil)
+		mockService.On("Create", mock.MatchedBy(func(av models.Availability) bool {
+			return av.EmployeeID == availability.EmployeeID &&
+				av.StartDate.Equal(availability.StartDate) &&
+				av.EndDate.Equal(availability.EndDate)
+		})).Return(&createdAvailability, nil)
 
-		jsonBody, _ := json.Marshal(availability)
+		// If you need to send JSON, you'll need a custom marshaler that formats the time
+		jsonBody, err := json.Marshal(struct {
+			EmployeeID string `json:"employee_id"`
+			StartDate  string `json:"start_date"`
+			EndDate    string `json:"end_date"`
+		}{
+			EmployeeID: availability.EmployeeID,
+			StartDate:  availability.StartDate.Format(time.RFC3339),
+			EndDate:    availability.EndDate.Format(time.RFC3339),
+		})
+		assert.NoError(t, err)
+
 		req, err := http.NewRequest("POST", "/availabilities", bytes.NewBuffer(jsonBody))
 		assert.NoError(t, err)
 
@@ -179,16 +196,33 @@ func TestCreate(t *testing.T) {
 		mockService := new(MockAvailabilityService)
 		handler := handlers.NewAvailabilityHandler(mockService)
 
+		startTime := time.Date(2025, 2, 15, 22, 0, 0, 0, time.UTC)
+		endTime := startTime.Add(24 * time.Hour)
+
 		availability := models.Availability{
 			EmployeeID: "emp1",
-			StartDate:  time.Now(),
-			EndDate:    time.Now().Add(24 * time.Hour),
+			StartDate:  startTime,
+			EndDate:    endTime,
 		}
 
-		mockService.On("Create", mock.Anything, availability).
-			Return(nil, errors.New("availability conflicts"))
+		mockService.On("Create", mock.MatchedBy(func(av models.Availability) bool {
+			return av.EmployeeID == availability.EmployeeID &&
+				av.StartDate.Equal(availability.StartDate) &&
+				av.EndDate.Equal(availability.EndDate)
+		})).Return(nil, errors.New("availability conflicts"))
 
-		jsonBody, _ := json.Marshal(availability)
+		// Similar JSON marshaling as above
+		jsonBody, err := json.Marshal(struct {
+			EmployeeID string `json:"employee_id"`
+			StartDate  string `json:"start_date"`
+			EndDate    string `json:"end_date"`
+		}{
+			EmployeeID: availability.EmployeeID,
+			StartDate:  availability.StartDate.Format(time.RFC3339),
+			EndDate:    availability.EndDate.Format(time.RFC3339),
+		})
+		assert.NoError(t, err)
+
 		req, err := http.NewRequest("POST", "/availabilities", bytes.NewBuffer(jsonBody))
 		assert.NoError(t, err)
 
@@ -210,17 +244,17 @@ func TestUpdate(t *testing.T) {
 			EndDate:    time.Now().Add(24 * time.Hour).UTC().Format(time.RFC3339),
 		}
 
-		mockService.On("Update", 
-			mock.Anything, 
-			"emp1", 
-			"avail1", 
+		mockService.On("Update",
+			mock.Anything,
+			"emp1",
+			"avail1",
 			mock.AnythingOfType("models.Availability")).
 			Return(nil)
 
-		req := createRequestWithVars("PUT", "/employees/emp1/availabilities/avail1", 
+		req := createRequestWithVars("PUT", "/employees/emp1/availabilities/avail1",
 			map[string]string{
-				"partitionKey": "emp1", 
-				"rowKey": "avail1",
+				"partitionKey": "emp1",
+				"rowKey":       "avail1",
 			}, updateReq)
 
 		w := httptest.NewRecorder()
@@ -239,17 +273,17 @@ func TestUpdate(t *testing.T) {
 			EndDate:    time.Now().Add(24 * time.Hour).UTC().Format(time.RFC3339),
 		}
 
-		mockService.On("Update", 
-			mock.Anything, 
-			"emp1", 
-			"avail1", 
+		mockService.On("Update",
+			mock.Anything,
+			"emp1",
+			"avail1",
 			mock.AnythingOfType("models.Availability")).
 			Return(models.ErrNotFound)
 
-		req := createRequestWithVars("PUT", "/employees/emp1/availabilities/avail1", 
+		req := createRequestWithVars("PUT", "/employees/emp1/availabilities/avail1",
 			map[string]string{
-				"partitionKey": "emp1", 
-				"rowKey": "avail1",
+				"partitionKey": "emp1",
+				"rowKey":       "avail1",
 			}, updateReq)
 
 		w := httptest.NewRecorder()
@@ -267,10 +301,10 @@ func TestDelete(t *testing.T) {
 		mockService.On("Delete", mock.Anything, "emp1", "avail1").
 			Return(nil)
 
-		req := createRequestWithVars("DELETE", "/employees/emp1/availabilities/avail1", 
+		req := createRequestWithVars("DELETE", "/employees/emp1/availabilities/avail1",
 			map[string]string{
-				"partitionKey": "emp1", 
-				"rowKey": "avail1",
+				"partitionKey": "emp1",
+				"rowKey":       "avail1",
 			}, nil)
 
 		w := httptest.NewRecorder()
@@ -286,10 +320,10 @@ func TestDelete(t *testing.T) {
 		mockService.On("Delete", mock.Anything, "emp1", "avail1").
 			Return(models.ErrNotFound)
 
-		req := createRequestWithVars("DELETE", "/employees/emp1/availabilities/avail1", 
+		req := createRequestWithVars("DELETE", "/employees/emp1/availabilities/avail1",
 			map[string]string{
-				"partitionKey": "emp1", 
-				"rowKey": "avail1",
+				"partitionKey": "emp1",
+				"rowKey":       "avail1",
 			}, nil)
 
 		w := httptest.NewRecorder()
