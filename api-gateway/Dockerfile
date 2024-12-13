@@ -4,8 +4,7 @@ FROM nginx:latest
 COPY nginx.conf /etc/nginx/nginx.conf
 
 # Default configuration file
-ARG CONFIG=local
 RUN cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf
 
-EXPOSE 5000
+EXPOSE 3007
 CMD ["nginx", "-g", "daemon off;"]
