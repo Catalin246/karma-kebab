@@ -8,14 +8,15 @@ import (
 	"net/http"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/data/aztables"
+	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
 	"github.com/gorilla/mux"
 )
 
-func RegisterRoutes(serviceClient *aztables.ServiceClient) *mux.Router {
+func RegisterRoutes(serviceClient *aztables.ServiceClient, blobServiceClient *azblob.Client) *mux.Router {
 	dutyRepository := repositories.NewDutyRepository(serviceClient)
 	dutyService := services.NewDutyService(dutyRepository)
 
-	dutyAssignmentRepository := repositories.NewDutyAssignmentRepository(serviceClient)
+	dutyAssignmentRepository := repositories.NewDutyAssignmentRepository(serviceClient, blobServiceClient)
 	dutyAssignmentService := services.NewDutyAssignmentService(dutyAssignmentRepository, dutyRepository)
 
 	dutyHandler := handlers.NewDutyHandler(dutyService)
