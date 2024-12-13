@@ -12,16 +12,16 @@ type Status string
 const (
 	StatusPlanned   Status = "Planned"
 	StatusOngoing   Status = "Ongoing"
-	StatusCompletes Status = "Completes"
+	StatusCompleted Status = "Completed"
 	StatusCancelled Status = "Cancelled"
 )
 
 // Event class
 type Event struct {
 	PartitionKey string    `json:"partitionKey"` // Azure Table Storage PartitionKey
-	RowKey       string    `json:"rowKey"`       // Azure Table Storage RowKey
-	ID           uuid.UUID `json:"id"`           // UUID for the event (used internally)
-	Date         time.Time `json:"date"`         // Event date and time
+	RowKey       uuid.UUID `json:"rowKey"`       // Azure Table Storage RowKey
+	StartTime    time.Time `json:"startTime"`    // Event date and time
+	EndTime      time.Time `json:"endTime"`      // Event date and time
 	Address      string    `json:"address"`      // Event address
 	Venue        string    `json:"venue"`        // Venue name
 	Description  string    `json:"description"`  // Description of the event
@@ -29,4 +29,5 @@ type Event struct {
 	Status       Status    `json:"status"`       // Event status
 	Person       Person    `json:"person"`       // Associated person
 	Note         string    `json:"note"`         // Additional notes
+	ShiftsNumber int       `json:"shiftsNumber"` // Number of shifts
 }

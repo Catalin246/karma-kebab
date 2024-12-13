@@ -1,8 +1,11 @@
-# Use the official NGINX image
 FROM nginx:latest
 
-# Copy custom NGINX configuration file
-COPY nginx.conf /etc/nginx/nginx.conf
+# Copy both configuration files
+COPY nginx.local.conf /etc/nginx/nginx.local.conf
 
-# Expose the NGINX gateway port
-EXPOSE 3007
+# Default configuration file
+ARG CONFIG=local
+RUN cp /etc/nginx/nginx.${CONFIG}.conf /etc/nginx/nginx.conf
+
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]

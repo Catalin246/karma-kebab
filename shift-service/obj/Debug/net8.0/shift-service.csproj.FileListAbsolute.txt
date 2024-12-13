@@ -1,0 +1,177 @@
+<<<<<<< HEAD
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\shift-service.csproj.AssemblyReference.cache
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\shift-service.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\shift-service.AssemblyInfoInputs.cache
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\shift-service.AssemblyInfo.cs
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\shift-service.csproj.CoreCompileInputs.cache
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\shift-service.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\shift-service.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\shift-service.sourcelink.json
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\appsettings.Development.json
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\appsettings.json
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\shift-service.exe
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\shift-service.deps.json
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\shift-service.runtimeconfig.json
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\shift-service.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\shift-service.pdb
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Azure.Core.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Azure.Data.Tables.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Azure.Identity.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.AspNetCore.OpenApi.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.Bcl.AsyncInterfaces.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Abstractions.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.Extensions.Azure.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.Extensions.Caching.Abstractions.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.Extensions.Caching.Memory.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.Extensions.DependencyInjection.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.Extensions.Logging.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.Extensions.Logging.Abstractions.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.Extensions.Options.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.Extensions.Primitives.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.Identity.Client.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.Identity.Client.Extensions.Msal.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.IdentityModel.Abstractions.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.OpenApi.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Swashbuckle.AspNetCore.Swagger.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerGen.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerUI.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\System.ClientModel.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\System.Diagnostics.DiagnosticSource.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\System.Memory.Data.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\System.Security.Cryptography.ProtectedData.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\runtimes\win\lib\netstandard2.0\System.Security.Cryptography.ProtectedData.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\staticwebassets.build.json
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\staticwebassets.development.json
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\staticwebassets\msbuild.shift-service.Microsoft.AspNetCore.StaticWebAssets.props
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\staticwebassets\msbuild.build.shift-service.props
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\staticwebassets\msbuild.buildMultiTargeting.shift-service.props
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\staticwebassets\msbuild.buildTransitive.shift-service.props
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\staticwebassets.pack.json
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\scopedcss\bundle\shift-service.styles.css
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\shift-se.6F7F19FE.Up2Date
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\shift-service.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\refint\shift-service.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\shift-service.pdb
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\shift-service.genruntimeconfig.cache
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\ref\shift-service.dll
+C:\Users\avorn\source\repos\karma-kebab\shift-service\bin\Debug\net8.0\appsettings.Development.json
+C:\Users\avorn\source\repos\karma-kebab\shift-service\bin\Debug\net8.0\appsettings.json
+C:\Users\avorn\source\repos\karma-kebab\shift-service\bin\Debug\net8.0\shift-service.staticwebassets.endpoints.json
+C:\Users\avorn\source\repos\karma-kebab\shift-service\bin\Debug\net8.0\shift-service.exe
+C:\Users\avorn\source\repos\karma-kebab\shift-service\bin\Debug\net8.0\shift-service.deps.json
+C:\Users\avorn\source\repos\karma-kebab\shift-service\bin\Debug\net8.0\shift-service.runtimeconfig.json
+C:\Users\avorn\source\repos\karma-kebab\shift-service\bin\Debug\net8.0\shift-service.dll
+C:\Users\avorn\source\repos\karma-kebab\shift-service\bin\Debug\net8.0\shift-service.pdb
+C:\Users\avorn\source\repos\karma-kebab\shift-service\bin\Debug\net8.0\Azure.Core.dll
+C:\Users\avorn\source\repos\karma-kebab\shift-service\bin\Debug\net8.0\Azure.Data.Tables.dll
+C:\Users\avorn\source\repos\karma-kebab\shift-service\bin\Debug\net8.0\Azure.Identity.dll
+C:\Users\avorn\source\repos\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.AspNetCore.OpenApi.dll
+C:\Users\avorn\source\repos\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.Bcl.AsyncInterfaces.dll
+C:\Users\avorn\source\repos\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.dll
+C:\Users\avorn\source\repos\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Abstractions.dll
+C:\Users\avorn\source\repos\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.Extensions.Azure.dll
+C:\Users\avorn\source\repos\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.Extensions.Caching.Abstractions.dll
+C:\Users\avorn\source\repos\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.Extensions.Caching.Memory.dll
+C:\Users\avorn\source\repos\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.Extensions.DependencyInjection.dll
+C:\Users\avorn\source\repos\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll
+C:\Users\avorn\source\repos\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.Extensions.Logging.dll
+C:\Users\avorn\source\repos\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.Extensions.Logging.Abstractions.dll
+C:\Users\avorn\source\repos\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.Extensions.Options.dll
+C:\Users\avorn\source\repos\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.Extensions.Primitives.dll
+C:\Users\avorn\source\repos\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.Identity.Client.dll
+C:\Users\avorn\source\repos\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.Identity.Client.Extensions.Msal.dll
+C:\Users\avorn\source\repos\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.IdentityModel.Abstractions.dll
+C:\Users\avorn\source\repos\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.OpenApi.dll
+C:\Users\avorn\source\repos\karma-kebab\shift-service\bin\Debug\net8.0\Swashbuckle.AspNetCore.Swagger.dll
+C:\Users\avorn\source\repos\karma-kebab\shift-service\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerGen.dll
+C:\Users\avorn\source\repos\karma-kebab\shift-service\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerUI.dll
+C:\Users\avorn\source\repos\karma-kebab\shift-service\bin\Debug\net8.0\System.ClientModel.dll
+C:\Users\avorn\source\repos\karma-kebab\shift-service\bin\Debug\net8.0\System.Diagnostics.DiagnosticSource.dll
+C:\Users\avorn\source\repos\karma-kebab\shift-service\bin\Debug\net8.0\System.Memory.Data.dll
+C:\Users\avorn\source\repos\karma-kebab\shift-service\bin\Debug\net8.0\System.Security.Cryptography.ProtectedData.dll
+C:\Users\avorn\source\repos\karma-kebab\shift-service\bin\Debug\net8.0\runtimes\win\lib\netstandard2.0\System.Security.Cryptography.ProtectedData.dll
+C:\Users\avorn\source\repos\karma-kebab\shift-service\obj\Debug\net8.0\shift-service.csproj.AssemblyReference.cache
+C:\Users\avorn\source\repos\karma-kebab\shift-service\obj\Debug\net8.0\shift-service.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\avorn\source\repos\karma-kebab\shift-service\obj\Debug\net8.0\shift-service.AssemblyInfoInputs.cache
+C:\Users\avorn\source\repos\karma-kebab\shift-service\obj\Debug\net8.0\shift-service.AssemblyInfo.cs
+C:\Users\avorn\source\repos\karma-kebab\shift-service\obj\Debug\net8.0\shift-service.csproj.CoreCompileInputs.cache
+C:\Users\avorn\source\repos\karma-kebab\shift-service\obj\Debug\net8.0\shift-service.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\avorn\source\repos\karma-kebab\shift-service\obj\Debug\net8.0\shift-service.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\avorn\source\repos\karma-kebab\shift-service\obj\Debug\net8.0\shift-service.sourcelink.json
+C:\Users\avorn\source\repos\karma-kebab\shift-service\obj\Debug\net8.0\scopedcss\bundle\shift-service.styles.css
+C:\Users\avorn\source\repos\karma-kebab\shift-service\obj\Debug\net8.0\staticwebassets.build.json
+C:\Users\avorn\source\repos\karma-kebab\shift-service\obj\Debug\net8.0\staticwebassets.development.json
+C:\Users\avorn\source\repos\karma-kebab\shift-service\obj\Debug\net8.0\staticwebassets.build.endpoints.json
+C:\Users\avorn\source\repos\karma-kebab\shift-service\obj\Debug\net8.0\staticwebassets\msbuild.shift-service.Microsoft.AspNetCore.StaticWebAssets.props
+C:\Users\avorn\source\repos\karma-kebab\shift-service\obj\Debug\net8.0\staticwebassets\msbuild.shift-service.Microsoft.AspNetCore.StaticWebAssetEndpoints.props
+C:\Users\avorn\source\repos\karma-kebab\shift-service\obj\Debug\net8.0\staticwebassets\msbuild.build.shift-service.props
+C:\Users\avorn\source\repos\karma-kebab\shift-service\obj\Debug\net8.0\staticwebassets\msbuild.buildMultiTargeting.shift-service.props
+C:\Users\avorn\source\repos\karma-kebab\shift-service\obj\Debug\net8.0\staticwebassets\msbuild.buildTransitive.shift-service.props
+C:\Users\avorn\source\repos\karma-kebab\shift-service\obj\Debug\net8.0\staticwebassets.pack.json
+C:\Users\avorn\source\repos\karma-kebab\shift-service\obj\Debug\net8.0\shift-se.6F7F19FE.Up2Date
+C:\Users\avorn\source\repos\karma-kebab\shift-service\obj\Debug\net8.0\shift-service.dll
+C:\Users\avorn\source\repos\karma-kebab\shift-service\obj\Debug\net8.0\refint\shift-service.dll
+C:\Users\avorn\source\repos\karma-kebab\shift-service\obj\Debug\net8.0\shift-service.pdb
+C:\Users\avorn\source\repos\karma-kebab\shift-service\obj\Debug\net8.0\shift-service.genruntimeconfig.cache
+C:\Users\avorn\source\repos\karma-kebab\shift-service\obj\Debug\net8.0\ref\shift-service.dll
+=======
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\appsettings.Development.json
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\appsettings.json
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\shift-service.exe
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\shift-service.deps.json
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\shift-service.runtimeconfig.json
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\shift-service.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\shift-service.pdb
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Azure.Core.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Azure.Data.Tables.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Azure.Identity.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.AspNetCore.OpenApi.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.Bcl.AsyncInterfaces.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Abstractions.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.Extensions.Azure.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.Extensions.Caching.Abstractions.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.Extensions.Caching.Memory.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.Extensions.DependencyInjection.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.Extensions.Logging.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.Extensions.Logging.Abstractions.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.Extensions.Options.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.Extensions.Primitives.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.Identity.Client.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.Identity.Client.Extensions.Msal.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.IdentityModel.Abstractions.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Microsoft.OpenApi.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Swashbuckle.AspNetCore.Swagger.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerGen.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerUI.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\System.ClientModel.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\System.Diagnostics.DiagnosticSource.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\System.Memory.Data.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\System.Security.Cryptography.ProtectedData.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\bin\Debug\net8.0\runtimes\win\lib\netstandard2.0\System.Security.Cryptography.ProtectedData.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\shift-service.csproj.AssemblyReference.cache
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\shift-service.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\shift-service.AssemblyInfoInputs.cache
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\shift-service.AssemblyInfo.cs
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\shift-service.csproj.CoreCompileInputs.cache
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\shift-service.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\shift-service.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\shift-service.sourcelink.json
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\staticwebassets.build.json
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\staticwebassets.development.json
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\staticwebassets\msbuild.shift-service.Microsoft.AspNetCore.StaticWebAssets.props
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\staticwebassets\msbuild.build.shift-service.props
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\staticwebassets\msbuild.buildMultiTargeting.shift-service.props
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\staticwebassets\msbuild.buildTransitive.shift-service.props
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\staticwebassets.pack.json
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\scopedcss\bundle\shift-service.styles.css
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\shift-se.6F7F19FE.Up2Date
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\shift-service.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\refint\shift-service.dll
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\shift-service.pdb
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\shift-service.genruntimeconfig.cache
+C:\Users\miede\OneDrive\Documents\Cloud Computing\Karma Kebab project\karma-kebab\shift-service\obj\Debug\net8.0\ref\shift-service.dll
+>>>>>>> origin/develop
