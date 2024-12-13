@@ -6,6 +6,8 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Models;
+using Newtonsoft.Json;
 
 namespace Services
 {
@@ -42,27 +44,44 @@ namespace Services
                     var message = Encoding.UTF8.GetString(body);
                     _logger.LogInformation($" [x] Received {message}");
 
+                    // Deserialize the JSON message into the EventMessage object
+                    EventMessage eventMessage = JsonConvert.DeserializeObject<EventMessage>(message);
+                    if (eventMessage == null)
+                    {
+                        _logger.LogError(" [!] Deserialized event message is null.");
+                        return;
+                    }
+
+                    // Now you can assign the values to individual variables
+                    string eventID = eventMessage.EventID;
+                    string startTime = eventMessage.StartTime;
+                    string endTime = eventMessage.EndTime;
+                    int shiftsNumber = eventMessage.ShiftsNumber;
+
                     // Assuming the message contains data needed to create a shift
                     var requestData = new
                     {
-                        employeeId = "2dc142cb-c95d-4ab5-a258-1d04c2d6c244",
-                        startTime = "2025-12-26T09:00:00",
-                        endTime = "2025-12-26T17:00:00",
+                        employeeId = "2dc142cb-c95d-4ab5-a258-1d04c2d6c244", // TODO: This should be automatically assigned based on the availability
+                        startTime = startTime,
+                        endTime = endTime,
                         shiftType = "Standby",
                     };
 
-                    var jsonContent = new StringContent(JsonSerializer.Serialize(requestData), Encoding.UTF8, "application/json");
+                    var jsonContent = new StringContent(System.Text.Json.JsonSerializer.Serialize(requestData), Encoding.UTF8, "application/json");
 
-                    // Send POST request to Shift Service
-                    var response = await _httpClient.PostAsync(_shiftServiceUrl, jsonContent);
+                    for (int i = 1; i <= shiftsNumber; i++)
+                    {
+                        // Send POST request to Shift Service
+                        var response = await _httpClient.PostAsync(_shiftServiceUrl, jsonContent);
 
-                    if (response.IsSuccessStatusCode)
-                    {
-                        _logger.LogInformation(" [✓] Shift created successfully.");
-                    }
-                    else
-                    {
-                        _logger.LogError($" [!] Failed to create shift. Status: {response.StatusCode}");
+                        if (response.IsSuccessStatusCode)
+                        {
+                            _logger.LogInformation(" [✓] Shift created successfully.");
+                        }
+                        else
+                        {
+                            _logger.LogError($" [!] Failed to create shift. Status: {response.StatusCode}");
+                        }
                     }
                 }
                 catch (Exception ex)
