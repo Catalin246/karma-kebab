@@ -1,11 +1,12 @@
 FROM nginx:latest
 
 # Copy both configuration files
-COPY nginx.prod.conf /etc/nginx/nginx.prod.conf
+COPY nginx.local.conf /etc/nginx/nginx.local.conf
+COPY nginx.prod.conf /etc/nginx/nginx.conf
 
 # Default configuration file
 ARG CONFIG=prod
-RUN cp /etc/nginx/nginx.${CONFIG}.conf /etc/nginx/nginx.conf
+RUN cp nginx.${CONFIG}.conf /etc/nginx/nginx.conf
 
-EXPOSE 80
+EXPOSE 5000
 CMD ["nginx", "-g", "daemon off;"]
