@@ -37,3 +37,10 @@ jobs:
           if echo "$CHANGED_FILES" | grep -q '^api-gateway/'; then
             echo "api_gateway=true" >> $GITHUB_ENV
           fi
+          
+      - name: Deploy API Gateway
+        if: env.api_gateway == 'true'
+        run: |
+          echo "Deploying API Gateway..."
+          oc project ${{ secrets.NAMESPACE }}
+          oc apply -f api-gateway/deployment.yaml
