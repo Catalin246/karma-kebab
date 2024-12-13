@@ -80,47 +80,74 @@ func (h *DutyAssignmentHandler) CreateDutyAssignments(w http.ResponseWriter, r *
 	json.NewEncoder(w).Encode(response)
 }
 
-// updates a duty assignment
+// updates a duty assignment //TODO make this method shorter
 func (h *DutyAssignmentHandler) UpdateDutyAssignment(w http.ResponseWriter, r *http.Request) {
-	// get ShiftId and DutyId from path parameters
 	vars := mux.Vars(r)
 
-	//chekck if they are in the parameter
+	// get ShiftId and DutyId from path parameters
+	// chekck if they are in the parameter
 	if vars["ShiftId"] == "" || vars["DutyId"] == "" {
 		http.Error(w, "Missing 'ShiftId' or 'DutyId' path parameter", http.StatusBadRequest)
 		return
 	}
 
-	// parse the uuids
+	//parse the UUIDs
 	uuids, err := parseUUIDs(map[string]string{"ShiftId": vars["ShiftId"], "DutyId": vars["DutyId"]})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	var updatedDutyAssignment models.DutyAssignment
-	if err := json.NewDecoder(r.Body).Decode(&updatedDutyAssignment); err != nil {
-		http.Error(w, "Invalid request body: "+err.Error(), http.StatusBadRequest)
+	// parsing the form to handle file upload (limit to 10MB)
+	if err := r.ParseMultipartForm(10 << 20); err != nil {
+		http.Error(w, "Failed to parse multipart form: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	if !models.ValidateDutyAssignmentStatus(updatedDutyAssignment.DutyAssignmentStatus) {
-		http.Error(w, "Invalid DutyAssignmentStatus. Valid values are 'Completed' or 'Incomplete'.", http.StatusBadRequest)
+	// get the file
+	file, _, err := r.FormFile("image")
+	if err != nil && err != http.ErrMissingFile {
+		http.Error(w, "Failed to get image file: "+err.Error(), http.StatusBadRequest)
 		return
 	}
+	defer func() {
+		if file != nil {
+			file.Close()
+		}
+	}()
 
-	if updatedDutyAssignment.PartitionKey != uuids["ShiftId"] || updatedDutyAssignment.RowKey != uuids["DutyId"] {
+	// get other form fields
+	dutyAssignment := models.DutyAssignment{
+		PartitionKey:         uuid.MustParse(r.FormValue("PartitionKey")),
+		RowKey:               uuid.MustParse(r.FormValue("RowKey")),
+		DutyAssignmentStatus: models.DutyAssignmentStatus(r.FormValue("DutyAssignmentStatus")),
+	}
+
+	// optional fields:
+	if note := r.FormValue("DutyAssignmentNote"); note != "" {
+		dutyAssignment.DutyAssignmentNote = &note
+	}
+
+	//check ShiftId and DutyId
+	if dutyAssignment.PartitionKey != uuids["ShiftId"] || dutyAssignment.RowKey != uuids["DutyId"] {
 		http.Error(w, "Mismatched ShiftId or DutyId in request body", http.StatusBadRequest)
 		return
 	}
 
-	if err := h.service.UpdateDutyAssignment(context.Background(), updatedDutyAssignment); err != nil {
+	// check DutyAssignmentStatus
+	if !models.ValidateDutyAssignmentStatus(dutyAssignment.DutyAssignmentStatus) {
+		http.Error(w, "Invalid DutyAssignmentStatus. Valid values are 'Completed' or 'Incomplete'.", http.StatusBadRequest)
+		return
+	}
+
+	// Call the service to update the duty assignment
+	if err := h.service.UpdateDutyAssignment(context.Background(), dutyAssignment, file); err != nil {
 		http.Error(w, "Failed to update duty assignment: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)                                                     //200
+	w.WriteHeader(http.StatusOK)                                                     // 200 ok
 	response := map[string]string{"message": "Duty assignment updated successfully"} // if it is updated and the resposne is 200
 	json.NewEncoder(w).Encode(response)
 }

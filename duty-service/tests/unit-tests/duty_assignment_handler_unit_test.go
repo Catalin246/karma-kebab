@@ -7,6 +7,7 @@ import (
 	"duty-service/models"
 	"duty-service/tests/mocks"
 	"encoding/json"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -95,40 +96,51 @@ func TestUpdateDutyAssignment_Success(t *testing.T) {
 	mockService := new(mocks.MockDutyAssignmentService)
 	handler := handlers.NewDutyAssignmentHandler(mockService)
 
-	// mock DutyAssignment
-	updatedDutyAssignment := models.DutyAssignment{
-		PartitionKey:           uuid.New(), //  ShiftId
-		RowKey:                 uuid.New(), //  DutyId
-		DutyAssignmentStatus:   models.StatusCompleted,
-		DutyAssignmentImageUrl: nil,
-		DutyAssignmentNote:     nil,
+	//dummy id data as PK and RK
+	partitionKey := uuid.New()
+	rowKey := uuid.New()
+
+	//setup the dutyassignment
+	dutyAssignmentStatus := models.StatusCompleted
+	dutyAssignment := models.DutyAssignment{
+		PartitionKey:         partitionKey,
+		RowKey:               rowKey,
+		DutyAssignmentStatus: dutyAssignmentStatus,
 	}
 
-	body, _ := json.Marshal(updatedDutyAssignment)
+	// creating a buffer to hold the multipart form data
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
 
-	mockService.On("UpdateDutyAssignment", mock.Anything, updatedDutyAssignment).Return(nil)
+	// adding required fields to the form data
+	_ = writer.WriteField("PartitionKey", partitionKey.String())
+	_ = writer.WriteField("RowKey", rowKey.String())
+	_ = writer.WriteField("DutyAssignmentStatus", string(dutyAssignmentStatus))
 
-	req := httptest.NewRequest(http.MethodPut, "/duty-assignments/"+updatedDutyAssignment.PartitionKey.String()+"/"+updatedDutyAssignment.RowKey.String(), bytes.NewReader(body))
+	writer.Close() // closing the writer to finalize the multipart form
+
+	mockService.On("UpdateDutyAssignment", mock.Anything, dutyAssignment, mock.Anything).Return(nil)
+
+	// PUT request with the multipart form data
+	req := httptest.NewRequest(http.MethodPut, "/duty-assignments/"+partitionKey.String()+"/"+rowKey.String(), body)
 	req = mux.SetURLVars(req, map[string]string{
-		"ShiftId": updatedDutyAssignment.PartitionKey.String(),
-		"DutyId":  updatedDutyAssignment.RowKey.String(),
+		"ShiftId": partitionKey.String(),
+		"DutyId":  rowKey.String(),
 	})
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Content-Type", writer.FormDataContentType())
 
 	rec := httptest.NewRecorder()
 
 	handler.UpdateDutyAssignment(rec, req)
 
-	require.Equal(t, http.StatusOK, rec.Result().StatusCode)
-
+	require.Equal(t, http.StatusOK, rec.Result().StatusCode) // asseritng the status code is 200 OK
 	require.Equal(t, "application/json", rec.Result().Header.Get("Content-Type"))
 
+	// verify response body
 	var response map[string]string
 	err := json.NewDecoder(rec.Body).Decode(&response)
 	require.NoError(t, err)
-
 	require.Equal(t, "Duty assignment updated successfully", response["message"])
-
 	mockService.AssertExpectations(t)
 }
 

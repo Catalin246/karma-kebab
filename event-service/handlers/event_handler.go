@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"event-service/models"
 	"event-service/services"
+	"log"
 	"net/http"
 	"time"
 
@@ -12,13 +13,15 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// EventHandler struct now includes RabbitMQService
 type EventHandler struct {
-	service services.EventServiceInteface
+	service         services.EventServiceInteface
+	rabbitMQService *services.RabbitMQService
 }
 
 // NewEventHandler creates a new EventHandler
-func NewEventHandler(service services.EventServiceInteface) *EventHandler {
-	return &EventHandler{service: service}
+func NewEventHandler(service services.EventServiceInteface, rabbitMQService *services.RabbitMQService) *EventHandler {
+	return &EventHandler{service: service, rabbitMQService: rabbitMQService}
 }
 
 func (h *EventHandler) GetEvents(w http.ResponseWriter, r *http.Request) {
@@ -87,6 +90,10 @@ func (h *EventHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := h.rabbitMQService.PublishMessage("eventCreated", "Event Created!"); err != nil {
+		log.Println("Failed to publish message:", err)
+	}
+
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(map[string]string{"message": "Event created successfully"})
 }
@@ -108,6 +115,10 @@ func (h *EventHandler) UpdateEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := h.rabbitMQService.PublishMessage("eventUpdated", "Event Updated!"); err != nil {
+		log.Println("Failed to publish message:", err)
+	}
+
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"message": "Event updated successfully"})
 }
@@ -127,7 +138,10 @@ func (h *EventHandler) DeleteEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	if err := h.rabbitMQService.PublishMessage("eventDeleted", "Event Deleted!"); err != nil {
+		log.Println("Failed to publish message:", err)
+	}
+
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"message": "Event deleted successfully"})
 }

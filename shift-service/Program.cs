@@ -4,6 +4,11 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.OpenApi.Models;
 using Middlewares;
+using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
+using System.Text;
+using System.Text.Json;
+using Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,10 +17,12 @@ builder.Services.Configure<AzureStorageConfig>(
 
 builder.Services.AddScoped<IShiftDbContext, ShiftDbContext>();
 builder.Services.AddScoped<IShiftService, ShiftService>();
-builder.Services.AddLogging(); // Ensure logging is added
-
-
+builder.Services.AddLogging(); 
 builder.Services.AddControllers();
+
+// Add RabbitMQ Service
+builder.Services.AddHttpClient<IRabbitMqService, RabbitMqService>();
+builder.Services.AddHostedService<RabbitMqHostedService>();
 
 // Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
