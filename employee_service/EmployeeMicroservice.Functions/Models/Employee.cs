@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 public class Employee
 {
+    
     [Key]
     public Guid EmployeeId { get; set; }
     public DateTime? DateOfBirth { get; set; }
@@ -17,5 +18,5 @@ public class Employee
     
     [Column(TypeName = "text[]")]
     public List<Skill> Skills { get; set; } = new();
-}
 
+}

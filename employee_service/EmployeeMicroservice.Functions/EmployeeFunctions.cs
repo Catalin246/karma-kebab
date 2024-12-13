@@ -7,6 +7,7 @@ using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System.Net;
+using employee_service.utility;
 
 namespace EmployeeMicroservice.Functions
 {
@@ -27,24 +28,28 @@ namespace EmployeeMicroservice.Functions
             FunctionContext executionContext)
         {
             var log = executionContext.GetLogger("GetAllEmployees");
-            log.LogInformation("Fetching all employees");
 
-            var employees = await _employeeService.GetAllEmployeesAsync();
-
-            // Handle the empty case explicitly
-            if (employees == null || !employees.Any())
+            return await ExceptionService.HandleRequestAsync(async () =>
             {
-                log.LogInformation("No employees found.");
-                var emptyResponse = req.CreateResponse(HttpStatusCode.OK);
-                await emptyResponse.WriteStringAsync("[]"); // Return an empty JSON array
-                return emptyResponse;
-            }
+                log.LogInformation("Fetching all employees");
 
-            var response = req.CreateResponse(HttpStatusCode.OK);
-            response.Headers.Add("Content-Type", "application/json");
-            await response.WriteStringAsync(JsonConvert.SerializeObject(employees));
+                var employees = await _employeeService.GetAllEmployeesAsync();
 
-            return response;
+                // Handle the empty case explicitly
+                if (employees == null || !employees.Any())
+                {
+                    log.LogInformation("No employees found.");
+                    var emptyResponse = req.CreateResponse(HttpStatusCode.OK);
+                    await emptyResponse.WriteStringAsync("[]"); // Return an empty JSON array
+                    return emptyResponse;
+                }
+
+                var response = req.CreateResponse(HttpStatusCode.OK);
+                response.Headers.Add("Content-Type", "application/json");
+                await response.WriteStringAsync(JsonConvert.SerializeObject(employees));
+
+                return response;
+            }, log, req);
         }
 
         // Get Employee by ID
@@ -55,18 +60,55 @@ namespace EmployeeMicroservice.Functions
             FunctionContext executionContext)
         {
             var log = executionContext.GetLogger("GetEmployeeById");
-            log.LogInformation($"Fetching employee with ID: {id}");
 
-            var employee = await _employeeService.GetEmployeeByIdAsync(id);
-            var response = req.CreateResponse(employee != null ? HttpStatusCode.OK : HttpStatusCode.NotFound);
-
-            if (employee != null)
+            return await ExceptionService.HandleRequestAsync(async () =>
             {
-                response.Headers.Add("Content-Type", "application/json");
-                await response.WriteStringAsync(JsonConvert.SerializeObject(employee));
-            }
+                log.LogInformation($"Fetching employee with ID: {id}");
 
-            return response;
+                var employee = await _employeeService.GetEmployeeByIdAsync(id);
+                var response = req.CreateResponse(employee != null ? HttpStatusCode.OK : HttpStatusCode.NotFound);
+
+                if (employee != null)
+                {
+                    response.Headers.Add("Content-Type", "application/json");
+                    await response.WriteStringAsync(JsonConvert.SerializeObject(employee));
+                }
+
+                return response;
+            }, log, req);
+        }
+
+        // Get By Role
+        [Function("GetEmployeeByRole")]
+        public async Task<HttpResponseData> GetEmployeeByRole(
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "employees/role/{role:int}")] HttpRequestData req,
+            int role,
+            FunctionContext executionContext)
+        {
+            var log = executionContext.GetLogger("GetEmployeeByRole");
+
+            return await ExceptionService.HandleRequestAsync(async () =>
+            {
+                log.LogInformation($"Fetching employees with Role: {role}");
+
+                // Validate role input
+                if (!Enum.IsDefined(typeof(EmployeeRole), role))
+                {
+                    log.LogWarning("Invalid role specified.");
+                    var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+                    await errorResponse.WriteStringAsync("Invalid role specified.");
+                    return errorResponse;
+                }
+
+                // Fetch employees by role
+                var employees = await _employeeService.GetEmployeesByRoleAsync((EmployeeRole)role);
+
+                var response = req.CreateResponse(HttpStatusCode.OK);
+                response.Headers.Add("Content-Type", "application/json");
+                await response.WriteStringAsync(JsonConvert.SerializeObject(employees));
+
+                return response;
+            }, log, req);
         }
 
         // Add Employee
@@ -74,24 +116,28 @@ namespace EmployeeMicroservice.Functions
         public async Task<HttpResponseData> AddEmployee(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = "employees")] HttpRequestData req,
             FunctionContext executionContext)
-        {   
+        {
             var logger = req.FunctionContext.GetLogger("AddEmployee");
             var log = executionContext.GetLogger("AddEmployee");
-            log.LogInformation("Adding new employee");
 
-            // read body content of incoming Http request as string
-            var content = await req.ReadAsStringAsync();
-            System.Console.WriteLine(content);
-            var employeeDto = JsonConvert.DeserializeObject<EmployeeDTO>(content);
+            return await ExceptionService.HandleRequestAsync(async () =>
+            {
+                log.LogInformation("Adding new employee");
 
-            logger.LogInformation($"Deserialized Employee: {JsonConvert.SerializeObject(employeeDto)}");
-            var addedEmployee = await _employeeService.AddEmployeeAsync(employeeDto);
+                // Read body content of incoming Http request as string
+                var content = await req.ReadAsStringAsync();
+                var employeeDto = JsonConvert.DeserializeObject<EmployeeDTO>(content);
 
-            var response = req.CreateResponse(HttpStatusCode.Created);
-            response.Headers.Add("Content-Type", "application/json");
-            await response.WriteStringAsync(JsonConvert.SerializeObject(addedEmployee));
+                logger.LogInformation($"Deserialized Employee: {JsonConvert.SerializeObject(employeeDto)}");
 
-            return response;
+                var addedEmployee = await _employeeService.AddEmployeeAsync(employeeDto);
+
+                var response = req.CreateResponse(HttpStatusCode.Created);
+                response.Headers.Add("Content-Type", "application/json");
+                await response.WriteStringAsync(JsonConvert.SerializeObject(addedEmployee));
+
+                return response;
+            }, log, req);
         }
 
         // Update Employee
@@ -102,25 +148,28 @@ namespace EmployeeMicroservice.Functions
             FunctionContext executionContext)
         {
             var log = executionContext.GetLogger("UpdateEmployee");
-            log.LogInformation($"Updating employee with ID: {id}");
 
-            var requestBody = await req.ReadAsStringAsync();
-            var updatedEmployeeDto = JsonConvert.DeserializeObject<EmployeeDTO>(requestBody);
-
-            var updatedEmployee = await _employeeService.UpdateEmployeeAsync(id, updatedEmployeeDto);
-
-            var response = req.CreateResponse(updatedEmployee != null ? HttpStatusCode.OK : HttpStatusCode.NotFound);
-
-            if (updatedEmployee != null)
+            return await ExceptionService.HandleRequestAsync(async () =>
             {
-                response.Headers.Add("Content-Type", "application/json");
-                await response.WriteStringAsync(JsonConvert.SerializeObject(updatedEmployee));
-            }
+                log.LogInformation($"Updating employee with ID: {id}");
 
-            return response;
+                var requestBody = await req.ReadAsStringAsync();
+                var updatedEmployeeDto = JsonConvert.DeserializeObject<EmployeeDTO>(requestBody);
+
+                var updatedEmployee = await _employeeService.UpdateEmployeeAsync(id, updatedEmployeeDto);
+
+                var response = req.CreateResponse(updatedEmployee != null ? HttpStatusCode.OK : HttpStatusCode.NotFound);
+
+                if (updatedEmployee != null)
+                {
+                    response.Headers.Add("Content-Type", "application/json");
+                    await response.WriteStringAsync(JsonConvert.SerializeObject(updatedEmployee));
+                }
+
+                return response;
+            }, log, req);
         }
 
-    
         // Delete Employee
         [Function("DeleteEmployee")]
         public async Task<HttpResponseData> DeleteEmployee(
@@ -129,13 +178,16 @@ namespace EmployeeMicroservice.Functions
             FunctionContext executionContext)
         {
             var log = executionContext.GetLogger("DeleteEmployee");
-            log.LogInformation($"Deleting employee with ID: {id}");
 
-            var result = await _employeeService.DeleteEmployeeAsync(id);
+            return await ExceptionService.HandleRequestAsync(async () =>
+            {
+                log.LogInformation($"Deleting employee with ID: {id}");
 
-            var response = req.CreateResponse(result ? HttpStatusCode.NoContent : HttpStatusCode.NotFound);
-            return response;
+                var result = await _employeeService.DeleteEmployeeAsync(id);
+
+                var response = req.CreateResponse(result ? HttpStatusCode.NoContent : HttpStatusCode.NotFound);
+                return response;
+            }, log, req);
         }
-
     }
 }
