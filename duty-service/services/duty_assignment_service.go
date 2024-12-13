@@ -5,6 +5,7 @@ import (
 	"duty-service/models"
 	"duty-service/repositories"
 	"fmt"
+	"mime/multipart"
 
 	"github.com/google/uuid"
 )
@@ -37,8 +38,8 @@ func (s *DutyAssignmentService) CreateDutyAssignments(ctx context.Context, shift
 }
 
 // PUT update a duty
-func (s *DutyAssignmentService) UpdateDutyAssignment(ctx context.Context, dutyAssignment models.DutyAssignment) error {
-	return s.repo.UpdateDutyAssignment(ctx, dutyAssignment)
+func (s *DutyAssignmentService) UpdateDutyAssignment(ctx context.Context, dutyAssignment models.DutyAssignment, file multipart.File) error {
+	return s.repo.UpdateDutyAssignment(ctx, dutyAssignment, file)
 }
 
 // DELETE a duty assignment by ShiftId and DutyId

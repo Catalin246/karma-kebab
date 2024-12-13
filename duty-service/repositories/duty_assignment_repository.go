@@ -2,21 +2,26 @@ package repositories
 
 import (
 	"context"
+	"duty-service/db"
 	"duty-service/models"
 	"encoding/json"
 	"fmt"
+	"io"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/data/aztables"
+	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
 	"github.com/google/uuid"
 )
 
 type DutyAssignmentRepository struct {
+	blobClient    *azblob.Client
 	serviceClient *aztables.ServiceClient
 	tableName     string
 }
 
-func NewDutyAssignmentRepository(serviceClient *aztables.ServiceClient) *DutyAssignmentRepository {
+func NewDutyAssignmentRepository(serviceClient *aztables.ServiceClient, blobClient *azblob.Client) *DutyAssignmentRepository {
 	return &DutyAssignmentRepository{
+		blobClient:    blobClient,
 		serviceClient: serviceClient,
 		tableName:     "dutyAssignments",
 	}
@@ -115,8 +120,19 @@ func (r *DutyAssignmentRepository) CreateDutyAssignments(ctx context.Context, sh
 }
 
 // UPDATE a duty assignment
-func (r *DutyAssignmentRepository) UpdateDutyAssignment(ctx context.Context, dutyAssignment models.DutyAssignment) error {
+func (r *DutyAssignmentRepository) UpdateDutyAssignment(ctx context.Context, dutyAssignment models.DutyAssignment, image io.Reader) error {
 	tableClient := r.serviceClient.NewClient(r.tableName)
+
+	// If there's an image to upload, handle the upload and get the URL
+	if image != nil {
+		//blobName := fmt.Sprintf("%s/%s.png", dutyAssignment.PartitionKey.String(), dutyAssignment.RowKey.String()) //folder structure
+		blobName := fmt.Sprintf("%s_%s.png", dutyAssignment.PartitionKey.String(), dutyAssignment.RowKey.String()) // no folder structure, just a unique name. [shiftid]_[dutyid].png
+		imageURL, err := db.UploadImage(ctx, "dutyassignmentimages", blobName, image)
+		if err != nil {
+			return fmt.Errorf("failed to upload image: %v", err)
+		}
+		dutyAssignment.DutyAssignmentImageUrl = &imageURL
+	}
 
 	// preparing the updated entity (only include fields that are non-nil or non-empty)
 	entity := map[string]interface{}{

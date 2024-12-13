@@ -3,11 +3,14 @@ package db
 import (
 	"context"
 	"errors"
+	"fmt"
+	"io"
 	"log"
 	"net/http"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/data/aztables"
+	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
 )
 
 // Global Azure Table Storage Client
@@ -59,6 +62,54 @@ func isResourceExistsError(err error) bool {
 	var responseErr *azcore.ResponseError
 	if errors.As(err, &responseErr) {
 		return responseErr.StatusCode == http.StatusConflict // 409 Conflict indicates resource exists
+	}
+	return false
+}
+
+//////////////////////////////////////
+
+// Azure Blob for Duty Assignment images:
+
+// Global Azure Blob Storage client
+var BlobServiceClient *azblob.Client
+
+// InitAzureBlobStorage initializes the Azure Blob Storage client
+func InitAzureBlobStorage(connectionString string) (*azblob.Client, error) {
+	client, err := azblob.NewClientFromConnectionString(connectionString, nil)
+	if err != nil {
+		log.Fatalf("Failed to create Azure Blob Storage client: %v", err)
+		return nil, err
+	}
+
+	BlobServiceClient = client //TODO check
+	log.Println("Successfully connected to Azure Blob Storage")
+	return BlobServiceClient, nil
+}
+
+// UploadImage uploads an image to the specified container and returns the URL
+func UploadImage(ctx context.Context, containerName string, blobName string, imageData io.Reader) (string, error) {
+	// Ensure the container exists (create if not)
+	_, err := BlobServiceClient.CreateContainer(ctx, containerName, nil)
+	if err != nil && !isContainerExistsError(err) {
+		return "", fmt.Errorf("failed to create blob container: %v", err)
+	}
+
+	// Upload the image to the blob storage
+	_, err = BlobServiceClient.UploadStream(ctx, containerName, blobName, imageData, nil)
+	if err != nil {
+		return "", fmt.Errorf("failed to upload image: %v", err)
+	}
+
+	// Construct the blob URL
+	blobURL := fmt.Sprintf("%s/%s/%s", BlobServiceClient.URL(), containerName, blobName)
+	return blobURL, nil
+}
+
+// isContainerExistsError checks if an error is due to the container already existing
+func isContainerExistsError(err error) bool {
+	var responseErr *azcore.ResponseError
+	if errors.As(err, &responseErr) {
+		return responseErr.StatusCode == http.StatusConflict // 409 Conflict indicates container exists
 	}
 	return false
 }
