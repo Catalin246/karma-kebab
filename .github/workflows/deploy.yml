@@ -12,8 +12,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 2  # Fetch the latest 2 commits to ensure 'before' commit is available
 
       - name: Install OpenShift CLI (oc)
         run: |
@@ -37,10 +35,18 @@ jobs:
           if echo "$CHANGED_FILES" | grep -q '^api-gateway/'; then
             echo "api_gateway=true" >> $GITHUB_ENV
           fi
-          
-      - name: Deploy API Gateway
-        if: env.api_gateway == 'true'
+
+      # Step 3: Set OpenShift Project (replace with your actual project name)
+      - name: Set OpenShift Project
         run: |
-          echo "Deploying API Gateway..."
           oc project ${{ secrets.NAMESPACE }}
-          oc apply -f api-gateway/deployment.yaml
+
+      # Step 4: Trigger OpenShift Build
+      - name: Start OpenShift Build
+        run: |
+          oc start-build api-gateway --wait  # Trigger the build and wait for completion
+
+      # Step 5: Restart the application by deleting the old running pod 
+      - name: Restart the application by deleting the old running pod
+        run: |
+          oc get pods --selector=app=api-gateway --field-selector=status.phase=Running -o name | xargs -I {} oc delete {} --ignore-not-found=true
