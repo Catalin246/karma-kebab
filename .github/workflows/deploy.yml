@@ -38,17 +38,14 @@ jobs:
             echo "api_gateway=true" >> $GITHUB_ENV
           fi
 
-      # Step 3: Set OpenShift Project (replace with your actual project name)
       - name: Set OpenShift Project
         run: |
           oc project ${{ secrets.NAMESPACE }}
 
-      # Step 4: Trigger OpenShift Build
       - name: Start OpenShift Build
         run: |
           oc start-build api-gateway --wait  # Trigger the build and wait for completion
 
-      # Step 5: Restart the application by deleting the old running pod 
       - name: Restart the application by deleting the old running pod
         run: |
           oc get pods --selector=app=api-gateway --field-selector=status.phase=Running -o name | xargs -I {} oc delete {} --ignore-not-found=true
