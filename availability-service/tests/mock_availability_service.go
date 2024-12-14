@@ -28,7 +28,7 @@ func (m *MockAvailabilityService) GetByEmployeeID(ctx context.Context, employeeI
 }
 
 func (m *MockAvailabilityService) Create(ctx context.Context, availability models.Availability) (*models.Availability, error) {
-    args := m.Called(availability) 
+    args := m.Called(ctx, availability)
     if args.Get(0) == nil {
         return nil, args.Error(1)
     }

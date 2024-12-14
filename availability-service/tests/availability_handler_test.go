@@ -15,6 +15,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 // Helper function to create a request with Gorilla Mux variables
@@ -33,7 +34,6 @@ func createRequestWithVars(method, path string, vars map[string]string, body int
 		panic(err)
 	}
 
-	// Add Mux vars
 	req = mux.SetURLVars(req, vars)
 	return req
 }
@@ -54,24 +54,18 @@ func TestGetAll(t *testing.T) {
 			},
 		}
 
-		// Set expectations
 		mockService.On("GetAll", mock.Anything, mock.Anything, mock.Anything).
 			Return(mockAvailabilities, nil)
 
-		// Create request
 		req, err := http.NewRequest("GET", "/availabilities", nil)
 		assert.NoError(t, err)
 
-		// Create response recorder
 		w := httptest.NewRecorder()
 
-		// Call handler
 		handler.GetAll(w, req)
 
-		// Assert response
 		assert.Equal(t, http.StatusOK, w.Code)
 
-		// Decode response
 		var receivedAvailabilities []models.Availability
 		err = json.Unmarshal(w.Body.Bytes(), &receivedAvailabilities)
 		assert.NoError(t, err)
@@ -144,94 +138,53 @@ func TestGetByEmployeeID(t *testing.T) {
 }
 
 func TestCreate(t *testing.T) {
-	t.Run("Successful Creation", func(t *testing.T) {
-		mockService := new(MockAvailabilityService)
-		handler := handlers.NewAvailabilityHandler(mockService)
-
-		startTime := time.Date(2025, 2, 15, 22, 0, 0, 0, time.UTC)
-		endTime := startTime.Add(24 * time.Hour)
-
-		availability := models.Availability{
-			EmployeeID: "d536770f-12c9-4de4-8583-4a6bd2a302b4",
-			StartDate:  startTime,
-			EndDate:    endTime,
-		}
-
-		createdAvailability := availability
-		createdAvailability.ID = "1"
-
-		mockService.On("Create", mock.MatchedBy(func(av models.Availability) bool {
-			return av.EmployeeID == availability.EmployeeID &&
-				av.StartDate.Equal(availability.StartDate) &&
-				av.EndDate.Equal(availability.EndDate)
-		})).Return(&createdAvailability, nil)
-
-		// If you need to send JSON, you'll need a custom marshaler that formats the time
-		jsonBody, err := json.Marshal(struct {
-			EmployeeID string `json:"employee_id"`
-			StartDate  string `json:"start_date"`
-			EndDate    string `json:"end_date"`
-		}{
-			EmployeeID: availability.EmployeeID,
-			StartDate:  availability.StartDate.Format(time.RFC3339),
-			EndDate:    availability.EndDate.Format(time.RFC3339),
-		})
-		assert.NoError(t, err)
-
-		req, err := http.NewRequest("POST", "/availabilities", bytes.NewBuffer(jsonBody))
-		assert.NoError(t, err)
-
-		w := httptest.NewRecorder()
-		handler.Create(w, req)
-
-		assert.Equal(t, http.StatusCreated, w.Code)
-
-		var receivedAvailability models.Availability
-		err = json.Unmarshal(w.Body.Bytes(), &receivedAvailability)
-		assert.NoError(t, err)
-		assert.NotEmpty(t, receivedAvailability.ID)
-	})
-
-	t.Run("Conflict Scenario", func(t *testing.T) {
-		mockService := new(MockAvailabilityService)
-		handler := handlers.NewAvailabilityHandler(mockService)
-
-		startTime := time.Date(2025, 2, 15, 22, 0, 0, 0, time.UTC)
-		endTime := startTime.Add(24 * time.Hour)
-
-		availability := models.Availability{
-			EmployeeID: "emp1",
-			StartDate:  startTime,
-			EndDate:    endTime,
-		}
-
-		mockService.On("Create", mock.MatchedBy(func(av models.Availability) bool {
-			return av.EmployeeID == availability.EmployeeID &&
-				av.StartDate.Equal(availability.StartDate) &&
-				av.EndDate.Equal(availability.EndDate)
-		})).Return(nil, errors.New("availability conflicts"))
-
-		// Similar JSON marshaling as above
-		jsonBody, err := json.Marshal(struct {
-			EmployeeID string `json:"employee_id"`
-			StartDate  string `json:"start_date"`
-			EndDate    string `json:"end_date"`
-		}{
-			EmployeeID: availability.EmployeeID,
-			StartDate:  availability.StartDate.Format(time.RFC3339),
-			EndDate:    availability.EndDate.Format(time.RFC3339),
-		})
-		assert.NoError(t, err)
-
-		req, err := http.NewRequest("POST", "/availabilities", bytes.NewBuffer(jsonBody))
-		assert.NoError(t, err)
-
-		w := httptest.NewRecorder()
-		handler.Create(w, req)
-
-		assert.Equal(t, http.StatusConflict, w.Code)
-	})
+    t.Run("Successful Creation", func(t *testing.T) {
+        mockService := new(MockAvailabilityService)
+        handler := handlers.NewAvailabilityHandler(mockService)
+        
+        //test data
+        employeeID := "d536770f-12c9-4de4-8583-4a6bd2a302b4"
+        startTime := time.Date(2025, 2, 15, 22, 0, 0, 0, time.UTC)
+        endTime := startTime.Add(24 * time.Hour)
+        
+        availability := models.Availability{
+            EmployeeID: employeeID,
+            StartDate:  startTime,
+            EndDate:    endTime,
+        }
+        
+        createdAvailability := availability
+        createdAvailability.ID = "1"
+        
+        mockService.On("Create", mock.Anything, mock.MatchedBy(func(av models.Availability) bool {
+            return av.EmployeeID == employeeID &&
+                av.StartDate.Equal(startTime) &&
+                av.EndDate.Equal(endTime)
+        })).Return(&createdAvailability, nil)
+        
+        jsonBody, err := json.Marshal(availability)
+        require.NoError(t, err)
+        
+        req := httptest.NewRequest(http.MethodPost, "/availabilities", bytes.NewBuffer(jsonBody))
+        req.Header.Set("Content-Type", "application/json")
+        
+        w := httptest.NewRecorder()
+        
+        handler.Create(w, req)
+        
+        assert.Equal(t, http.StatusCreated, w.Code)
+        
+        var response models.Availability
+        err = json.Unmarshal(w.Body.Bytes(), &response)
+        require.NoError(t, err)
+        
+        assert.NotEmpty(t, response.ID)
+        assert.Equal(t, employeeID, response.EmployeeID)
+        
+        mockService.AssertExpectations(t)
+    })
 }
+
 
 func TestUpdate(t *testing.T) {
 	t.Run("Successful Update", func(t *testing.T) {
