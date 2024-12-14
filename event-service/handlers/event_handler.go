@@ -3,11 +3,12 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	"event-service/models"
-	"event-service/services"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/Catalin246/karma-kebab/models"
+	"github.com/Catalin246/karma-kebab/services"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"

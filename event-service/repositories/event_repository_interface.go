@@ -2,7 +2,8 @@ package repositories
 
 import (
 	"context"
-	"event-service/models"
+
+	"github.com/Catalin246/karma-kebab/models"
 )
 
 type EventRepositoryInterface interface {

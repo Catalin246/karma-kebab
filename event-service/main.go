@@ -1,12 +1,13 @@
 package main
 
 import (
-	"event-service/db"
-	"event-service/routes"
-	"event-service/services"
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/Catalin246/karma-kebab/db"
+	"github.com/Catalin246/karma-kebab/routes"
+	"github.com/Catalin246/karma-kebab/services"
 
 	"github.com/joho/godotenv"
 	amqp "github.com/rabbitmq/amqp091-go"

@@ -3,9 +3,10 @@ package repositories
 import (
 	"context"
 	"encoding/json"
-	"event-service/models"
 	"fmt"
 	"time"
+
+	"github.com/Catalin246/karma-kebab/models"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/data/aztables"
 	"github.com/google/uuid"
