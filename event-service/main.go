@@ -39,7 +39,11 @@ func main() {
 	}
 
 	// Initialize RabbitMQ
-	conn, err := amqp.Dial("amqp://guest:guest@rabbitmq:5672/")
+	rabbitmqUrl := os.Getenv("RABBITMQ_URL")
+	if rabbitmqUrl == "" {
+		log.Fatal("Error: RABBITMQ_URL is not set")
+	}
+	conn, err := amqp.Dial(rabbitmqUrl)
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()
 
