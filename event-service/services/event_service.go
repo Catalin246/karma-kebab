@@ -28,13 +28,13 @@ func (s *EventService) GetAll(ctx context.Context, startDate, endDate *time.Time
 	var filter string
 
 	if startDate != nil {
-		filter = "Date ge datetime'" + startDate.Format(time.RFC3339) + "'"
+		filter = "StartTime ge datetime'" + startDate.Format(time.RFC3339) + "'"
 	}
 	if endDate != nil {
 		if filter != "" {
-			filter += " and Date le datetime'" + endDate.Format(time.RFC3339) + "'"
+			filter += " and EndTime le datetime'" + endDate.Format(time.RFC3339) + "'"
 		} else {
-			filter = "Date le datetime'" + endDate.Format(time.RFC3339) + "'"
+			filter = "EndTime le datetime'" + endDate.Format(time.RFC3339) + "'"
 		}
 	}
 
