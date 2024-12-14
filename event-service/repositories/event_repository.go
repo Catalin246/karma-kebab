@@ -77,12 +77,12 @@ func (r *EventRepository) GetByID(ctx context.Context, partitionKey, rowKey stri
 	}
 
 	// Parse date from string
-	startTime, err := time.Parse(time.RFC3339, eventData["startTime"].(string))
+	startTime, err := time.Parse(time.RFC3339, eventData["StartTime"].(string))
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse event date: %v", err)
 	}
 
-	endTime, err := time.Parse(time.RFC3339, eventData["endTime"].(string))
+	endTime, err := time.Parse(time.RFC3339, eventData["EndTime"].(string))
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse event date: %v", err)
 	}
@@ -142,12 +142,12 @@ func (r *EventRepository) GetAll(ctx context.Context, filter string) ([]models.E
 			}
 
 			// Parse the date field
-			startTime, err := time.Parse(time.RFC3339, eventData["startTime"].(string))
+			startTime, err := time.Parse(time.RFC3339, eventData["StartTime"].(string))
 			if err != nil {
 				return nil, fmt.Errorf("failed to parse event date: %v", err)
 			}
 
-			endTime, err := time.Parse(time.RFC3339, eventData["endTime"].(string))
+			endTime, err := time.Parse(time.RFC3339, eventData["EndTime"].(string))
 			if err != nil {
 				return nil, fmt.Errorf("failed to parse event date: %v", err)
 			}
