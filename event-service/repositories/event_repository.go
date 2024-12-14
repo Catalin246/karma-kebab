@@ -32,7 +32,8 @@ func (r *EventRepository) Create(ctx context.Context, event models.Event) error 
 	entity := map[string]interface{}{
 		"PartitionKey": event.PartitionKey,
 		"RowKey":       event.RowKey.String(), // convert UUID to string
-		"Date":         event.Date.Format(time.RFC3339),
+		"StartTime":    event.StartTime.Format(time.RFC3339),
+		"EndTime":      event.EndTime.Format(time.RFC3339),
 		"Address":      event.Address,
 		"Venue":        event.Venue,
 		"Description":  event.Description,
@@ -76,7 +77,12 @@ func (r *EventRepository) GetByID(ctx context.Context, partitionKey, rowKey stri
 	}
 
 	// Parse date from string
-	date, err := time.Parse(time.RFC3339, eventData["Date"].(string))
+	startTime, err := time.Parse(time.RFC3339, eventData["startTime"].(string))
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse event date: %v", err)
+	}
+
+	endTime, err := time.Parse(time.RFC3339, eventData["endTime"].(string))
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse event date: %v", err)
 	}
@@ -91,7 +97,8 @@ func (r *EventRepository) GetByID(ctx context.Context, partitionKey, rowKey stri
 	event := models.Event{
 		PartitionKey: eventData["PartitionKey"].(string),
 		RowKey:       rowKeyUUID, // Assign UUID here
-		Date:         date,
+		StartTime:    startTime,
+		EndTime:      endTime,
 		Address:      eventData["Address"].(string),
 		Venue:        eventData["Venue"].(string),
 		Description:  eventData["Description"].(string),
@@ -135,7 +142,12 @@ func (r *EventRepository) GetAll(ctx context.Context, filter string) ([]models.E
 			}
 
 			// Parse the date field
-			date, err := time.Parse(time.RFC3339, eventData["Date"].(string))
+			startTime, err := time.Parse(time.RFC3339, eventData["startTime"].(string))
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse event date: %v", err)
+			}
+
+			endTime, err := time.Parse(time.RFC3339, eventData["endTime"].(string))
 			if err != nil {
 				return nil, fmt.Errorf("failed to parse event date: %v", err)
 			}
@@ -149,7 +161,8 @@ func (r *EventRepository) GetAll(ctx context.Context, filter string) ([]models.E
 			event := models.Event{
 				PartitionKey: eventData["PartitionKey"].(string),
 				RowKey:       rowKeyUUID, // Assign UUID here
-				Date:         date,
+				StartTime:    startTime,
+				EndTime:      endTime,
 				Address:      eventData["Address"].(string),
 				Venue:        eventData["Venue"].(string),
 				Description:  eventData["Description"].(string),
@@ -178,7 +191,8 @@ func (r *EventRepository) Update(ctx context.Context, partitionKey, rowKey strin
 	entity := map[string]interface{}{
 		"PartitionKey": partitionKey,
 		"RowKey":       rowKey,
-		"Date":         event.Date.Format(time.RFC3339),
+		"StartTime":    event.StartTime.Format(time.RFC3339),
+		"EndTime":      event.EndTime.Format(time.RFC3339),
 		"Address":      event.Address,
 		"Venue":        event.Venue,
 		"Description":  event.Description,
