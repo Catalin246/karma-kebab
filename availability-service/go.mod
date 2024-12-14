@@ -9,6 +9,8 @@ require (
 	github.com/joho/godotenv v1.5.1
 )
 
+require github.com/rabbitmq/amqp091-go v1.10.0 // indirect
+
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.16.0
 	github.com/Azure/azure-sdk-for-go/sdk/internal v1.10.0 // indirect
