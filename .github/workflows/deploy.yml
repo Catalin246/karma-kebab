@@ -38,14 +38,38 @@ jobs:
             echo "api_gateway=true" >> $GITHUB_ENV
           fi
 
+          if echo "$CHANGED_FILES" | grep -q '^event-service/'; then
+            echo "event_service=true" >> $GITHUB_ENV
+          fi
+
+      # Deploy the API Gateway
       - name: Set OpenShift Project
+        if: env.api_gateway == 'true'
         run: |
           oc project ${{ secrets.NAMESPACE }}
 
       - name: Start OpenShift Build
+        if: env.api_gateway == 'true'
         run: |
           oc start-build api-gateway --wait  # Trigger the build and wait for completion
 
       - name: Restart the application by deleting the old running pod
+        if: env.api_gateway == 'true'
         run: |
           oc get pods --selector=app=api-gateway --field-selector=status.phase=Running -o name | xargs -I {} oc delete {} --ignore-not-found=true
+
+      # Deploy the Event Service
+      - name: Set OpenShift Project
+        if: env.event_service == 'true'
+        run: |
+          oc project ${{ secrets.NAMESPACE }}
+
+      - name: Start OpenShift Build
+        if: env.event_service == 'true'
+        run: |
+          oc start-build event-service --wait  # Trigger the build and wait for completion
+
+      - name: Restart the application by deleting the old running pod
+        if: env.event_service == 'true'
+        run: |
+          oc get pods --selector=app=event-service --field-selector=status.phase=Running -o name | xargs -I {} oc delete {} --ignore-not-found=true
