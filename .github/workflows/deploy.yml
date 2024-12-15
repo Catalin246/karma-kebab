@@ -26,6 +26,7 @@ jobs:
         run: |
           oc login ${{ secrets.OPENSHIFT_SERVER }} --token=${{ secrets.OPENSHIFT_TOKEN }} --insecure-skip-tls-verify=true
 
+      # Detect changes chnaged directories (services)
       - name: Detect Changes
         id: changes
         run: |
@@ -40,6 +41,10 @@ jobs:
 
           if echo "$CHANGED_FILES" | grep -q '^event-service/'; then
             echo "event_service=true" >> $GITHUB_ENV
+          fi
+
+          if echo "$CHANGED_FILES" | grep -q '^rabbitmq/'; then
+            echo "rabbitmq=true" >> $GITHUB_ENV
           fi
 
       # Deploy the API Gateway
@@ -73,3 +78,19 @@ jobs:
         if: env.event_service == 'true'
         run: |
           oc get pods --selector=app=event-service --field-selector=status.phase=Running -o name | xargs -I {} oc delete {} --ignore-not-found=true
+
+      # Deploy the RabbitMQ
+      - name: Set OpenShift Project
+        if: env.rabbitmq == 'true'
+        run: |
+          oc project ${{ secrets.NAMESPACE }}
+
+      - name: Start OpenShift Build
+        if: env.rabbitmq == 'true'
+        run: |
+          oc start-build rabbitmq --wait  # Trigger the build and wait for completion
+
+      - name: Restart the application by deleting the old running pod
+        if: env.rabbitmq == 'true'
+        run: |
+          oc get pods --selector=app=rabbitmq --field-selector=status.phase=Running -o name | xargs -I {} oc delete {} --ignore-not-found=true
