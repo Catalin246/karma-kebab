@@ -6,6 +6,7 @@ import (
 	"duty-service/services"
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -54,20 +55,20 @@ func (h *DutyHandler) GetDutyById(w http.ResponseWriter, r *http.Request) {
 
 func (h *DutyHandler) GetDutiesByRole(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
-	roleId := query.Get("RoleId") // Extract the RoleId from query parameters
+	roleIdStr := query.Get("RoleId") // Get RoleId as a string from query parameters
 
-	if roleId == "" {
+	if roleIdStr == "" {
 		http.Error(w, "Missing 'RoleId' query parameter", http.StatusBadRequest)
 		return
 	}
 
-	roleIdUUID, err := uuid.Parse(roleId) // Validate the UUID format
+	roleId, err := strconv.Atoi(roleIdStr) // Convert RoleId to integer //TODO check
 	if err != nil {
 		http.Error(w, "Invalid 'RoleId' format: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	duties, err := h.service.GetDutiesByRole(context.Background(), roleIdUUID)
+	duties, err := h.service.GetDutiesByRole(context.Background(), roleId)
 	if err != nil {
 		http.Error(w, "Failed to retrieve duties by RoleId: "+err.Error(), http.StatusInternalServerError)
 		return

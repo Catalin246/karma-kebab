@@ -28,10 +28,10 @@ func (s *DutyAssignmentService) GetAllDutyAssignmentsByShiftId(ctx context.Conte
 }
 
 // POST create duty assignments for a given ShiftId and RoleId
-func (s *DutyAssignmentService) CreateDutyAssignments(ctx context.Context, shiftId uuid.UUID, roleId uuid.UUID) error {
+func (s *DutyAssignmentService) CreateDutyAssignments(ctx context.Context, shiftId uuid.UUID, roleId int) error {
 	duties, err := s.dutyRepo.GetDutiesByRole(ctx, roleId)
 	if err != nil {
-		return fmt.Errorf("failed to fetch duties for RoleId %s: %v", roleId, err)
+		return fmt.Errorf("failed to fetch duties for RoleId %d: %v", roleId, err)
 	}
 
 	return s.repo.CreateDutyAssignments(ctx, shiftId, duties)

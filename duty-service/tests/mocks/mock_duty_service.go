@@ -4,7 +4,6 @@ import (
 	"context"
 	"duty-service/models"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -23,16 +22,19 @@ func (m *MockDutyService) GetDutyById(ctx context.Context, partitionKey, rowKey 
 	return args.Get(0).(*models.Duty), args.Error(1)
 }
 
-func (m *MockDutyService) GetDutiesByRole(ctx context.Context, roleId uuid.UUID) ([]models.Duty, error) {
+// Change the type of roleId from uuid.UUID to int
+func (m *MockDutyService) GetDutiesByRole(ctx context.Context, roleId int) ([]models.Duty, error) {
 	args := m.Called(ctx, roleId)
 	return args.Get(0).([]models.Duty), args.Error(1)
 }
 
+// Modify to accept 'duty' as per the new data type for RoleId
 func (m *MockDutyService) CreateDuty(ctx context.Context, duty models.Duty) error {
 	args := m.Called(ctx, duty)
 	return args.Error(0)
 }
 
+// Modify to accept 'duty' as per the new data type for RoleId
 func (m *MockDutyService) UpdateDuty(ctx context.Context, partitionKey, rowKey string, duty models.Duty) error {
 	args := m.Called(ctx, partitionKey, rowKey, duty)
 	return args.Error(0)
