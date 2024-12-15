@@ -25,7 +25,7 @@ var host = new HostBuilder()
         services.AddDbContextFactory<ApplicationDatabase>(options =>
         {
             // Read the connection string from local.settings.json or environment variables
-            var connectionString = configuration["ConnectionStrings:PostgreSQLEntityFramework"];
+            var connectionString = configuration["Values:PostgreSQLEntityFramework"];
             options.UseNpgsql(connectionString);
         });
 
