@@ -4,7 +4,7 @@ FROM nginx:latest
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY nginx.local.conf /etc/nginx/nginx.local.conf
 
-# Set an environment variable for local development (default to production). Chnage this var to nginx.local.conf for local development.
+# Set an environment variable for local development (default to production). Change this var to nginx.local.conf for local development.
 ENV NGINX_CONFIG=nginx.conf 
 
 # Choose which config to use based on the environment variable
