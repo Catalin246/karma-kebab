@@ -2,8 +2,9 @@ package mocks
 
 import (
 	"context"
-	"event-service/models"
 	"time"
+
+	"github.com/Catalin246/karma-kebab/models"
 
 	"github.com/stretchr/testify/mock"
 )

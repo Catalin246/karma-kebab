@@ -1,11 +1,12 @@
 package routes
 
 import (
-	"event-service/handlers"
-	"event-service/middlewares"
-	"event-service/repositories"
-	"event-service/services"
 	"net/http"
+
+	"github.com/Catalin246/karma-kebab/handlers"
+	"github.com/Catalin246/karma-kebab/middlewares"
+	"github.com/Catalin246/karma-kebab/repositories"
+	"github.com/Catalin246/karma-kebab/services"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/data/aztables"
 	"github.com/gorilla/mux"

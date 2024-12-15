@@ -2,9 +2,10 @@ package services
 
 import (
 	"context"
-	"event-service/models"
-	"event-service/repositories"
 	"time"
+
+	"github.com/Catalin246/karma-kebab/models"
+	"github.com/Catalin246/karma-kebab/repositories"
 )
 
 type EventService struct {
