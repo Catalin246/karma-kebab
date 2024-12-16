@@ -22,3 +22,5 @@ app.route(route="trucks/{id}", methods=["DELETE"])(delete_truck)
 
 #filter available trucks based on date
 app.route(route="trucks/available/{date}", methods=["GET"])(get_available_trucks_date)
+
+#port 3006
