@@ -63,6 +63,20 @@ services:
     networks:
       - karama-kebab-network
 
+  availability-service:
+    build:
+      context: ./availability-service
+      dockerfile: Dockerfile
+    volumes:
+      - ./availability-service/.env:/app/.env
+    depends_on:
+      - azurite
+      - keycloak
+    ports:
+      - "3002:3002"
+    networks:
+      - karama-kebab-network
+
   api-gateway:
     build:
       context: ./api-gateway
@@ -70,6 +84,34 @@ services:
     container_name: api-gateway
     ports:
       - "3007:3007"
+    networks:
+      - karama-kebab-network
+
+  shift-service:
+    build:
+      context: ./shift-service
+      dockerfile: Dockerfile.local
+    environment:
+      - AZURE_STORAGE_CONNECTION_STRING="AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;DefaultEndpointsProtocol=http;BlobEndpoint=http://azurite:10000/devstoreaccount1;QueueEndpoint=http://azurite:10001/devstoreaccount1;TableEndpoint=http://azurite:10002/devstoreaccount1;"
+    depends_on:
+      - azurite
+      - keycloak
+    ports:
+      - "3003:3003"
+    networks:
+      - karama-kebab-network
+
+  duty-service:
+    build:
+      context: ./duty-service
+      dockerfile: Dockerfile
+    volumes:
+      - ./duty-service/.env:/app/.env
+    depends_on:
+      - azurite
+      - keycloak
+    ports:
+      - "3004:3004"
     networks:
       - karama-kebab-network
 

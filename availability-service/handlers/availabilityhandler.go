@@ -2,255 +2,257 @@ package handlers
 
 import (
 	"availability-service/models"
-	"availability-service/service"
+	"context"
+	"encoding/json"
+	"log"
 	"net/http"
+	"strings"
 	"time"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gorilla/mux"
 )
 
-type AvailabilityHandler struct {
-	service *service.AvailabilityService
+// AvailabilityServiceInterface defines the methods that the service must implement
+type IAvailability interface {
+	GetAll(ctx context.Context, startDate, endDate *time.Time) ([]models.Availability, error)
+	GetByEmployeeID(ctx context.Context, employeeID string) ([]models.Availability, error)
+	Create(ctx context.Context, availability models.Availability) (*models.Availability, error)
+	Update(ctx context.Context, employeeID, id string, availability models.Availability) error
+	Delete(ctx context.Context, employeeID, id string) error
 }
+
+type AvailabilityHandler struct {
+	service IAvailability
+}
+
 type CreateAvailabilityRequest struct {
-    EmployeeID string `json:"employeeId" binding:"required"`
-    StartDate  string `json:"startDate" binding:"required"`
-    EndDate    string `json:"endDate" binding:"required"`
+	EmployeeID string `json:"employeeId"`
+	StartDate  string `json:"startDate"`
+	EndDate    string `json:"endDate"`
 }
 
 type UpdateAvailabilityRequest struct {
-    EmployeeID string `json:"employeeId" binding:"required"`
-    StartDate  string `json:"startDate" binding:"required"`
-    EndDate    string `json:"endDate" binding:"required"`
+	EmployeeID string `json:"employeeId"`
+	StartDate  string `json:"startDate"`
+	EndDate    string `json:"endDate"`
 }
-func NewAvailabilityHandler(service *service.AvailabilityService) *AvailabilityHandler {
+
+// NewAvailabilityHandler now accepts the interface instead of a pointer to the concrete service
+func NewAvailabilityHandler(service IAvailability) *AvailabilityHandler {
 	return &AvailabilityHandler{
 		service: service,
 	}
 }
 
-// GetAll godoc
-// @Summary Get all availabilities
-// @Description Get all availability records for a specific EmployeeID
-// @Tags availability
-// @Accept json
-// @Produce json
-// @Param employeeId query string true "Employee ID"
-// @Success 200 {array} AvailabilityResponse
-// @Router /api/v1/availability [get]
-func (h *AvailabilityHandler) GetAll(c *gin.Context) {
-	// Retrieve employeeID from query parameters
-	employeeID := c.Query("employeeId")
-	if employeeID == "" {
-		// Return error if employeeID is not provided
-		c.JSON(http.StatusBadRequest, gin.H{"error": "EmployeeID is required"})
-		return
-	}
-
-	// Retrieve optional date range parameters from query
-	startDateStr := c.DefaultQuery("startDate", "")
-	endDateStr := c.DefaultQuery("endDate", "")
+func (h *AvailabilityHandler) GetAll(w http.ResponseWriter, r *http.Request) {
+	startDateStr := r.URL.Query().Get("startDate")
+	endDateStr := r.URL.Query().Get("endDate")
 
 	var startDate, endDate *time.Time
 
-	// Parse start date if provided
+	// Define multiple date formats to try
+	dateFormats := []string{
+		time.RFC3339,
+		"2006-01-02T15:04:05Z07:00",
+		"2006-01-02T15:04:05Z",
+		"2006-01-02",
+	}
+
 	if startDateStr != "" {
-		startDateParsed, err := time.Parse("2006-01-02", startDateStr) // Assuming "YYYY-MM-DD" format
+		// Remove quotes if they exist
+		startDateStr = strings.Trim(startDateStr, "\"")
+
+		var parsedStartDate time.Time
+		var err error
+
+		// Try parsing with different formats
+		for _, format := range dateFormats {
+			parsedStartDate, err = time.Parse(format, startDateStr)
+			if err == nil {
+				break
+			}
+		}
+
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid startDate format. Use YYYY-MM-DD"})
+			http.Error(w, "Invalid startDate format. Use RFC3339 format.", http.StatusBadRequest)
 			return
 		}
-		startDate = &startDateParsed
+
+		startDate = &parsedStartDate
 	}
 
-	// Parse end date if provided
 	if endDateStr != "" {
-		endDateParsed, err := time.Parse("2006-01-02", endDateStr) // Assuming "YYYY-MM-DD" format
+		// Remove quotes if they exist
+		endDateStr = strings.Trim(endDateStr, "\"")
+
+		var parsedEndDate time.Time
+		var err error
+
+		// Try parsing with different formats
+		for _, format := range dateFormats {
+			parsedEndDate, err = time.Parse(format, endDateStr)
+			if err == nil {
+				break
+			}
+		}
+
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid endDate format. Use YYYY-MM-DD"})
+			http.Error(w, "Invalid endDate format. Use RFC3339 format.", http.StatusBadRequest)
 			return
 		}
-		endDate = &endDateParsed
+
+		endDate = &parsedEndDate
 	}
 
-	// Call the service to get all availability records
-	availabilities, err := h.service.GetAll(c.Request.Context(), employeeID, startDate, endDate)
+	availabilities, err := h.service.GetAll(r.Context(), startDate, endDate)
 	if err != nil {
-		// Handle internal server error and return it to the client
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// Return success with the availability records
-	c.JSON(http.StatusOK, availabilities)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(availabilities)
 }
 
-// GetByID godoc
-// @Summary Get availability by ID
-// @Description Get a single availability record by ID and EmployeeID
-// @Tags availability
-// @Accept json
-// @Produce json
-// @Param id path string true "Availability ID"
-// @Param employeeId query string true "Employee ID"
-// @Success 200 {object} AvailabilityResponse
-// @Router /api/v1/availability/{id} [get]
-func (h *AvailabilityHandler) GetByID(c *gin.Context) {
-	id := c.Param("id")
-	employeeID := c.Query("employeeId")
+// gets all availabilities of one employee
+func (h *AvailabilityHandler) GetByEmployeeID(w http.ResponseWriter, r *http.Request) {
+	// Log full request details for debugging
+	log.Printf("Received GETby emp id request: %+v", r)
 
-	if employeeID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "EmployeeID is required"})
+	// Log all URL variables
+	vars := mux.Vars(r)
+	log.Printf("URL Variables: %+v", vars)
+
+	// Use partitionKey instead of employeeId
+	partitionKey := vars["partitionKey"]
+	log.Printf("Extracted PartitionKey (EmployeeID): '%s'", partitionKey)
+
+	// Ensure partition key is provided
+	if partitionKey == "" {
+		log.Println("Error: PartitionKey is empty")
+		http.Error(w, "PartitionKey is required", http.StatusBadRequest)
 		return
 	}
 
-	availability, err := h.service.GetByID(c.Request.Context(), employeeID, id)
+	availabilities, err := h.service.GetByEmployeeID(r.Context(), partitionKey)
 	if err != nil {
+		log.Printf("Service Error: %v", err)
 		if err == models.ErrNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Availability not found"})
+			http.Error(w, "Availability not found", http.StatusNotFound)
+		} else {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		return
+	}
+
+	// Log the retrieved availabilities
+	log.Printf("Retrieved Availabilities: %+v", availabilities)
+
+	// Check if no availabilities found
+	if len(availabilities) == 0 {
+		http.Error(w, "No availabilities found for this employee", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(availabilities); err != nil {
+		log.Printf("JSON Encoding Error: %v", err)
+		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+	}
+}
+func (h *AvailabilityHandler) Create(w http.ResponseWriter, r *http.Request) {
+	var availability models.Availability
+	if err := json.NewDecoder(r.Body).Decode(&availability); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Capture the returned availability
+	createdAvailability, err := h.service.Create(r.Context(), availability)
+	if err != nil {
+		if strings.Contains(err.Error(), "availability conflicts") {
+			http.Error(w, err.Error(), http.StatusConflict)
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	c.JSON(http.StatusOK, availability)
+	// Respond with created availability
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(createdAvailability)
 }
 
-// Create godoc
-// @Summary Create availability
-// @Description Create a new availability record
-// @Tags availability
-// @Accept json
-// @Produce json
-// @Param availability body CreateAvailabilityRequest true "Availability Info"
-// @Success 201 {object} AvailabilityResponse
-// @Router /api/v1/availability [post]
-func (h *AvailabilityHandler) Create(c *gin.Context) {
-	var req CreateAvailabilityRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+func (h *AvailabilityHandler) Update(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	partitionKey := vars["partitionKey"] // EmployeeID
+	rowKey := vars["rowKey"]             // Availability ID
 
-	// Parse dates
-	startDate, err := time.Parse(time.RFC3339, req.StartDate)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid start date format"})
-		return
-	}
-
-	endDate, err := time.Parse(time.RFC3339, req.EndDate)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid end date format"})
-		return
-	}
-
-	availability := models.Availability{
-		EmployeeID: req.EmployeeID,
-		StartDate:  startDate,
-		EndDate:    endDate,
-	}
-
-	created, err := h.service.Create(c.Request.Context(), availability)
-	if err != nil {
-		switch err {
-		case models.ErrInvalidAvailability:
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		case models.ErrConflict:
-			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
-		default:
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		}
-		return
-	}
-
-	c.JSON(http.StatusCreated, created)
-}
-
-// Update godoc
-// @Summary Update availability
-// @Description Update an existing availability record
-// @Tags availability
-// @Accept json
-// @Produce json
-// @Param id path string true "Availability ID"
-// @Param availability body UpdateAvailabilityRequest true "Availability Info"
-// @Success 200 {object} AvailabilityResponse
-// @Router /api/v1/availability/{id} [put]
-func (h *AvailabilityHandler) Update(c *gin.Context) {
-	id := c.Param("id")
 	var req UpdateAvailabilityRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	// Parse dates
 	startDate, err := time.Parse(time.RFC3339, req.StartDate)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid start date format"})
+		http.Error(w, "Invalid start date format", http.StatusBadRequest)
 		return
 	}
 
 	endDate, err := time.Parse(time.RFC3339, req.EndDate)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid end date format"})
+		http.Error(w, "Invalid end date format", http.StatusBadRequest)
 		return
 	}
 
 	availability := models.Availability{
-		ID:         id,
-		EmployeeID: req.EmployeeID,
+		ID:         rowKey,
+		EmployeeID: partitionKey,
 		StartDate:  startDate,
 		EndDate:    endDate,
 	}
 
-	err = h.service.Update(c.Request.Context(), req.EmployeeID, id, availability)
+	err = h.service.Update(r.Context(), partitionKey, rowKey, availability)
 	if err != nil {
 		switch err {
 		case models.ErrNotFound:
-			c.JSON(http.StatusNotFound, gin.H{"error": "Availability not found"})
-		case models.ErrInvalidAvailability:
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			http.Error(w, "Availability not found", http.StatusNotFound)
+		case models.ErrInvalidID:
+			http.Error(w, "Invalid employee ID or availability ID", http.StatusBadRequest)
 		default:
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 		return
 	}
 
-	c.JSON(http.StatusOK, availability)
+	w.WriteHeader(http.StatusOK)
 }
 
-// Delete godoc
-// @Summary Delete availability
-// @Description Delete an availability record
-// @Tags availability
-// @Accept json
-// @Produce json
-// @Param id path string true "Availability ID"
-// @Param employeeId query string true "Employee ID"
-// @Success 204 "No Content"
-// @Router /api/v1/availability/{id} [delete]
-func (h *AvailabilityHandler) Delete(c *gin.Context) {
-	id := c.Param("id")
-	employeeID := c.Query("employeeId")
+// delete
+func (h *AvailabilityHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	partitionKey := vars["partitionKey"] // EmployeeID
+	rowKey := vars["rowKey"]             // Availability ID
 
-	if employeeID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "EmployeeID is required"})
+	if partitionKey == "" || rowKey == "" {
+		http.Error(w, "EmployeeID and Availability ID are required", http.StatusBadRequest)
 		return
 	}
 
-	err := h.service.Delete(c.Request.Context(), employeeID, id)
+	err := h.service.Delete(r.Context(), partitionKey, rowKey)
 	if err != nil {
 		switch err {
 		case models.ErrNotFound:
-			c.JSON(http.StatusNotFound, gin.H{"error": "Availability not found"})
+			http.Error(w, "Availability not found", http.StatusNotFound)
+		case models.ErrInvalidID:
+			http.Error(w, "Invalid employee ID or availability ID", http.StatusBadRequest)
 		default:
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 		return
 	}
 
-	c.Status(http.StatusNoContent)
+	w.WriteHeader(http.StatusNoContent)
 }

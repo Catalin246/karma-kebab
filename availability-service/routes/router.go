@@ -1,34 +1,36 @@
-package http
+package routes
 
 import (
 	"availability-service/handlers"
+	"availability-service/middlewares"
+	"availability-service/repository"
 	"availability-service/service"
+	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"github.com/Azure/azure-sdk-for-go/sdk/data/aztables"
+	"github.com/gorilla/mux"
 )
 
-func SetupRouter(availabilityService *service.AvailabilityService) *gin.Engine {
-	router := gin.Default()
+func RegisterRoutes(serviceClient *aztables.ServiceClient) *mux.Router {
+	// Create the repository and service instances
+	availabilityRepository := repository.NewTableStorageAvailabilityRepository(serviceClient)
+	availabilityService := service.NewAvailabilityService(availabilityRepository)
 
-	// Health check
-	router.GET("/health", func(c *gin.Context) {
-		c.JSON(200, gin.H{"status": "ok"})
-	})
+	// Create the availability handler and inject the service
+	availabilityHandler := handlers.NewAvailabilityHandler(availabilityService)
 
-	// API v1 group
-	v1 := router.Group("/api/v1")
-	{
-		// Availability routes
-		availability := v1.Group("/availability")
-		{
-			handler := handlers.NewAvailabilityHandler(availabilityService)
-			availability.GET("", handler.GetAll)
-			availability.GET("/:id", handler.GetByID)
-			availability.POST("", handler.Create)
-			availability.PUT("/:id", handler.Update)
-			availability.DELETE("/:id", handler.Delete)
-		}
-	}
+	// Create a new Gorilla Mux router
+	r := mux.NewRouter()
 
-	return router
+	// Apply middleware to all routes
+	r.Use(middlewares.GatewayHeaderMiddleware)
+
+	// Availability routes
+	r.HandleFunc("/availability", availabilityHandler.GetAll).Methods(http.MethodGet) //also filters by start and end date
+	r.HandleFunc("/availability/{partitionKey}", availabilityHandler.GetByEmployeeID).Methods(http.MethodGet)
+	r.HandleFunc("/availability", availabilityHandler.Create).Methods(http.MethodPost)
+	r.HandleFunc("/availability/{partitionKey}/{rowKey}", availabilityHandler.Update).Methods(http.MethodPut)
+	r.HandleFunc("/availability/{partitionKey}/{rowKey}", availabilityHandler.Delete).Methods(http.MethodDelete)
+	http.Handle("/", r)
+	return r
 }

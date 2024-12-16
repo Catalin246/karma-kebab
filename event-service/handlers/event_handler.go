@@ -3,22 +3,26 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	"event-service/models"
-	"event-service/services"
+	"log"
 	"net/http"
 	"time"
+
+	"github.com/Catalin246/karma-kebab/models"
+	"github.com/Catalin246/karma-kebab/services"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
 
+// EventHandler struct now includes RabbitMQService
 type EventHandler struct {
-	service services.EventServiceInteface
+	service         services.EventServiceInteface
+	rabbitMQService *services.RabbitMQService
 }
 
 // NewEventHandler creates a new EventHandler
-func NewEventHandler(service services.EventServiceInteface) *EventHandler {
-	return &EventHandler{service: service}
+func NewEventHandler(service services.EventServiceInteface, rabbitMQService *services.RabbitMQService) *EventHandler {
+	return &EventHandler{service: service, rabbitMQService: rabbitMQService}
 }
 
 func (h *EventHandler) GetEvents(w http.ResponseWriter, r *http.Request) {
@@ -57,18 +61,18 @@ func (h *EventHandler) GetEventByID(w http.ResponseWriter, r *http.Request) {
 	partitionKey := vars["partitionKey"]
 	rowKey := vars["rowKey"]
 
-	if partitionKey == "" || rowKey == "" {
-		http.Error(w, "Missing partitionKey or rowKey", http.StatusBadRequest)
-		return
-	}
-
-	event, err := h.service.GetByID(context.Background(), partitionKey, rowKey)
+	event, err := h.service.GetByID(r.Context(), partitionKey, rowKey)
 	if err != nil {
-		http.Error(w, "Failed to retrieve event: "+err.Error(), http.StatusInternalServerError)
+		if err.Error() == "event not found" {
+			http.Error(w, `{"error": "event not found"}`, http.StatusNotFound)
+		} else {
+			http.Error(w, `{"error": "internal server error"}`, http.StatusInternalServerError)
+		}
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(event)
 }
 
@@ -80,11 +84,28 @@ func (h *EventHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	event.RowKey = uuid.New()
-	event.Date = time.Now()
 
 	if err := h.service.Create(context.Background(), event); err != nil {
 		http.Error(w, "Failed to create event: "+err.Error(), http.StatusInternalServerError)
 		return
+	}
+
+	// Create the JSON message you want to send
+	message := map[string]interface{}{
+		"shiftsNumber": event.ShiftsNumber,
+		"eventID":      event.RowKey,
+		"startTime":    event.StartTime,
+		"endTime":      event.EndTime,
+	}
+
+	messageBytes, err := json.Marshal(message)
+	if err != nil {
+		log.Println("Failed to marshal message:", err)
+		return
+	}
+
+	if err := h.rabbitMQService.PublishMessage("eventCreated", string(messageBytes)); err != nil {
+		log.Println("Failed to publish message:", err)
 	}
 
 	w.WriteHeader(http.StatusCreated)
@@ -97,7 +118,6 @@ func (h *EventHandler) UpdateEvent(w http.ResponseWriter, r *http.Request) {
 	rowKey := vars["rowKey"]
 
 	var event models.Event
-	event.Date = time.Now()
 	if err := json.NewDecoder(r.Body).Decode(&event); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
@@ -106,6 +126,10 @@ func (h *EventHandler) UpdateEvent(w http.ResponseWriter, r *http.Request) {
 	if err := h.service.Update(context.Background(), partitionKey, rowKey, event); err != nil {
 		http.Error(w, "Failed to update event: "+err.Error(), http.StatusInternalServerError)
 		return
+	}
+
+	if err := h.rabbitMQService.PublishMessage("eventUpdated", "Event Updated!"); err != nil {
+		log.Println("Failed to publish message:", err)
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -117,9 +141,18 @@ func (h *EventHandler) DeleteEvent(w http.ResponseWriter, r *http.Request) {
 	partitionKey := vars["partitionKey"]
 	rowKey := vars["rowKey"]
 
-	if err := h.service.Delete(context.Background(), partitionKey, rowKey); err != nil {
-		http.Error(w, "Failed to delete event: "+err.Error(), http.StatusInternalServerError)
+	err := h.service.Delete(r.Context(), partitionKey, rowKey)
+	if err != nil {
+		if err.Error() == "event not found" {
+			http.Error(w, `{"error": "event not found"}`, http.StatusNotFound)
+		} else {
+			http.Error(w, `{"error": "internal server error"}`, http.StatusInternalServerError)
+		}
 		return
+	}
+
+	if err := h.rabbitMQService.PublishMessage("eventDeleted", "Event Deleted!"); err != nil {
+		log.Println("Failed to publish message:", err)
 	}
 
 	w.WriteHeader(http.StatusOK)

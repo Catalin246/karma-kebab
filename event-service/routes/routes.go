@@ -1,23 +1,25 @@
 package routes
 
 import (
-	"event-service/handlers"
-	"event-service/middlewares"
-	"event-service/repositories"
-	"event-service/services"
 	"net/http"
+
+	"github.com/Catalin246/karma-kebab/handlers"
+	"github.com/Catalin246/karma-kebab/middlewares"
+	"github.com/Catalin246/karma-kebab/repositories"
+	"github.com/Catalin246/karma-kebab/services"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/data/aztables"
 	"github.com/gorilla/mux"
 )
 
-func RegisterRoutes(serviceClient *aztables.ServiceClient) *mux.Router {
+// RegisterRoutes registers all the routes for the event service
+func RegisterRoutes(serviceClient *aztables.ServiceClient, rabbitMQService *services.RabbitMQService) *mux.Router {
 	// Create the repository and service instances
 	eventRepository := repositories.NewEventRepository(serviceClient)
 	eventService := services.NewEventService(eventRepository)
 
-	// Create the event handler and inject the service
-	eventHandler := handlers.NewEventHandler(eventService)
+	// Create the event handler and inject the service and RabbitMQService
+	eventHandler := handlers.NewEventHandler(eventService, rabbitMQService)
 
 	r := mux.NewRouter()
 
