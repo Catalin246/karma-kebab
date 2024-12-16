@@ -27,7 +27,7 @@ public class ShiftsControllerTests
             StartTime = DateTime.UtcNow,
             EndTime = DateTime.UtcNow.AddHours(8),
             EmployeeId = Guid.NewGuid(),
-            ShiftType = ShiftType.Normal.ToString()
+            RoleID = 1
         };
 
         var createdShiftDto = new ShiftDto 

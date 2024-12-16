@@ -30,6 +30,7 @@ public class ShiftEntity : ITableEntity
     public DateTime? ClockInTime { get; set; }
     public DateTime? ClockOutTime { get; set; }
     public decimal? ShiftHours { get; set; }
+    public int RoleID {get;set;}
 
     // Helper methods for enum conversion
     public ShiftType GetShiftTypeEnum()

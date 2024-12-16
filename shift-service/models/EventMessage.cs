@@ -1,6 +1,6 @@
 namespace Models 
 {
-    public class EventMessage
+    public class EventMessage //this gon have a list of roles - length is number of shifts.
     {
         public required string EventID { get; set; }
         public required string StartTime { get; set; }

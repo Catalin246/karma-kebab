@@ -171,6 +171,7 @@ public static ShiftDto MapToDto(ShiftEntity shift)
         StartTime = shift.StartTime, 
         EndTime = shift.EndTime,     
         ClockInTime = shift.ClockInTime, 
+        RoleID = shift.RoleID,
         ClockOutTime = shift.ClockOutTime, 
         ShiftHours = shift.ShiftHours.HasValue ? shift.ShiftHours.Value : null
     };
