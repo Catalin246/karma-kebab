@@ -1,4 +1,4 @@
-# Availability Service
+# Availability Microservice
 
 This microservice manages employee (un)availability for events in the Karma Kebab application.
 each record will be a record of when an employee is NOT available
