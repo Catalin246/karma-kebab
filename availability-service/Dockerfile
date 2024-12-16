@@ -24,6 +24,9 @@ WORKDIR /app
 COPY --from=builder /app/availability-service .
 COPY --from=builder /app/models ./models
 
+# Copy the .env file (assuming it's in the project root during build)
+COPY .env .env
+
 # Ensure the binary is executable
 RUN chmod +x /app/availability-service
 
