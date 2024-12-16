@@ -1,7 +1,7 @@
+`python3 -m venv .venv`
 
+Desktop: `.venv\Scripts\activate` Linux: `source .venv/bin/activate`
 
-
-.venv\Scripts\activate
-pip install azure-functions
-pip install psycopg
-func start
+`pip install azure-functions`
+`pip install psycopg`
+`func start`
