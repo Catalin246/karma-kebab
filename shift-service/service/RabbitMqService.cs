@@ -50,7 +50,7 @@ namespace Services
                     var body = ea.Body.ToArray();
                     var message = Encoding.UTF8.GetString(body);
                     _logger.LogInformation($" [x] Received {message}");
-                    _logger.LogInformation($" [*] Configured ShiftServiceUrl: {_shiftServiceUrl}");
+                    _logger.LogInformation($" [*] Configured ShiftService Url: {_shiftServiceUrl}");
 
                     // Deserialize the JSON message into the EventMessage object
                     EventMessage eventMessage = JsonConvert.DeserializeObject<EventMessage>(message);

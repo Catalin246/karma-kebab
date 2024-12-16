@@ -47,6 +47,10 @@ jobs:
             echo "rabbitmq=true" >> $GITHUB_ENV
           fi
 
+           if echo "$CHANGED_FILES" | grep -q '^shift-service/'; then
+            echo "shift_service=true" >> $GITHUB_ENV
+          fi
+
       # Deploy the API Gateway
       - name: Set OpenShift Project
         if: env.api_gateway == 'true'
@@ -94,3 +98,19 @@ jobs:
         if: env.rabbitmq == 'true'
         run: |
           oc get pods --selector=app=rabbitmq --field-selector=status.phase=Running -o name | xargs -I {} oc delete {} --ignore-not-found=true
+
+      # Deploy the Shift Service
+      - name: Set OpenShift Project
+        if: env.shift_service == 'true'
+        run: |
+          oc project ${{ secrets.NAMESPACE }}
+
+      - name: Start OpenShift Build
+        if: env.shift_service == 'true'
+        run: |
+          oc start-build shift-service --wait  # Trigger the build and wait for completion
+
+      - name: Restart the application by deleting the old running pod
+        if: env.shift_service == 'true'
+        run: |
+          oc get pods --selector=app=shift-service --field-selector=status.phase=Running -o name | xargs -I {} oc delete {} --ignore-not-found=true
