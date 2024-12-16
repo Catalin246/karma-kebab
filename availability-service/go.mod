@@ -1,6 +1,6 @@
 module availability-service
 
-go 1.23.1
+go 1.20
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/data/aztables v1.3.0
