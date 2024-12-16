@@ -46,6 +46,10 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
+            "Azure.Core": {
+              "target": "Package",
+              "version": "[1.44.1, )"
+            },
             "Azure.Data.Tables": {
               "target": "Package",
               "version": "[12.9.1, )"

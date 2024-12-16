@@ -2375,6 +2375,7 @@
   },
   "projectFileDependencyGroups": {
     "net8.0": [
+      "Azure.Core >= 1.44.1",
       "Azure.Data.Tables >= 12.9.1",
       "Microsoft.AspNetCore.OpenApi >= 8.0.10",
       "Microsoft.EntityFrameworkCore >= 9.0.0",
@@ -2431,6 +2432,10 @@
       "net8.0": {
         "targetAlias": "net8.0",
         "dependencies": {
+          "Azure.Core": {
+            "target": "Package",
+            "version": "[1.44.1, )"
+          },
           "Azure.Data.Tables": {
             "target": "Package",
             "version": "[12.9.1, )"
