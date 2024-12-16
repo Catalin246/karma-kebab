@@ -117,7 +117,7 @@ jobs:
       - name: Restart the application by deleting the old running pod
         if: env.shift_service == 'true'
         run: |
-          oc get pods --selector=app=shift-service --field-selector=status.phase=Running -o name | xargs -I {} oc delete {} --ignore-not-found=trueS
+          oc get pods --selector=app=shift-service --field-selector=status.phase=Running -o name | xargs -I {} oc delete {} --ignore-not-found=true
 
       # Deploy the Availability Service
       - name: Availability Service - Set OpenShift Project
@@ -133,5 +133,5 @@ jobs:
       - name: Restart the application by deleting the old running pod
         if: env.availability_service == 'true'
         run: |
-          oc get pods --selector=app=availability-service --field-selector=status.phase=Running -o name | xargs -I {} oc delete {} --ignore-not-found=trueS
+          oc get pods --selector=app=availability-service --field-selector=status.phase=Running -o name | xargs -I {} oc delete {} --ignore-not-found=true
       
