@@ -26,7 +26,7 @@ public async Task CreateShift_ValidInput_ReturnsShiftDto()
         StartTime = DateTime.UtcNow,
         EndTime = DateTime.UtcNow.AddHours(8),
         EmployeeId = Guid.NewGuid(),
-        ShiftType = ShiftType.Normal.ToString()
+        RoleID = 1
     };
 
     var expectedShiftEntity = new ShiftEntity 
@@ -35,7 +35,8 @@ public async Task CreateShift_ValidInput_ReturnsShiftDto()
         StartTime = createShiftDto.StartTime,
         EndTime = createShiftDto.EndTime,
         EmployeeId = createShiftDto.EmployeeId,
-        ShiftType = createShiftDto.ShiftType,
+        RoleID = createShiftDto.RoleID,
+        ShiftType = ShiftType.Normal.ToString(),
         Status = ShiftStatus.Unconfirmed.ToString(),
         PartitionKey = createShiftDto.EmployeeId.ToString(), // required property
         RowKey = Guid.NewGuid().ToString() //  required property
@@ -55,22 +56,6 @@ public async Task CreateShift_ValidInput_ReturnsShiftDto()
     Assert.Equal(expectedShiftDto.ShiftId, result.ShiftId);
     _mockDbContext.Verify(x => x.AddShift(It.IsAny<ShiftEntity>()), Times.Once);
 }
-
-    [Fact]
-    public async Task CreateShift_InvalidShiftType_ThrowsArgumentException()
-    {
-        // Arrange
-        var createShiftDto = new CreateShiftDto
-        {
-            StartTime = DateTime.UtcNow,
-            EndTime = DateTime.UtcNow.AddHours(8),
-            EmployeeId = Guid.NewGuid(),
-            ShiftType = "InvalidShiftType"
-        };
-
-        // Act & Assert
-        await Assert.ThrowsAsync<ArgumentException>(() => _shiftService.CreateShift(createShiftDto));
-    }
 
     [Fact]
     public async Task DeleteShift_ExistingShift_ReturnsTrue()
