@@ -9,7 +9,7 @@ namespace Models
             public string? EmployeeId { get; set; }
             public string? StartTime { get; set; }
             public string? EndTime { get; set; }
-            public int RoleID {get;set;}
+            public string? RoleID {get;set;}
         }
 
 }
