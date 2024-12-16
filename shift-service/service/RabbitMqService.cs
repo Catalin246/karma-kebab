@@ -8,22 +8,29 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Models;
 using Newtonsoft.Json;
+using Microsoft.Extensions.Options;
 
 namespace Services
 {
+    public class RabbitMqServiceConfig
+    {
+        public required string Url { get; set; }
+    }
     public class RabbitMqService : IRabbitMqService
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger<RabbitMqService> _logger;
         private readonly string _queueName = "eventCreated";
-        private readonly string _shiftServiceUrl = "http://api-gateway:3007/shifts";
+        private readonly string _shiftServiceUrl;
         private readonly ConnectionFactory _factory;
 
-        public RabbitMqService(HttpClient httpClient, ILogger<RabbitMqService> logger)
+        public RabbitMqService(HttpClient httpClient, ILogger<RabbitMqService> logger, IOptions<RabbitMqServiceConfig> options)
         {
             _httpClient = httpClient;
             _logger = logger;
             _factory = new ConnectionFactory { HostName = "rabbitmq" };
+            if (options == null) throw new ArgumentNullException(nameof(options));
+            _shiftServiceUrl = options.Value.Url;
         }
 
         public async Task StartListeningAsync()
@@ -43,6 +50,7 @@ namespace Services
                     var body = ea.Body.ToArray();
                     var message = Encoding.UTF8.GetString(body);
                     _logger.LogInformation($" [x] Received {message}");
+                    _logger.LogInformation($" [*] Configured ShiftService Url: {_shiftServiceUrl}");
 
                     // Deserialize the JSON message into the EventMessage object
                     EventMessage eventMessage = JsonConvert.DeserializeObject<EventMessage>(message);

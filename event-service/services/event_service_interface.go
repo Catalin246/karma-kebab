@@ -2,8 +2,9 @@ package services
 
 import (
 	"context"
-	"event-service/models"
 	"time"
+
+	"github.com/Catalin246/karma-kebab/models"
 )
 
 type EventServiceInteface interface {
