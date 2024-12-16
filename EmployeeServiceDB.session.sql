@@ -14,7 +14,7 @@ INSERT INTO "Employees" (
     "LastName",
     "Address",
     "Payrate",
-    "Role",
+    "Roles",
     "Email",
     "Skills"
 ) VALUES (
@@ -24,7 +24,7 @@ INSERT INTO "Employees" (
     'Blair',
     '123 Not Main St, Springfield, USA',
     25.50,
-    2,
+    ARRAY[2,3],
     'john.doe@example.com',
     ARRAY['Cooking', 'Driving']
 );

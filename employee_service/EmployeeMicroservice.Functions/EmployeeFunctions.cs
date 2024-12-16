@@ -82,7 +82,7 @@ namespace EmployeeMicroservice.Functions
         [Function("GetEmployeeByRole")]
         public async Task<HttpResponseData> GetEmployeeByRole(
             [HttpTrigger(AuthorizationLevel.Function, "get", Route = "employees/role/{role:int}")] HttpRequestData req,
-            int role,
+            int role, // Change to accept a single int for role
             FunctionContext executionContext)
         {
             var log = executionContext.GetLogger("GetEmployeeByRole");
@@ -91,7 +91,7 @@ namespace EmployeeMicroservice.Functions
             {
                 log.LogInformation($"Fetching employees with Role: {role}");
 
-                // Validate role input
+                // Validate role input as an enum
                 if (!Enum.IsDefined(typeof(EmployeeRole), role))
                 {
                     log.LogWarning("Invalid role specified.");
@@ -100,8 +100,10 @@ namespace EmployeeMicroservice.Functions
                     return errorResponse;
                 }
 
+                var employeeRole = (EmployeeRole)role; // Convert int to the EmployeeRole enum
+
                 // Fetch employees by role
-                var employees = await _employeeService.GetEmployeesByRoleAsync((EmployeeRole)role);
+                var employees = await _employeeService.GetEmployeesByRoleAsync(employeeRole); // Pass the enum value
 
                 var response = req.CreateResponse(HttpStatusCode.OK);
                 response.Headers.Add("Content-Type", "application/json");
@@ -110,6 +112,7 @@ namespace EmployeeMicroservice.Functions
                 return response;
             }, log, req);
         }
+
 
         // Add Employee
         [Function("AddEmployee")]
