@@ -217,52 +217,6 @@ public class ShiftsController : ControllerBase
         }
     }
 
-//    [HttpDelete("employee/{employeeId:guid}")]
-//     public async Task<ActionResult> DeleteEmployeeShifts(Guid employeeId)
-//     {
-//         try 
-//         {
-//             var result = await _shiftService.DeleteEmployeeAndShifts(employeeId);
-            
-//             if (!result)
-//                 return NotFound($"No shifts found for employee ID: {employeeId}");
-            
-//             return NoContent();
-//         }
-//         catch (Exception ex)
-//         {
-//             _logger.LogError(ex, "Error deleting shifts for employee ID: {EmployeeId}", employeeId);
-//             return StatusCode(StatusCodes.Status500InternalServerError, 
-//                 "An error occurred while deleting employee shifts");
-//         }
-//     }
-
-    // [HttpPut("/events/{eventId:guid}")]
-    // public async Task<ActionResult<ApiResponse>> UpdateShiftWithEventChanges(Guid eventId, [FromBody] EventDto eventDto)
-    // {
-    //     try
-    //     {
-    //         var updatedShifts = await _shiftService.UpdateShiftWithEventChanges(eventId, eventDto);
-    //         if (updatedShifts == null)
-    //             return NotFound();
-
-    //         return Ok(new ApiResponse 
-    //         { 
-    //             Success = true,
-    //             Message = "Shifts updated successfully based on event changes",
-    //             Data = updatedShifts
-    //         });
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         _logger.LogError(ex, "Error updating shifts for event: {EventId}", eventId);
-    //         return StatusCode(500, new ApiResponse 
-    //         { 
-    //             Success = false,
-    //             Message = "Internal server error occurred while updating shifts for event" 
-    //         });
-    //     }
-    // }
 }
 
 public class ApiResponse

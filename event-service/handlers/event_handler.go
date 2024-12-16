@@ -95,6 +95,7 @@ func (h *EventHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 		"eventID":      event.RowKey,
 		"startTime":    event.StartTime,
 		"endTime":      event.EndTime,
+		
 	}
 
 	messageBytes, err := json.Marshal(message)
