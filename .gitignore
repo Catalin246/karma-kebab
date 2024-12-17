@@ -2,3 +2,5 @@
 shift-service/obj/Debug/net8.0/shift-service.AssemblyInfo.cs
 shift-service/obj/Debug/net8.0/shift-service.AssemblyInfo.cs
 /shift-service/obj
+**/bin/
+**/obj/
