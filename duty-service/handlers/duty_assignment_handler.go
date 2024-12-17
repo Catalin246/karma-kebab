@@ -51,34 +51,58 @@ func (h *DutyAssignmentHandler) GetAllDutyAssignmentsByShiftId(w http.ResponseWr
 }
 
 // creates duty assignments for a Shift based on Role
+// creates duty assignments for a Shift based on ClockInMessage
 func (h *DutyAssignmentHandler) CreateDutyAssignments(w http.ResponseWriter, r *http.Request) {
-	// parse request body
-	var request struct {
-		ShiftId string `json:"ShiftId"`
-		RoleId  string `json:"RoleId"`
-	}
-
-	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+	// Parse request body into ClockInMessage
+	var clockInMessage models.ClockInMessage
+	if err := json.NewDecoder(r.Body).Decode(&clockInMessage); err != nil {
 		http.Error(w, "Invalid request body: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	uuids, err := parseUUIDs(map[string]string{"ShiftId": request.ShiftId, "RoleId": request.RoleId})
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	if err := h.service.CreateDutyAssignments(context.Background(), uuids["ShiftId"], uuids["RoleId"]); err != nil {
+	// Call the service method with context and ClockInMessage
+	if err := h.service.CreateDutyAssignments(context.Background(), clockInMessage); err != nil {
 		http.Error(w, "Failed to create duty assignments: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	// Set response headers and send a success message
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	response := map[string]string{"message": "Duty assignments created successfully"}
-	json.NewEncoder(w).Encode(response)
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		http.Error(w, "Failed to encode response: "+err.Error(), http.StatusInternalServerError)
+	}
 }
+
+// func (h *DutyAssignmentHandler) CreateDutyAssignments(w http.ResponseWriter, r *http.Request) {
+// 	// parse request body
+// 	var request struct {
+// 		ShiftId string `json:"ShiftId"`
+// 		RoleId  string `json:"RoleId"`
+// 	}
+
+// 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+// 		http.Error(w, "Invalid request body: "+err.Error(), http.StatusBadRequest)
+// 		return
+// 	}
+
+// 	uuids, err := parseUUIDs(map[string]string{"ShiftId": request.ShiftId, "RoleId": request.RoleId})
+// 	if err != nil {
+// 		http.Error(w, err.Error(), http.StatusBadRequest)
+// 		return
+// 	}
+
+// 	if err := h.service.CreateDutyAssignments(context.Background(), uuids["ShiftId"], uuids["RoleId"]); err != nil {
+// 		http.Error(w, "Failed to create duty assignments: "+err.Error(), http.StatusInternalServerError)
+// 		return
+// 	}
+
+// 	w.Header().Set("Content-Type", "application/json")
+// 	w.WriteHeader(http.StatusCreated)
+// 	response := map[string]string{"message": "Duty assignments created successfully"}
+// 	json.NewEncoder(w).Encode(response)
+// }
 
 // updates a duty assignment //TODO make this method shorter
 func (h *DutyAssignmentHandler) UpdateDutyAssignment(w http.ResponseWriter, r *http.Request) {

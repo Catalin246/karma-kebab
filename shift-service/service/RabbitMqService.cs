@@ -22,6 +22,7 @@ namespace Services
         private readonly ILogger<RabbitMqService> _logger;
         private readonly string _queueName = "eventCreated";
         private readonly string _shiftServiceUrl;
+        private readonly string _clockInQueueName = "clockIn";
         private readonly ConnectionFactory _factory;
 
         public RabbitMqService(HttpClient httpClient, ILogger<RabbitMqService> logger, IOptions<RabbitMqServiceConfig> options)
@@ -32,6 +33,32 @@ namespace Services
             if (options == null) throw new ArgumentNullException(nameof(options));
             _shiftServiceUrl = options.Value.Url;
         }
+        public async Task PublishClockIn(ClockInDto clockInDto) //producer - should push to clockIn queue
+        {
+            using var connection = await _factory.CreateConnectionAsync();
+            using var channel = await connection.CreateChannelAsync();
+
+            // Declare the queue
+            await channel.QueueDeclareAsync(
+                queue: _clockInQueueName, 
+                durable: false, 
+                exclusive: false, 
+                autoDelete: false
+            );
+             // Serialize the DTO
+            var message = JsonConvert.SerializeObject(clockInDto);
+            var body = Encoding.UTF8.GetBytes(message);
+
+            // Publish the message
+            await channel.BasicPublishAsync(
+                exchange: "",
+                routingKey: _clockInQueueName,
+                body: body
+            );
+
+            _logger.LogInformation($"Published Clock In/Out message for Shift {clockInDto.ShiftID}");
+        }
+
 
         public async Task StartListeningAsync()
         {

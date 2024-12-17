@@ -44,7 +44,6 @@ public class ShiftService : IShiftService
         return await _dbContext.GetShiftById(shiftId);
     }
 
-//this one still needs to be tested (filtering by date for example)
     public async Task<IEnumerable<ShiftDto>> GetShifts(DateTime? date = null, Guid? employeeId = null, ShiftType? shiftType = null, Guid? shiftId = null, Guid? eventId = null)
     {
         var shifts = await _dbContext.GetShifts(date, employeeId, shiftType, shiftId, eventId);
@@ -142,7 +141,7 @@ public class ShiftService : IShiftService
             ShiftId = shiftDto.ShiftId,
             StartTime = shiftDto.StartTime,
             EndTime = shiftDto.EndTime,
-            EmployeeId = shiftDto.EmployeeId,
+            EmployeeId = shiftDto.EmployeeId ?? Guid.Empty,
             ShiftType = shiftDto.ShiftType.ToString(),
             Status = shiftDto.Status.ToString(),
             ClockInTime = shiftDto.ClockInTime,

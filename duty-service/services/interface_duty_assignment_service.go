@@ -10,7 +10,7 @@ import (
 
 type InterfaceDutyAssignmentService interface {
 	GetAllDutyAssignmentsByShiftId(ctx context.Context, shiftId uuid.UUID) ([]models.DutyAssignment, error)
-	CreateDutyAssignments(ctx context.Context, shiftId uuid.UUID, roleId uuid.UUID) error
+	CreateDutyAssignments(ctx context.Context, clockInMessage models.ClockInMessage) error
 	UpdateDutyAssignment(ctx context.Context, dutyAssignment models.DutyAssignment, file multipart.File) error
 	DeleteDutyAssignment(ctx context.Context, shiftId uuid.UUID, dutyId uuid.UUID) error
 }
