@@ -17,5 +17,5 @@ type Duty struct {
 type ClockInMessage struct {
     ShiftID      uuid.UUID `json:"shift_id"`
     ClockInTime  time.Time `json:"clock_in_time"`
-	RoleId		 int	   `json:"role_id"` //or roleID??
+	RoleId		 uuid.UUID `json:"role_id"` //or roleID??
 }
