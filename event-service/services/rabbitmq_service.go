@@ -8,7 +8,7 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-// RabbitMQService handles RabbitMQ messaging operations
+// RabbitMQService handles RabbitMQ messaging operations and implements RabbitMQServiceInterface
 type RabbitMQService struct {
 	Channel *amqp.Channel
 }
