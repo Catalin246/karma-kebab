@@ -91,8 +91,16 @@ func (r *RabbitMQService) ConsumeMessage(queueName string) error {
 		return err
 	}
 
-	rowKey := "4e58bec7-20db-4bfc-aa69-3044ad872e5f"
-	partitionKey := "event-group-1"
+	shiftID := "da1d0a6d-d41d-482a-aec0-f239e3ad6b29"
+	// Convert shiftID (string) to uuid.UUID
+	parsedShiftID, err := uuid.Parse(shiftID)
+	if err != nil {
+		log.Printf("[!] Error parsing ShiftID: %v\n", err)
+		return err
+	}
+
+	rowKey := "d25c8ac7-244a-4e1a-8385-363e177f0d45"
+	partitionKey := "event-group-winter"
 	startTime := time.Date(2024, time.December, 18, 9, 0, 0, 0, time.UTC) // December 18, 2024 at 09:00 UTC
 	endTime := time.Date(2024, time.December, 18, 17, 0, 0, 0, time.UTC)  // December 18, 2024 at 17:00 UTC
 
@@ -118,7 +126,8 @@ func (r *RabbitMQService) ConsumeMessage(queueName string) error {
 			LastName:  "Doe",                 // Hardcoded last name
 			Email:     "johndoe@example.com", // Hardcoded email
 		},
-		Note: "Registration opens at 8:00 AM.", // Hardcoded note
+		Note:     "Registration opens at 8:00 AM.", // Hardcoded note
+		ShiftIDs: []uuid.UUID{parsedShiftID},       // Use the parsed shift ID (e.g., from the message)
 	}
 
 	ctx := context.Background()
