@@ -19,13 +19,16 @@ func failOnError(err error, msg string) {
 }
 
 func main() {
-	// Load environment variables
+	// Try loading the .env file (optional for production)
 	if err := godotenv.Load(".env"); err != nil {
-		log.Fatal("Error loading .env file: ", err)
+		log.Println("Warning: .env file not found, falling back to environment variables")
 	}
 
-	// Get environment variables
+	// Fetch environment variable
 	connectionString := os.Getenv("AZURE_STORAGE_CONNECTION_STRING")
+	if connectionString == "" {
+		log.Fatal("Error: AZURE_STORAGE_CONNECTION_STRING is not set")
+	}
 
 	// Initialize Azure Table Storage
 	client, err := db.InitAzureTables(connectionString)

@@ -3,6 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.002.0
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "employee-service", "employee-service\employee-service.csproj", "{6629A1E9-9129-4E12-9967-74ED93870AD7}"
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "shift-service", "shift-service\shift-service.csproj", "{C4BDD1D7-EF59-40C0-9755-2FFD802F22B7}"
 EndProject
 Global
@@ -11,6 +12,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6629A1E9-9129-4E12-9967-74ED93870AD7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6629A1E9-9129-4E12-9967-74ED93870AD7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6629A1E9-9129-4E12-9967-74ED93870AD7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6629A1E9-9129-4E12-9967-74ED93870AD7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C4BDD1D7-EF59-40C0-9755-2FFD802F22B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C4BDD1D7-EF59-40C0-9755-2FFD802F22B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C4BDD1D7-EF59-40C0-9755-2FFD802F22B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -20,6 +25,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {73060040-7299-4A0B-85F8-E70A956A0087}
 		SolutionGuid = {C395FF0B-49F8-45DA-9D3A-998ADD330979}
 	EndGlobalSection
 EndGlobal

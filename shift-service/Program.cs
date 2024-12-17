@@ -15,6 +15,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<AzureStorageConfig>(
     builder.Configuration.GetSection("AzureStorage"));
 
+builder.Services.Configure<RabbitMqServiceConfig>(
+    builder.Configuration.GetSection("ShiftService"));
+
 builder.Services.AddScoped<IShiftDbContext, ShiftDbContext>();
 builder.Services.AddScoped<IShiftService, ShiftService>();
 builder.Services.AddLogging(); 

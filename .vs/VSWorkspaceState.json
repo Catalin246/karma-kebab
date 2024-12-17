@@ -1,0 +1,14 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\employee_service",
+    "\\employee_service\\EmployeeMicroservice.Functions",
+    "\\employee_service\\EmployeeMicroservice.Functions\\Database",
+    "\\employee_service\\EmployeeMicroservice.Functions\\Migrations",
+    "\\employee_service\\EmployeeMicroservice.Functions\\Models",
+    "\\employee_service\\EmployeeMicroservice.Functions\\Repositories",
+    "\\employee_service\\EmployeeMicroservice.Functions\\Services"
+  ],
+  "SelectedNode": "\\employee_service\\EmployeeMicroservice.Functions",
+  "PreviewInSolutionExplorer": false
+}

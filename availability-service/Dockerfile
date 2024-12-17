@@ -1,5 +1,5 @@
 # Stage 1: Build the Go application
-FROM golang:1.23 AS builder
+FROM golang:1.20 AS builder
 
 WORKDIR /app
 
@@ -23,6 +23,9 @@ WORKDIR /app
 # Copy the binary and models
 COPY --from=builder /app/availability-service .
 COPY --from=builder /app/models ./models
+
+# Copy the .env file (assuming it's in the project root during build)
+COPY .env .env
 
 # Ensure the binary is executable
 RUN chmod +x /app/availability-service
