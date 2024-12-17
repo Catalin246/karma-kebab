@@ -52,8 +52,16 @@ func (h *EventHandler) GetEvents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Constructing the response in the same format as provided.
+	response := map[string]interface{}{
+		"success": true,
+		"message": "Events retrieved successfully",
+		"data":    events, // Here, 'events' will be an array of event objects
+	}
+
+	// Set content type to JSON and return the response
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(events)
+	json.NewEncoder(w).Encode(response)
 }
 
 func (h *EventHandler) GetEventByID(w http.ResponseWriter, r *http.Request) {
