@@ -1,7 +1,9 @@
 import azure.functions as func
-from controllers import create_truck, return_all_truck, return_truck, update_truck, delete_truck, get_available_trucks_date
-from models import TruckEntity, TableOperations
+from controller.controller import create_truck, return_all_truck, return_truck, update_truck, delete_truck, get_available_trucks_date
 
+
+from service import *
+from model import models, truck_model
 
 app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 

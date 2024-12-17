@@ -1,50 +1,17 @@
-import psycopg
+
+
 #from get_conn import get_connection_uri
-import os
-import urllib.parse
 import azure.functions as func
 import logging
 from datetime import *
-
-
-class TruckEntity:
-    def __init__(self, plate_number, name, description, note):
-        self.plate_number = plate_number
-        self.name = name
-        #self.available = available
-        self.description = description
-        self.note = note
-
-os.environ['DBHOST'] = "localhost"
-os.environ['DBNAME'] = "truck"
-os.environ['DBUSER'] = "postgres"
-os.environ['DBPASS'] = "Cica08"
-os.environ['SSLMODE'] = "disable"
-
+from model.truck_model import TruckEntity
+from model.models import Connect
 
 class TableOperations(object):
-    def __init__(self):
-        #load_dotenv(find_dotenv())
-        self.dbhost = os.environ['DBHOST']
-        self.dbname = os.environ['DBNAME']
-        self.dbuser = urllib.parse.quote(os.environ['DBUSER'])
-        self.dbpass = os.environ['DBPASS']
-        self.sslmode = os.environ['SSLMODE']
-
-
-        #self.table_name = "trucks"
-
-    def get_connection(self):
-        try:
-            db_uri = f"postgresql://{self.dbuser}:{self.dbpass}@{self.dbhost}/{self.dbname}?sslmode={self.sslmode}"
-            return psycopg.connect(db_uri)
-        except Exception as e:
-            logging.error(f"Error connecting to PostgreSQL: {e}")
-            raise
 
     def create_table(self):
         try:
-            conn = self.get_connection()
+            conn = Connect().get_connection()
             cursor = conn.cursor()
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS trucks (
@@ -68,7 +35,7 @@ class TableOperations(object):
     #second table for truck availability
     def create_table_truck_sched(self):
         try:
-            conn = self.get_connection()
+            conn = Connect().get_connection()
             cursor = conn.cursor()
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS TruckAvailability (
@@ -93,7 +60,7 @@ class TableOperations(object):
     def create_entity(self, entity: TruckEntity):
         conn= None
         try:
-            conn = self.get_connection()
+            conn = Connect().get_connection()
             cursor = conn.cursor()
 
             cursor.execute("""INSERT INTO trucks (plate_number, name, description, note) VALUES (%s, %s, %s, %s);""", 
@@ -114,7 +81,7 @@ class TableOperations(object):
     def list_all_entities(self):
 
         try:
-            conn = self.get_connection()
+            conn = Connect().get_connection()
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM trucks;")
             rows = cursor.fetchall()
@@ -130,7 +97,7 @@ class TableOperations(object):
             
     def return_one_entity(self, plate_number: str):
         try:
-            conn = self.get_connection()
+            conn = Connect().get_connection()
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM trucks WHERE plate_number = %s;", (plate_number,))
             row = cursor.fetchone()
@@ -157,10 +124,10 @@ class TableOperations(object):
     def update_entity(self, entity: TruckEntity):
         conn= None
         try:
-            conn = self.get_connection()
+            conn = Connect().get_connection()
             cursor = conn.cursor()
             cursor.execute("UPDATE trucks SET name = %s, description = %s, note = %s WHERE plate_number = %s;", 
-                           (entity.name, entity.description, entity.note, entity.plate_number))
+                            (entity.name, entity.description, entity.note, entity.plate_number))
             conn.commit()
 
             cursor.close()
@@ -175,7 +142,7 @@ class TableOperations(object):
     def delete_entity(self, plate_number: str):
         conn= None
         try:
-            conn = self.get_connection()
+            conn = Connect().get_connection()
             cursor = conn.cursor()
 
             cursor.execute("DELETE FROM trucks WHERE plate_number = %s;", (plate_number,))
@@ -192,12 +159,12 @@ class TableOperations(object):
 
 
 
-#eliminates the need for bool in truck table - mixing static and non static data is no good
-#where not exists = like left join but the negation
+    #eliminates the need for bool in truck table - mixing static and non static data is no good
+    #where not exists = like left join but the negation
     def get_availability(self, get_date):
         conn= None
         try:
-            conn = self.get_connection()
+            conn = Connect().get_connection()
             cursor = conn.cursor()
             cursor.execute("""
                     SELECT t.plate_number, t.name
@@ -223,4 +190,3 @@ class TableOperations(object):
             logging.error(f"Error updating avaiability: {e}")
             conn.rollback()
             return False
-        

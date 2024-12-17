@@ -4,7 +4,9 @@ import logging
 import json
 from enum import Enum
 from datetime import *
-from models import TableOperations, TruckEntity
+from model.truck_model import TruckEntity
+
+from service.db_operations import TableOperations
 
 
 #create new truck
