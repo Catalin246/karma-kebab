@@ -81,10 +81,10 @@ func (r *DutyRepository) GetDutyById(ctx context.Context, partitionKey, rowKey s
 }
 
 // GET DUTIES BY ROLE ID (using RoleId as filter)
-func (r *DutyRepository) GetDutiesByRole(ctx context.Context, roleId int) ([]models.Duty, error) {
+func (r *DutyRepository) GetDutiesByRole(ctx context.Context, roleId uuid.UUID) ([]models.Duty, error) {
 	tableClient := r.serviceClient.NewClient(r.tableName)
 
-	filter := fmt.Sprintf("RoleId eq '%s'", roleId)
+	filter := fmt.Sprintf("RoleId eq '%s'", roleId.String())
 
 	listOptions := &aztables.ListEntitiesOptions{
 		Filter: &filter,

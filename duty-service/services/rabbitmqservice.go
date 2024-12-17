@@ -79,7 +79,7 @@ func NewRabbitMQService(dutyService *DutyAssignmentService) *RabbitMQService {
             }
 
             // Create duty list based on clock-in message
-            err = dutyService.CreateDutyAssignments(context.Background(), clockInMessage) //move to repo class?
+            err = dutyService.CreateDutyAssignments(context.Background(), clockInMessage.ShiftID, clockInMessage.RoleId) //move to repo class?
             if err != nil {
                 log.Printf("Error creating duty list: %v", err)
                 msg.Nack(false, false)

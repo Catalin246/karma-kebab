@@ -1,3 +1,4 @@
+
 package handlers
 
 import (
@@ -5,9 +6,7 @@ import (
 	"duty-service/models"
 	"duty-service/services"
 	"encoding/json"
-	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -63,20 +62,13 @@ func (h *DutyHandler) GetDutiesByRole(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// roleIdUUID, err := uuid.Parse(roleId) // Validate the UUID format
-	// if err != nil {
-	// 	http.Error(w, "Invalid 'RoleId' format: "+err.Error(), http.StatusBadRequest)
-	// 	return
-	// }
-
-	roleIdInt, err := strconv.Atoi(roleId)
+	roleIdUUID, err := uuid.Parse(roleId) // Validate the UUID format
 	if err != nil {
-		// Handle error if the string is not a valid number
-		fmt.Println("Error converting string to int:", err)
+		http.Error(w, "Invalid 'RoleId' format: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	duties, err := h.service.GetDutiesByRole(context.Background(), roleIdInt)
+	duties, err := h.service.GetDutiesByRole(context.Background(), roleIdUUID)
 	if err != nil {
 		http.Error(w, "Failed to retrieve duties by RoleId: "+err.Error(), http.StatusInternalServerError)
 		return
