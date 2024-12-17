@@ -44,6 +44,7 @@ func (r *TableStorageAvailabilityRepository) Create(ctx context.Context, availab
         "EmployeeID":   availability.EmployeeID,
         "StartDate":    availability.StartDate.Format(time.RFC3339),
         "EndDate":      availability.EndDate.Format(time.RFC3339),
+        "RoleIDs":      availability.RoleIDs,
     }
 
     // Marshal the entity to JSON
@@ -151,66 +152,8 @@ func (r *TableStorageAvailabilityRepository) GetByEmployeeID(ctx context.Context
 	return availabilities, nil
 }
 
-// GetAll retrieves all availability records
-// func (r *TableStorageAvailabilityRepository) GetAll(ctx context.Context, startDate, endDate *time.Time) ([]models.Availability, error) {
-// 	tableClient := r.serviceClient.NewClient(r.tableName)
 
-// 	// Build the base query for Table Storage
-// 	filter := ""
-
-// 	// Add date filters if startDate and endDate are provided
-// 	if startDate != nil {
-// 		filter += fmt.Sprintf(" and StartDate ge datetime'%s'", startDate.Format("2006-01-02T15:04:05Z"))
-// 	}
-// 	if endDate != nil {
-// 		filter += fmt.Sprintf(" and EndDate le datetime'%s'", endDate.Format("2006-01-02T15:04:05Z"))
-// 	}
-
-// 	// Create list options with the filter
-// 	listOptions := &aztables.ListEntitiesOptions{
-// 		Filter: &filter,
-// 	}
-
-// 	// Query table storage with the filter
-// 	pager := tableClient.NewListEntitiesPager(listOptions)
-// 	var availabilities []models.Availability
-
-// 	for pager.More() {
-// 		response, err := pager.NextPage(ctx)
-// 		if err != nil {
-// 			return nil, fmt.Errorf("failed to list entities: %v", err)
-// 		}
-
-// 		for _, entityBytes := range response.Entities {
-// 			var entityData map[string]interface{}
-// 			if err := json.Unmarshal(entityBytes, &entityData); err != nil {
-// 				return nil, fmt.Errorf("failed to unmarshal entity: %v", err)
-// 			}
-
-// 			// Parse the dates
-// 			startDate, err := time.Parse(time.RFC3339, entityData["StartDate"].(string))
-// 			if err != nil {
-// 				return nil, fmt.Errorf("failed to parse start date: %v", err)
-// 			}
-
-// 			endDate, err := time.Parse(time.RFC3339, entityData["EndDate"].(string))
-// 			if err != nil {
-// 				return nil, fmt.Errorf("failed to parse end date: %v", err)
-// 			}
-
-// 			availability := models.Availability{
-// 				ID:         entityData["RowKey"].(string),
-// 				EmployeeID: entityData["PartitionKey"].(string),
-// 				StartDate:  startDate,
-// 				EndDate:    endDate,
-// 			}
-// 			availabilities = append(availabilities, availability)
-// 		}
-// 	}
-
-// 	return availabilities, nil
-// }
-func (r *TableStorageAvailabilityRepository) GetAll(ctx context.Context, startDate, endDate *time.Time) ([]models.Availability, error) {
+func (r *TableStorageAvailabilityRepository) GetAll(ctx context.Context, startDate, endDate *time.Time, roleIDs []int) ([]models.Availability, error) {
     tableClient := r.serviceClient.NewClient(r.tableName)
 
     // Start with an empty filter

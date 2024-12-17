@@ -22,9 +22,9 @@ func NewAvailabilityService(repo repository.AvailabilityRepository) *Availabilit
 }
 
 // Fetch all availability records for a specific EmployeeID with optional date range filter
-func (s *AvailabilityService) GetAll(ctx context.Context, startDate, endDate *time.Time) ([]models.Availability, error) {
+func (s *AvailabilityService) GetAll(ctx context.Context, startDate, endDate *time.Time,roleIDs []int) ([]models.Availability, error) {
 
-	return s.repo.GetAll(ctx, startDate, endDate)
+	return s.repo.GetAll(ctx, startDate, endDate, roleIDs)
 }
 
 // Fetch a specific availability record by EmployeeID

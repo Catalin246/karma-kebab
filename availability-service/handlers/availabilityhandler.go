@@ -4,8 +4,10 @@ import (
 	"availability-service/models"
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -14,7 +16,7 @@ import (
 
 // AvailabilityServiceInterface defines the methods that the service must implement
 type IAvailability interface {
-	GetAll(ctx context.Context, startDate, endDate *time.Time) ([]models.Availability, error)
+	GetAll(ctx context.Context, startDate, endDate *time.Time, roleIDs []int) ([]models.Availability, error)
 	GetByEmployeeID(ctx context.Context, employeeID string) ([]models.Availability, error)
 	Create(ctx context.Context, availability models.Availability) (*models.Availability, error)
 	Update(ctx context.Context, employeeID, id string, availability models.Availability) error
@@ -29,12 +31,14 @@ type CreateAvailabilityRequest struct {
 	EmployeeID string `json:"employeeId"`
 	StartDate  string `json:"startDate"`
 	EndDate    string `json:"endDate"`
+	RoleIDs    []int  `json:"roleIds"`
 }
 
 type UpdateAvailabilityRequest struct {
 	EmployeeID string `json:"employeeId"`
 	StartDate  string `json:"startDate"`
 	EndDate    string `json:"endDate"`
+	RoleIDs    []int  `json:"roleIds"`
 }
 
 // NewAvailabilityHandler now accepts the interface instead of a pointer to the concrete service
@@ -47,6 +51,16 @@ func NewAvailabilityHandler(service IAvailability) *AvailabilityHandler {
 func (h *AvailabilityHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	startDateStr := r.URL.Query().Get("startDate")
 	endDateStr := r.URL.Query().Get("endDate")
+	roleIDsStr := r.URL.Query().Get("RoleIDs")
+	var roleIDs []int
+	if roleIDsStr != "" {
+		parsedRoleIDs, err := parseRoleIDs(roleIDsStr)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		roleIDs = parsedRoleIDs
+	}
 
 	var startDate, endDate *time.Time
 
@@ -104,7 +118,7 @@ func (h *AvailabilityHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 		endDate = &parsedEndDate
 	}
 
-	availabilities, err := h.service.GetAll(r.Context(), startDate, endDate)
+	availabilities, err := h.service.GetAll(r.Context(), startDate, endDate, roleIDs)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -114,7 +128,6 @@ func (h *AvailabilityHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(availabilities)
 }
 
-// gets all availabilities of one employee
 func (h *AvailabilityHandler) GetByEmployeeID(w http.ResponseWriter, r *http.Request) {
 	// Log full request details for debugging
 	log.Printf("Received GETby emp id request: %+v", r)
@@ -160,11 +173,33 @@ func (h *AvailabilityHandler) GetByEmployeeID(w http.ResponseWriter, r *http.Req
 		http.Error(w, "Error encoding response", http.StatusInternalServerError)
 	}
 }
+
 func (h *AvailabilityHandler) Create(w http.ResponseWriter, r *http.Request) {
-	var availability models.Availability
-	if err := json.NewDecoder(r.Body).Decode(&availability); err != nil {
+	var req CreateAvailabilityRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
+	}
+
+	// Parse start and end dates
+	startDate, err := time.Parse(time.RFC3339, req.StartDate)
+	if err != nil {
+		http.Error(w, "Invalid start date format", http.StatusBadRequest)
+		return
+	}
+
+	endDate, err := time.Parse(time.RFC3339, req.EndDate)
+	if err != nil {
+		http.Error(w, "Invalid end date format", http.StatusBadRequest)
+		return
+	}
+
+	// Create Availability model
+	availability := models.Availability{
+		EmployeeID: req.EmployeeID,
+		StartDate:  startDate,
+		EndDate:    endDate,
+		RoleIDs:    req.RoleIDs,
 	}
 
 	// Capture the returned availability
@@ -212,6 +247,7 @@ func (h *AvailabilityHandler) Update(w http.ResponseWriter, r *http.Request) {
 		EmployeeID: partitionKey,
 		StartDate:  startDate,
 		EndDate:    endDate,
+		RoleIDs:    req.RoleIDs,
 	}
 
 	err = h.service.Update(r.Context(), partitionKey, rowKey, availability)
@@ -230,7 +266,6 @@ func (h *AvailabilityHandler) Update(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// delete
 func (h *AvailabilityHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	partitionKey := vars["partitionKey"] // EmployeeID
@@ -255,4 +290,34 @@ func (h *AvailabilityHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func parseRoleIDs(roleIDsStr string) ([]int, error) {
+    // If the string is empty, return an empty slice
+    if roleIDsStr == "" {
+        return nil, nil
+    }
+
+    // Split the string by comma
+    roleIDStrings := strings.Split(roleIDsStr, ",")
+    
+    // Create a slice to store parsed role IDs
+    roleIDs := make([]int, 0, len(roleIDStrings))
+    
+    // Parse each string to an integer
+    for _, idStr := range roleIDStrings {
+        // Trim any whitespace
+        idStr = strings.TrimSpace(idStr)
+        
+        // Convert to integer
+        roleID, err := strconv.Atoi(idStr)
+        if err != nil {
+            // Return an error if any ID is not a valid integer
+            return nil, fmt.Errorf("invalid role ID: %s", idStr)
+        }
+        
+        roleIDs = append(roleIDs, roleID)
+    }
+    
+    return roleIDs, nil
 }
