@@ -17,11 +17,11 @@ import (
 // EventHandler struct now includes RabbitMQService
 type EventHandler struct {
 	service         services.EventServiceInteface
-	rabbitMQService *services.RabbitMQService
+	rabbitMQService services.RabbitMQServiceInterface
 }
 
 // NewEventHandler creates a new EventHandler
-func NewEventHandler(service services.EventServiceInteface, rabbitMQService *services.RabbitMQService) *EventHandler {
+func NewEventHandler(service services.EventServiceInteface, rabbitMQService services.RabbitMQServiceInterface) *EventHandler {
 	return &EventHandler{service: service, rabbitMQService: rabbitMQService}
 }
 

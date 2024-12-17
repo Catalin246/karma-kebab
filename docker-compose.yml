@@ -79,7 +79,7 @@ services:
   api-gateway:
     build:
       context: ./api-gateway
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.local
     container_name: api-gateway
     ports:
       - "3007:3007"
@@ -114,20 +114,20 @@ services:
     networks:
       - karama-kebab-network
 
-  employee-service:
-    build:
-      context: ./employee_service/EmployeeMicroservice.Functions
-      dockerfile: Dockerfile
-    environment:
-      - PostgreSQLEntityFramework="Host=localhost;Port=5432;Database=employeedb;Username=postgres;Password=password;"
-      - FUNCTIONS_WORKER_RUNTIME=dotnet-isolated
-      - AzureWebJobsStorage=UseDevelopmentStorage=true
-    depends_on:
-      - postgres
-    ports:
-      - "3005:3005"  # Assuming the employee service runs on port 3005
-    networks:
-      - karama-kebab-network
+  # employee-service:
+  #   build:
+  #     context: ./employee_service/EmployeeMicroservice.Functions
+  #     dockerfile: Dockerfile
+  #   environment:
+  #     - PostgreSQLEntityFramework="Host=localhost;Port=5432;Database=employeedb;Username=postgres;Password=password;"
+  #     - FUNCTIONS_WORKER_RUNTIME=dotnet-isolated
+  #     - AzureWebJobsStorage=UseDevelopmentStorage=true
+  #   depends_on:
+  #     - postgres
+  #   ports:
+  #     - "3005:3005"  # Assuming the employee service runs on port 3005
+  #   networks:
+  #     - karama-kebab-network
 
   postgres:
     image: postgres:13

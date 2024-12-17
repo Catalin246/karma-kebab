@@ -13,7 +13,7 @@ import (
 )
 
 // RegisterRoutes registers all the routes for the event service
-func RegisterRoutes(serviceClient *aztables.ServiceClient, rabbitMQService *services.RabbitMQService) *mux.Router {
+func RegisterRoutes(serviceClient *aztables.ServiceClient, rabbitMQService services.RabbitMQServiceInterface) *mux.Router {
 	// Create the repository and service instances
 	eventRepository := repositories.NewEventRepository(serviceClient)
 	eventService := services.NewEventService(eventRepository)
