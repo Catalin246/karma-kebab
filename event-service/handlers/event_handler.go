@@ -136,10 +136,6 @@ func (h *EventHandler) UpdateEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.rabbitMQService.PublishMessage("eventUpdated", "Event Updated!"); err != nil {
-		log.Println("Failed to publish message:", err)
-	}
-
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"message": "Event updated successfully"})
 }
@@ -157,6 +153,10 @@ func (h *EventHandler) DeleteEvent(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, `{"error": "internal server error"}`, http.StatusInternalServerError)
 		}
 		return
+	}
+
+	if err := h.rabbitMQService.PublishMessage("eventDeleted", "Event Deleted!"); err != nil {
+		log.Println("Failed to publish message:", err)
 	}
 
 	if err := h.rabbitMQService.PublishMessage("eventDeleted", "Event Deleted!"); err != nil {

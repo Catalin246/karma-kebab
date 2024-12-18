@@ -91,16 +91,16 @@ func (r *RabbitMQService) ConsumeMessage(queueName string) error {
 		return err
 	}
 
-	shiftID := "da1d0a6d-d41d-482a-aec0-f239e3ad6b29"
-	// Convert shiftID (string) to uuid.UUID
+	// This must come from the message
+	shiftID := "da1d0a6d-d41d-482a-aec0-f239e3ad6b29" // Come from the message
 	parsedShiftID, err := uuid.Parse(shiftID)
 	if err != nil {
 		log.Printf("[!] Error parsing ShiftID: %v\n", err)
 		return err
 	}
 
-	rowKey := "62ba06f4-fcbe-4a17-b196-a5348dc62d11"
-	partitionKey := "event-group-winter"
+	rowKey := "62ba06f4-fcbe-4a17-b196-a5348dc62d11"                      // Come from the message
+	partitionKey := "event-group-winter"                                  // Come from the message
 	startTime := time.Date(2024, time.December, 18, 9, 0, 0, 0, time.UTC) // December 18, 2024 at 09:00 UTC
 	endTime := time.Date(2024, time.December, 18, 17, 0, 0, 0, time.UTC)  // December 18, 2024 at 17:00 UTC
 
@@ -116,7 +116,7 @@ func (r *RabbitMQService) ConsumeMessage(queueName string) error {
 		RowKey:       parsedRowKey,               // Use the UUID (RowKey) from the message
 		StartTime:    startTime,                  // Use the parsed start time (e.g., from the message)
 		EndTime:      endTime,                    // Use the parsed end time (e.g., from the message)
-		Address:      "123 Event Street",         // Hardcoded address
+		Address:      "Event Street",             // Hardcoded address
 		Venue:        "The Grand Hall",           // Hardcoded venue
 		Description:  "Annual GoLang Conference", // Hardcoded description
 		Money:        0.00,                       // Hardcoded money value
@@ -129,6 +129,7 @@ func (r *RabbitMQService) ConsumeMessage(queueName string) error {
 		Note:     "Registration opens at 8:00 AM.", // Hardcoded note
 		ShiftIDs: []uuid.UUID{parsedShiftID},       // Use the parsed shift ID (e.g., from the message)
 	}
+	// ...
 
 	ctx := context.Background()
 	err = r.EventRepository.Update(ctx, partitionKey, rowKey, updatedEvent)
