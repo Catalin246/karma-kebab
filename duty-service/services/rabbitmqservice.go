@@ -6,14 +6,13 @@ import (
 	"encoding/json"
 	"log"
 
-	"github.com/streadway/amqp"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 type RabbitMQService struct {
 	Connection  *amqp.Connection
 	Channel     *amqp.Channel
 	QueueName   string
-	Exchange    string
 	DutyService *DutyAssignmentService
 }
 
@@ -27,23 +26,9 @@ func NewRabbitMQService(
 		log.Fatalf("Failed to open a channel: %v", err)
 	}
 
-	// Declare exchange
-	err = ch.ExchangeDeclare(
-		"clock-in-exchange", // name
-		"topic",             // type
-		true,                // durable
-		false,               // auto-deleted
-		false,               // internal
-		false,               // no-wait
-		nil,                 // arguments
-	)
-	if err != nil {
-		log.Fatalf("Failed to declare exchange: %v", err)
-	}
-
 	// Declare queue
 	q, err := ch.QueueDeclare(
-		"clock-in-queue", // name
+		"clock-in", // queue name
 		true,             // durable
 		false,            // delete when unused
 		false,            // exclusive
@@ -54,24 +39,10 @@ func NewRabbitMQService(
 		log.Fatalf("Failed to declare queue: %v", err)
 	}
 
-	// Bind queue to exchange
-	err = ch.QueueBind(
-		q.Name,              // queue name
-		"employee.clock-in", // routing key
-		"clock-in-exchange", // exchange
-		false,
-		nil,
-	)
-	if err != nil {
-		log.Fatalf("Failed to bind queue: %v", err)
-	}
-
-	// Create RabbitMQ service
 	rmqService := &RabbitMQService{
 		Connection:  connection,
 		Channel:     ch,
 		QueueName:   q.Name,
-		Exchange:    "clock-in-exchange",
 		DutyService: dutyService,
 	}
 
@@ -85,12 +56,12 @@ func (s *RabbitMQService) StartConsuming() {
 	// Consume messages
 	msgs, err := s.Channel.Consume(
 		s.QueueName, // queue
-		"",          // consumer
+		"",          // consumer tag
 		false,       // auto-ack
 		false,       // exclusive
 		false,       // no-local
 		false,       // no-wait
-		nil,         // args
+		nil,         // arguments
 	)
 	if err != nil {
 		log.Fatalf("Failed to register a consumer: %v", err)
@@ -106,7 +77,7 @@ func (s *RabbitMQService) StartConsuming() {
 				continue
 			}
 
-			// Create duty list based on clock-in message
+			// Process the message
 			err = s.DutyService.CreateDutyAssignments(context.Background(), clockInMessage.ShiftID, clockInMessage.RoleId)
 			if err != nil {
 				log.Printf("Error creating duty list: %v", err)
@@ -114,7 +85,7 @@ func (s *RabbitMQService) StartConsuming() {
 				continue
 			}
 
-			// Acknowledge message
+			// Acknowledge the message
 			msg.Ack(false)
 		}
 	}()

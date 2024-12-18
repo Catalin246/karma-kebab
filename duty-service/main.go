@@ -3,12 +3,20 @@ package main
 import (
 	"duty-service/db"
 	"duty-service/routes"
+	"duty-service/services"
 	"log"
 	"net/http"
 	"os"
 
 	"github.com/joho/godotenv"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
+
+func failOnError(err error, msg string) {
+	if err != nil {
+		log.Panicf("%s: %s", msg, err)
+	}
+}
 
 func main() {
 	// Load environment variables
@@ -40,7 +48,24 @@ func main() {
 		log.Fatal("Error initializing Azure Blob Storage: ", err)
 	}
 
-	// Register routes with both Table Storage and Blob Storage clients
+	// Initialize RabbitMQ connection
+	rabbitmqURL := os.Getenv("RABBITMQ_URL")
+	if rabbitmqURL == "" {
+		log.Fatal("Error: RABBITMQ_URL is not set")
+	}
+
+	rabbitConn, err := amqp.Dial(rabbitmqURL)
+	failOnError(err, "Failed to connect to RabbitMQ")
+	defer rabbitConn.Close()
+
+	// Initialize DutyAssignmentService 
+	dutyService := &services.DutyAssignmentService{}
+
+	// Initialize RabbitMQService
+	rabbitMQService := services.NewRabbitMQService(dutyService, rabbitConn)
+	defer rabbitMQService.Close()
+
+	// Register HTTP routes
 	router := routes.RegisterRoutes(tableClient, blobServiceClient)
 
 	// Start the server
