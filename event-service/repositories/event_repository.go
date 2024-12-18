@@ -117,7 +117,7 @@ func (r *EventRepository) GetByID(ctx context.Context, partitionKey, rowKey stri
 
 	// Fetch the shift IDs associated with the event
 	// The PartitionKey of the shift entities is the event's RowKey
-	filter := fmt.Sprintf("PartitionKey eq '%s'", rowKey) // using the event's RowKey as PartitionKey for shifts
+	filter := fmt.Sprintf("EventRowKey eq '%s'", rowKey) // using the event's RowKey as PartitionKey for shifts
 	listOptions := &aztables.ListEntitiesOptions{
 		Filter: &filter,
 	}
@@ -226,7 +226,7 @@ func (r *EventRepository) GetAll(ctx context.Context, filter string) ([]models.E
 			}
 
 			// Fetch the shift IDs associated with the event (use RowKey of the event for PartitionKey in shifts)
-			filterShifts := fmt.Sprintf("PartitionKey eq '%s'", rowKeyUUID.String()) // use event's RowKey as PartitionKey for shift relationships
+			filterShifts := fmt.Sprintf("EventRowKey eq '%s'", rowKeyUUID.String()) // use event's RowKey as PartitionKey for shift relationships
 			listOptionsShifts := &aztables.ListEntitiesOptions{
 				Filter: &filterShifts,
 			}
@@ -344,8 +344,51 @@ func (r *EventRepository) Delete(ctx context.Context, partitionKey, rowKey strin
 	return nil
 }
 
-// GetEventByShiftID retrieves an event by ShiftID
+// GetEventByShiftID retrieves a single event by ShiftID
 func (r *EventRepository) GetEventByShiftID(ctx context.Context, shiftID string) (*models.Event, error) {
-	// TODO: Implement this method
-	return nil, nil
+	// Initialize the client for the eventshifts table
+	tableClientRelationship := r.serviceClient.NewClient("eventshifts")
+
+	// Define the filter to find relationships for the specific ShiftID
+	filter := fmt.Sprintf("RowKey eq '%s'", shiftID) // ShiftID as RowKey in eventshifts
+	listOptions := &aztables.ListEntitiesOptions{
+		Filter: &filter,
+	}
+
+	// Create a pager for the eventshifts table to list all entities that match the filter
+	pager := tableClientRelationship.NewListEntitiesPager(listOptions)
+
+	var eventRowKey string
+	var eventPartitionKey string
+	// Loop through pages of shift relationships to find matching event IDs
+	for pager.More() {
+		page, err := pager.NextPage(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed to list shift relationships: %v", err)
+		}
+
+		// Unmarshal shift entities and extract the PartitionKey (EventID)
+		for _, entity := range page.Entities {
+			var shiftData map[string]interface{}
+			if err := json.Unmarshal(entity, &shiftData); err != nil {
+				return nil, fmt.Errorf("failed to unmarshal shift relationship: %v", err)
+			}
+
+			// Extract the PartitionKey (EventID) from the shift relationship
+			eventRowKey = shiftData["EventRowKey"].(string)
+			eventPartitionKey = shiftData["PartitionKey"].(string)
+		}
+	}
+
+	// Now retrieve the event from the events table using the eventID
+	event, err := r.GetByID(ctx, eventRowKey, eventPartitionKey)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve event by ID: %v", err)
+	}
+	if event == nil {
+		return nil, fmt.Errorf("event not found for ID: %s", eventRowKey)
+	}
+
+	// Return the event
+	return event, nil
 }
