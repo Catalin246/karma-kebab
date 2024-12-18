@@ -32,6 +32,7 @@ func RegisterRoutes(serviceClient *aztables.ServiceClient, rabbitMQService servi
 	r.HandleFunc("/events", eventHandler.CreateEvent).Methods(http.MethodPost)
 	r.HandleFunc("/events/{partitionKey}/{rowKey}", eventHandler.UpdateEvent).Methods(http.MethodPut)
 	r.HandleFunc("/events/{partitionKey}/{rowKey}", eventHandler.DeleteEvent).Methods(http.MethodDelete)
+	r.HandleFunc("/events/shift/{shiftID}", eventHandler.GetEventByShiftID).Methods(http.MethodGet)
 
 	return r
 }

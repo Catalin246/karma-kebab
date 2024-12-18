@@ -343,3 +343,9 @@ func (r *EventRepository) Delete(ctx context.Context, partitionKey, rowKey strin
 
 	return nil
 }
+
+// GetEventByShiftID retrieves an event by ShiftID
+func (r *EventRepository) GetEventByShiftID(ctx context.Context, shiftID string) (*models.Event, error) {
+	// TODO: Implement this method
+	return nil, nil
+}

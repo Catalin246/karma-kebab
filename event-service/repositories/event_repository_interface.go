@@ -17,4 +17,6 @@ type EventRepositoryInterface interface {
 	Update(ctx context.Context, partitionKey, rowKey string, event models.Event) error
 	// Delete removes an event by PartitionKey and RowKey
 	Delete(ctx context.Context, partitionKey, rowKey string) error
+	// GetEventByShiftID retrieves an event by ShiftID
+	GetEventByShiftID(ctx context.Context, shiftID string) (*models.Event, error)
 }

@@ -166,3 +166,18 @@ func (h *EventHandler) DeleteEvent(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"message": "Event deleted successfully"})
 }
+
+func (h *EventHandler) GetEventByShiftID(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	shiftID := vars["shiftID"]
+
+	event, err := h.service.GetEventByShiftID(r.Context(), shiftID)
+	if err != nil {
+		http.Error(w, "Failed to retrieve events: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(event)
+}
