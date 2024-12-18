@@ -375,8 +375,8 @@ func (r *EventRepository) GetEventByShiftID(ctx context.Context, shiftID string)
 			}
 
 			// Extract the PartitionKey (EventID) from the shift relationship
-			eventRowKey = shiftData["EventRowKey"].(string)
-			eventPartitionKey = shiftData["PartitionKey"].(string)
+			eventRowKey = shiftData["PartitionKey"].(string)
+			eventPartitionKey = shiftData["EventRowKey"].(string)
 		}
 	}
 
@@ -390,5 +390,5 @@ func (r *EventRepository) GetEventByShiftID(ctx context.Context, shiftID string)
 	}
 
 	// Return the event
-	return event, nil
+	return event, err
 }
