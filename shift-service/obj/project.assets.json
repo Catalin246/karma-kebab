@@ -2387,31 +2387,24 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\avorn\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "C:\\Users\\Eniko\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\avorn\\source\\repos\\karma-kebab\\shift-service\\shift-service.csproj",
+      "projectUniqueName": "C:\\Users\\Eniko\\Desktop\\karma_kebab\\karma-kebab\\shift-service\\shift-service.csproj",
       "projectName": "shift-service",
-      "projectPath": "C:\\Users\\avorn\\source\\repos\\karma-kebab\\shift-service\\shift-service.csproj",
-      "packagesPath": "C:\\Users\\avorn\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\avorn\\source\\repos\\karma-kebab\\shift-service\\obj\\",
+      "projectPath": "C:\\Users\\Eniko\\Desktop\\karma_kebab\\karma-kebab\\shift-service\\shift-service.csproj",
+      "packagesPath": "C:\\Users\\Eniko\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Eniko\\Desktop\\karma_kebab\\karma-kebab\\shift-service\\obj\\",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-      ],
       "configFilePaths": [
-        "C:\\Users\\avorn\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "C:\\Users\\Eniko\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
       ],
       "sources": {
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -2429,8 +2422,7 @@
         "enableAudit": "true",
         "auditLevel": "low",
         "auditMode": "direct"
-      },
-      "SdkAnalysisLevel": "9.0.100"
+      }
     },
     "frameworks": {
       "net8.0": {
@@ -2492,7 +2484,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.101/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.404/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

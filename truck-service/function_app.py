@@ -3,7 +3,16 @@ from controller.controller import create_truck, return_all_truck, return_truck, 
 
 
 from service import *
-from model import models, truck_model
+from model.models import Connect
+
+def initialize_database():
+    connect = Connect()
+    connect.create_table()
+    connect.create_table_truck_sched()
+
+
+initialize_database()
+
 
 app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
