@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Azure;
 using System.Text.Json;
+using Services;
 
 [ApiController]
 [Route("[controller]")]
@@ -8,6 +9,7 @@ public class ShiftsController : ControllerBase
 {
     private readonly IShiftService _shiftService;
     private readonly ILogger<ShiftsController> _logger;
+    private readonly IRabbitMqService _rabbitMqService;
 
     public ShiftsController(IShiftService shiftService, ILogger<ShiftsController> logger)
     {
@@ -141,6 +143,7 @@ public class ShiftsController : ControllerBase
                     Success = false,
                     Message = $"Shift with ID {shiftId} not found"
                 });
+
                 
             return Ok(new ApiResponse
             {
@@ -173,6 +176,60 @@ public class ShiftsController : ControllerBase
             });
         }
     }
+
+
+    [HttpPost("{shiftId:guid}/clockin")]
+    public async Task<ActionResult<ApiResponse>> ClockIn(Guid shiftId)
+    {
+        try
+        {
+            // Create UpdateShiftDto with only ClockInTime updated
+            var updateShiftDto = new UpdateShiftDto
+            {
+                ClockInTime = DateTime.Now
+            };
+
+            // Call the existing UpdateShift method
+            var updatedShift = await _shiftService.UpdateShift(shiftId, updateShiftDto);
+
+            if (updatedShift == null)
+            {
+                return NotFound(new ApiResponse
+                {
+                    Success = false,
+                    Message = $"Shift with ID {shiftId} not found"
+                });
+            }
+
+            // message for rabbitmq
+            var clockInMessage = new ClockInDto
+            {
+                ShiftID = shiftId,
+                TimeStamp = DateTime.Now,
+                RoleID = updatedShift.RoleID
+            };
+
+            // Publish clock-in message to RabbitMQ - to clockin queue
+            _rabbitMqService.PublishClockIn(clockInMessage);
+
+            return Ok(new ApiResponse
+            {
+                Success = true,
+                Message = "Clock-in successful and message published",
+                Data = updatedShift
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error clocking in for shift with ID: {ShiftId}", shiftId);
+            return StatusCode(500, new ApiResponse
+            {
+                Success = false,
+                Message = "Internal server error occurred while clocking in"
+            });
+        }
+    }
+
 
     [HttpDelete("{shiftId:guid}")]
     public async Task<ActionResult> DeleteShift(Guid shiftId)
