@@ -310,8 +310,9 @@ func (r *EventRepository) Update(ctx context.Context, partitionKey, rowKey strin
 	// Now insert the new shift relationships for the updated event
 	for _, shiftID := range event.ShiftIDs {
 		shiftEntity := map[string]interface{}{
-			"PartitionKey": rowKey,  // EventID
-			"RowKey":       shiftID, // ShiftID
+			"PartitionKey": partitionKey, // Event's partition key
+			"EventRowKey":  rowKey,       // EventID
+			"RowKey":       shiftID,      // ShiftID
 		}
 
 		// Marshal the shift entity to JSON
