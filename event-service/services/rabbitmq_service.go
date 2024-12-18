@@ -99,7 +99,7 @@ func (r *RabbitMQService) ConsumeMessage(queueName string) error {
 		return err
 	}
 
-	rowKey := "d25c8ac7-244a-4e1a-8385-363e177f0d45"
+	rowKey := "62ba06f4-fcbe-4a17-b196-a5348dc62d11"
 	partitionKey := "event-group-winter"
 	startTime := time.Date(2024, time.December, 18, 9, 0, 0, 0, time.UTC) // December 18, 2024 at 09:00 UTC
 	endTime := time.Date(2024, time.December, 18, 17, 0, 0, 0, time.UTC)  // December 18, 2024 at 17:00 UTC
