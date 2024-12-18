@@ -1,6 +1,10 @@
 package models
 
-import "github.com/google/uuid"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 // represents a duty assigned to a role
 type Duty struct {
@@ -9,4 +13,9 @@ type Duty struct {
 	RoleId          uuid.UUID `json:"RoleId"`          // ID of the associated role (string representation of UUID)
 	DutyName        string    `json:"DutyName"`        // Name of the duty
 	DutyDescription string    `json:"DutyDescription"` // Detailed description
+}
+type ClockInMessage struct {
+    ShiftID      uuid.UUID `json:"shift_id"`
+    ClockInTime  time.Time `json:"clock_in_time"`
+	RoleId		 uuid.UUID `json:"role_id"` //or roleID??
 }
