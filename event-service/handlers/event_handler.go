@@ -159,10 +159,6 @@ func (h *EventHandler) DeleteEvent(w http.ResponseWriter, r *http.Request) {
 		log.Println("Failed to publish message:", err)
 	}
 
-	if err := h.rabbitMQService.PublishMessage("eventDeleted", "Event Deleted!"); err != nil {
-		log.Println("Failed to publish message:", err)
-	}
-
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"message": "Event deleted successfully"})
 }
