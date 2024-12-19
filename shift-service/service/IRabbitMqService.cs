@@ -4,7 +4,7 @@ namespace Services
 {
     public interface IRabbitMqService
     {
-        Task StartListeningAsync();
+        Task ListeningEventCreated();
 
         Task PublishClockIn(ClockInDto clockInDto);
     }

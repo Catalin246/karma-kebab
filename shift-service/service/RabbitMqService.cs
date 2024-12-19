@@ -61,7 +61,7 @@ namespace Services
         }
 
 
-        public async Task StartListeningAsync()
+        public async Task ListeningEventCreated()
         {
             using var connection = await _factory.CreateConnectionAsync();
             using var channel = await connection.CreateChannelAsync();
@@ -92,7 +92,7 @@ namespace Services
                     string eventID = eventMessage.EventID;
                     string startTime = eventMessage.StartTime;
                     string endTime = eventMessage.EndTime;
-                    int shiftsNumber = eventMessage.ShiftsNumber;
+                    List<int> roleIDs = eventMessage.RoleIDs;
 
                     // Assuming the message contains data needed to create a shift
                     var requestData = new
@@ -105,7 +105,7 @@ namespace Services
 
                     var jsonContent = new StringContent(System.Text.Json.JsonSerializer.Serialize(requestData), Encoding.UTF8, "application/json");
 
-                    for (int i = 1; i <= shiftsNumber; i++)
+                    foreach (int roleID in roleIDs)
                     {
                         // Send POST request to Shift Service
                         var response = await _httpClient.PostAsync(_shiftServiceUrl, jsonContent);
