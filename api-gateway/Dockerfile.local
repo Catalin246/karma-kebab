@@ -8,7 +8,7 @@ COPY nginx.local.conf /etc/nginx/nginx.local.conf
 COPY public.pem /etc/nginx/keys/public.pem
 
 # Set an environment variable for local development (default to production). Change this var to nginx.local.conf for local development.
-ENV NGINX_CONFIG=nginx.conf
+ENV NGINX_CONFIG=nginx.local.conf
 
 RUN cp /etc/nginx/$NGINX_CONFIG /etc/nginx/nginx.conf
 
