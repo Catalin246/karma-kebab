@@ -28,14 +28,14 @@ func TestGetAllDuties(t *testing.T) {
 		{
 			PartitionKey:    "TestPartitionKey",
 			RowKey:          uuid.MustParse("123e4567-e89b-12d3-a456-426614174000"), // Sample UUID
-			RoleId:          uuid.MustParse("123e4567-e89b-12d3-a456-426614174001"), // Sample UUID
+			RoleId:          1,                                                      // Sample UUID
 			DutyName:        "Test Duty 1",
 			DutyDescription: "Description for Test Duty 1",
 		},
 		{
 			PartitionKey:    "TestPartitionKey",
 			RowKey:          uuid.MustParse("123e4567-e89b-12d3-a456-426614174002"), // Sample UUID
-			RoleId:          uuid.MustParse("123e4567-e89b-12d3-a456-426614174003"), // Sample UUID
+			RoleId:          2,                                                      // Sample UUID
 			DutyName:        "Test Duty 2",
 			DutyDescription: "Description for Test Duty 2",
 		},
@@ -65,27 +65,26 @@ func TestGetDutiesByRole_Success(t *testing.T) {
 	handler := handlers.NewDutyHandler(mockService)
 
 	// dummy data
-	roleId := uuid.MustParse("123e4567-e89b-12d3-a456-426614174000")
 	mockDuties := []models.Duty{
 		{
 			PartitionKey:    "Partition1",
 			RowKey:          uuid.New(),
-			RoleId:          roleId,
+			RoleId:          1,
 			DutyName:        "Duty 1",
 			DutyDescription: "Desc 1",
 		},
 		{
 			PartitionKey:    "Partition2",
 			RowKey:          uuid.New(),
-			RoleId:          roleId,
+			RoleId:          1,
 			DutyName:        "Duty 2",
 			DutyDescription: "Desc 2",
 		},
 	}
 
-	mockService.On("GetDutiesByRole", mock.Anything, roleId).Return(mockDuties, nil)
+	mockService.On("GetDutiesByRole", mock.Anything, 1).Return(mockDuties, nil)
 
-	req := httptest.NewRequest(http.MethodGet, "/duties?RoleId=123e4567-e89b-12d3-a456-426614174000", nil)
+	req := httptest.NewRequest(http.MethodGet, "/duties?RoleId=1", nil)
 	rec := httptest.NewRecorder()
 
 	handler.GetDutiesByRole(rec, req)
@@ -93,7 +92,6 @@ func TestGetDutiesByRole_Success(t *testing.T) {
 	require.Equal(t, http.StatusOK, rec.Result().StatusCode)
 	require.Equal(t, "application/json", rec.Result().Header.Get("Content-Type"))
 
-	// parse the response body
 	var response []models.Duty
 	err := json.NewDecoder(rec.Body).Decode(&response)
 	require.NoError(t, err)
@@ -110,7 +108,7 @@ func TestGetDutyById(t *testing.T) {
 	mockDuty := models.Duty{
 		PartitionKey:    "TestPartitionKey",
 		RowKey:          uuid.MustParse("123e4567-e89b-12d3-a456-426614174000"),
-		RoleId:          uuid.MustParse("123e4567-e89b-12d3-a456-426614174001"),
+		RoleId:          123,
 		DutyName:        "Test Duty",
 		DutyDescription: "Description for Test Duty",
 	}
@@ -146,7 +144,7 @@ func TestCreateDuty_Success(t *testing.T) {
 	newDuty := models.Duty{
 		PartitionKey:    "Duty",
 		RowKey:          uuid.New(),
-		RoleId:          uuid.New(),
+		RoleId:          123,
 		DutyName:        "Test Duty",
 		DutyDescription: "Test Description",
 	}
@@ -177,7 +175,7 @@ func TestUpdateDuty_Success(t *testing.T) {
 	updatedDuty := models.Duty{
 		PartitionKey:    "TestPartitionKey",
 		RowKey:          uuid.New(),
-		RoleId:          uuid.New(),
+		RoleId:          234,
 		DutyName:        "Updated Duty",
 		DutyDescription: "Updated Description",
 	}
@@ -290,10 +288,10 @@ func TestCreateDuty_ServiceError(t *testing.T) {
 	mockService := new(mocks.MockDutyService)
 	handler := handlers.NewDutyHandler(mockService)
 
-	// du,mmy duty
+	// dummy duty
 	newDuty := models.Duty{
 		PartitionKey:    "Duty",
-		RoleId:          uuid.New(),
+		RoleId:          111,
 		DutyName:        "Test Duty",
 		DutyDescription: "Test Description",
 	}
