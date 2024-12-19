@@ -20,10 +20,11 @@ namespace Services
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger<RabbitMqService> _logger;
-        private readonly string _queueName = "eventCreated";
+        private readonly string _eventCreatedQueueName = "eventCreated";
         private readonly string _shiftServiceUrl;
         private readonly string _clockInQueueName = "clockIn";
         private readonly ConnectionFactory _factory;
+        
 
         public RabbitMqService(HttpClient httpClient, ILogger<RabbitMqService> logger, IOptions<RabbitMqServiceConfig> options)
         {
@@ -65,7 +66,7 @@ namespace Services
             using var connection = await _factory.CreateConnectionAsync();
             using var channel = await connection.CreateChannelAsync();
 
-            await channel.QueueDeclareAsync(queue: _queueName, durable: false, exclusive: false, autoDelete: false, arguments: null);
+            await channel.QueueDeclareAsync(queue: _eventCreatedQueueName, durable: false, exclusive: false, autoDelete: false, arguments: null);
 
             _logger.LogInformation(" [*] Waiting for messages.");
 
@@ -125,7 +126,7 @@ namespace Services
                 }
             };
 
-            await channel.BasicConsumeAsync(queue: _queueName, autoAck: true, consumer: consumer);
+            await channel.BasicConsumeAsync(queue: _eventCreatedQueueName, autoAck: true, consumer: consumer);
 
             // Prevent the method from exiting immediately
             await Task.Delay(-1);
