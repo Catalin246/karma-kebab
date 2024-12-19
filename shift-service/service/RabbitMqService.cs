@@ -24,16 +24,18 @@ namespace Services
         private readonly string _shiftServiceUrl;
         private readonly string _clockInQueueName = "clockIn";
         private readonly ConnectionFactory _factory;
+        private readonly IServiceProvider _serviceProvider;
 
-        public RabbitMqService(HttpClient httpClient, ILogger<RabbitMqService> logger, IOptions<RabbitMqServiceConfig> options)
+        public RabbitMqService(HttpClient httpClient, ILogger<RabbitMqService> logger, IOptions<RabbitMqServiceConfig> options, IServiceProvider serviceProvider)
         {
             _httpClient = httpClient;
             _logger = logger;
             _factory = new ConnectionFactory { HostName = "rabbitmq" };
             if (options == null) throw new ArgumentNullException(nameof(options));
             _shiftServiceUrl = options.Value.Url;
+            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         }
-        public async Task PublishClockIn(ClockInDto clockInDto) // Producer - should push to clockIn queue
+        public async Task PublishClockIn(ClockInDto clockInDto) // Producer - push to clockIn queue
         {
             using var connection = await _factory.CreateConnectionAsync();
             using var channel = await connection.CreateChannelAsync();
@@ -59,11 +61,12 @@ namespace Services
             _logger.LogInformation($"Published Clock In/Out message for Shift {clockInDto.ShiftID}");
         }
 
-        public async Task PublishShiftCreated() {
+        public async Task PublishShiftCreated() // Producer - push to shiftCreated queue
+        {
             // TODO: Implement the logic to publish ShiftCreated messages
         }
 
-        public async Task ListeningEventCreated() // Consumer
+        public async Task ListeningEventCreated() // Consumer - consume from eventCreated queue
         {
             using var connection = await _factory.CreateConnectionAsync();
             using var channel = await connection.CreateChannelAsync();
@@ -96,29 +99,32 @@ namespace Services
                     string endTime = eventMessage.EndTime;
                     List<int> roleIDs = eventMessage.RoleIDs;
 
-                    // Assuming the message contains data needed to create a shift
-                    var requestData = new
+                    var createShiftDto = new CreateShiftDto
                     {
-                        startTime = startTime,
-                        endTime = endTime,
-                        shiftType = "Standby",
-                        // Add the role ID to the request data
+                        StartTime = DateTime.Parse(startTime),
+                        EndTime = DateTime.Parse(endTime),
+                        EmployeeId = Guid.Empty,
+                        ShiftType = "Standby"
                     };
 
-                    var jsonContent = new StringContent(System.Text.Json.JsonSerializer.Serialize(requestData), Encoding.UTF8, "application/json");
-
-                    foreach (int roleID in roleIDs)
+                    // Create a scope and resolve IShiftService within it
+                    using (var scope = _serviceProvider.CreateScope())
                     {
-                        // Send POST request to Shift Service
-                        var response = await _httpClient.PostAsync(_shiftServiceUrl, jsonContent); //  Make the request through repository
+                        var shiftService = scope.ServiceProvider.GetRequiredService<IShiftService>();
 
-                        if (response.IsSuccessStatusCode)
+                        foreach (int roleID in roleIDs)
                         {
-                            _logger.LogInformation(" [✓] Shift created successfully.");
-                        }
-                        else
-                        {
-                            _logger.LogError($" [!] Failed to create shift. Status: {response.StatusCode}");
+                            // Send POST request to Shift Service through IShiftService
+                            var response = await shiftService.CreateShift(createShiftDto);
+
+                            if (response != null)
+                            {
+                                _logger.LogInformation(" [✓] Shift created successfully.");
+                            }
+                            else
+                            {
+                                _logger.LogError($" [!] Failed to create shift.");
+                            }
                         }
                     }
                 }
@@ -134,7 +140,7 @@ namespace Services
             await Task.Delay(-1);
         }
 
-        public async Task ListeningEventDeleted() // Consumer
+        public async Task ListeningEventDeleted() // Consumer - consume from eventDeleted queue
         {
             // TODO: Implement the logic to listen for EventDeleted messages
         }
