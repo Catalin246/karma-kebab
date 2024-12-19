@@ -30,4 +30,5 @@ type Event struct {
 	Person       Person      `json:"person"`       // Associated person
 	Note         string      `json:"note"`         // Additional notes
 	ShiftIDs     []uuid.UUID `json:"shiftIDs"`     // List of shift IDs (UUIDs)
+	RoleIDs      []int       `json:"roleIDs"`      // List of role IDs (ints)
 }
