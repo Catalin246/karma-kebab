@@ -21,20 +21,25 @@ namespace Services
         private readonly HttpClient _httpClient;
         private readonly ILogger<RabbitMqService> _logger;
         private readonly string _eventCreatedQueueName = "eventCreated";
-        private readonly string _shiftServiceUrl;
         private readonly string _clockInQueueName = "clockIn";
         private readonly ConnectionFactory _factory;
-        
+        private readonly ShiftDbContext _shiftDbContext;
 
-        public RabbitMqService(HttpClient httpClient, ILogger<RabbitMqService> logger, IOptions<RabbitMqServiceConfig> options)
+        public RabbitMqService(
+            HttpClient httpClient,
+            ILogger<RabbitMqService> logger,
+            IOptions<RabbitMqServiceConfig> options,
+            ShiftDbContext shiftDbContext) 
         {
             _httpClient = httpClient;
             _logger = logger;
             _factory = new ConnectionFactory { HostName = "rabbitmq" };
+
             if (options == null) throw new ArgumentNullException(nameof(options));
-            _shiftServiceUrl = options.Value.Url;
+            _shiftDbContext = shiftDbContext;
+
         }
-        public async Task PublishClockIn(ClockInDto clockInDto) //producer - should push to clockIn queue
+        public async Task PublishClockIn(ClockInDto clockInDto) // Producer - should push to clockIn queue
         {
             using var connection = await _factory.CreateConnectionAsync();
             using var channel = await connection.CreateChannelAsync();
@@ -60,8 +65,11 @@ namespace Services
             _logger.LogInformation($"Published Clock In/Out message for Shift {clockInDto.ShiftID}");
         }
 
+        public async Task PublishShiftCreated() {
+            // TODO: Implement the logic to publish ShiftCreated messages
+        }
 
-        public async Task ListeningEventCreated()
+        public async Task ListeningEventCreated() // Consumer
         {
             using var connection = await _factory.CreateConnectionAsync();
             using var channel = await connection.CreateChannelAsync();
@@ -130,6 +138,11 @@ namespace Services
 
             // Prevent the method from exiting immediately
             await Task.Delay(-1);
+        }
+
+        public async Task ListeningEventDeleted() // Consumer
+        {
+            // TODO: Implement the logic to listen for EventDeleted messages
         }
     }
 }
