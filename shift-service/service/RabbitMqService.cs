@@ -21,23 +21,17 @@ namespace Services
         private readonly HttpClient _httpClient;
         private readonly ILogger<RabbitMqService> _logger;
         private readonly string _eventCreatedQueueName = "eventCreated";
+        private readonly string _shiftServiceUrl;
         private readonly string _clockInQueueName = "clockIn";
         private readonly ConnectionFactory _factory;
-        private readonly ShiftDbContext _shiftDbContext;
 
-        public RabbitMqService(
-            HttpClient httpClient,
-            ILogger<RabbitMqService> logger,
-            IOptions<RabbitMqServiceConfig> options,
-            ShiftDbContext shiftDbContext) 
+        public RabbitMqService(HttpClient httpClient, ILogger<RabbitMqService> logger, IOptions<RabbitMqServiceConfig> options)
         {
             _httpClient = httpClient;
             _logger = logger;
             _factory = new ConnectionFactory { HostName = "rabbitmq" };
-
             if (options == null) throw new ArgumentNullException(nameof(options));
-            _shiftDbContext = shiftDbContext;
-
+            _shiftServiceUrl = options.Value.Url;
         }
         public async Task PublishClockIn(ClockInDto clockInDto) // Producer - should push to clockIn queue
         {
@@ -105,10 +99,10 @@ namespace Services
                     // Assuming the message contains data needed to create a shift
                     var requestData = new
                     {
-                        employeeId = "2dc142cb-c95d-4ab5-a258-1d04c2d6c244", // TODO: This should be automatically assigned based on the availability
                         startTime = startTime,
                         endTime = endTime,
                         shiftType = "Standby",
+                        // Add the role ID to the request data
                     };
 
                     var jsonContent = new StringContent(System.Text.Json.JsonSerializer.Serialize(requestData), Encoding.UTF8, "application/json");
@@ -116,7 +110,7 @@ namespace Services
                     foreach (int roleID in roleIDs)
                     {
                         // Send POST request to Shift Service
-                        var response = await _httpClient.PostAsync(_shiftServiceUrl, jsonContent);
+                        var response = await _httpClient.PostAsync(_shiftServiceUrl, jsonContent); //  Make the request through repository
 
                         if (response.IsSuccessStatusCode)
                         {
