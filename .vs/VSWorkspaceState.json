@@ -1,14 +1,13 @@
 {
   "ExpandedNodes": [
     "",
-    "\\employee_service",
+    "\\employee-service",
+    "\\employee-service\\Database",
+    "\\employee-service\\Interfaces",
+    "\\employee-service\\Models",
     "\\employee_service\\EmployeeMicroservice.Functions",
-    "\\employee_service\\EmployeeMicroservice.Functions\\Database",
-    "\\employee_service\\EmployeeMicroservice.Functions\\Migrations",
-    "\\employee_service\\EmployeeMicroservice.Functions\\Models",
-    "\\employee_service\\EmployeeMicroservice.Functions\\Repositories",
-    "\\employee_service\\EmployeeMicroservice.Functions\\Services"
+    "\\employee_service\\EmployeeMicroservice.Functions\\Interfaces"
   ],
-  "SelectedNode": "\\employee_service\\EmployeeMicroservice.Functions",
+  "SelectedNode": "\\employee-service\\Program.cs",
   "PreviewInSolutionExplorer": false
 }

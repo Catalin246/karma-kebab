@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\avorn\\source\\repos\\karma-kebab\\shift-service\\shift-service.csproj": {}
+    "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\shift-service\\shift-service.csproj": {}
   },
   "projects": {
-    "C:\\Users\\avorn\\source\\repos\\karma-kebab\\shift-service\\shift-service.csproj": {
+    "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\shift-service\\shift-service.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\avorn\\source\\repos\\karma-kebab\\shift-service\\shift-service.csproj",
+        "projectUniqueName": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\shift-service\\shift-service.csproj",
         "projectName": "shift-service",
-        "projectPath": "C:\\Users\\avorn\\source\\repos\\karma-kebab\\shift-service\\shift-service.csproj",
-        "packagesPath": "C:\\Users\\avorn\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\avorn\\source\\repos\\karma-kebab\\shift-service\\obj\\",
+        "projectPath": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\shift-service\\shift-service.csproj",
+        "packagesPath": "C:\\Users\\Aizaz Ahsan\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\shift-service\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\avorn\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\Aizaz Ahsan\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],

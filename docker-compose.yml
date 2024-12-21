@@ -116,21 +116,23 @@ services:
 
   employee-service:
     build:
-      context: ./employee_service/EmployeeMicroservice.Functions
+      context: ./employee-service
       dockerfile: Dockerfile
+    container_name: employees
     environment:
-      - PostgreSQLEntityFramework="Host=localhost;Port=5432;Database=employeedb;Username=postgres;Password=password;"
+      - PostgreSQLEntityFramework="Host=employee-db;Port=5432;Database=employeedb;Username=postgres;Password=password;"
       - FUNCTIONS_WORKER_RUNTIME=dotnet-isolated
       - AzureWebJobsStorage=UseDevelopmentStorage=true
     depends_on:
       - postgres
     ports:
-      - "3005:3005"  # Assuming the employee service runs on port 3005
+      - "3005:80"
     networks:
       - karama-kebab-network
 
   postgres:
     image: postgres:13
+    container_name: employee-db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
@@ -138,22 +140,30 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
     ports:
-      - "5432:5432" # PostgreSQL port
+      - "5432:5432"
     networks:
       - karama-kebab-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # azure-functions:
   #   build:
-  #     context: .  # The directory containing your Dockerfile
-  #     dockerfile: ./EmployeeMicroservice.Functions/Dockerfile  # Name of the Dockerfile for Azure Functions
+  #     context: ./employee-service
+  #     dockerfile: Dockerfile
   #   container_name: azure-functions
   #   environment:
-  #     FUNCTIONS_WORKER_RUNTIME: dotnet-isolated
-  #     AzureWebJobsStorage: UseDevelopmentStorage=true  # Connects to Azurite for local dev
+  #     DBHOST: employee-db
+  #     DBNAME: employeedb
+  #     DBUSER: postgres
+  #     DBPASS: password
+  #     SSLMODE: disable
   #   ports:
-  #     - "7071:8080"  # Expose port 7071 on the host, mapped to 8080 inside the container
+  #     - "3006:80"  # Avoid port conflict
   #   depends_on:
-  #     - azurite
+  #     - postgres
   #   networks:
   #     - karama-kebab-network
 
