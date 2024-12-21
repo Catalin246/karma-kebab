@@ -1,4 +1,4 @@
-# Use the .NET SDK image to build the app
+﻿# Use the .NET SDK image to build the app
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 
 # Set the working directory inside the container

@@ -5,9 +5,8 @@
     "\\employee-service\\Database",
     "\\employee-service\\Interfaces",
     "\\employee-service\\Models",
-    "\\employee_service\\EmployeeMicroservice.Functions",
-    "\\employee_service\\EmployeeMicroservice.Functions\\Interfaces"
+    "\\shift-service"
   ],
-  "SelectedNode": "\\employee-service\\Program.cs",
+  "SelectedNode": "\\docker-compose.yml",
   "PreviewInSolutionExplorer": false
 }
