@@ -73,7 +73,7 @@ public class EmployeeService : IEmployeeService
             throw new ArgumentNullException(nameof(employeeDto), "Employee data cannot be null.");
         }
 
-        if (string.IsNullOrEmpty(employeeDto.FirstName) || string.IsNullOrEmpty(employeeDto.LastName) || employeeDto.Role == null)
+        if (string.IsNullOrEmpty(employeeDto.FirstName) || string.IsNullOrEmpty(employeeDto.LastName) || employeeDto.Roles == null)
         {
             throw new ArgumentException("Required fields are missing in the employee data.");
         }
@@ -84,7 +84,7 @@ public class EmployeeService : IEmployeeService
             EmployeeId = Guid.NewGuid(), 
             FirstName = employeeDto.FirstName,
             LastName = employeeDto.LastName,
-            Role = employeeDto.Role,
+            Roles = employeeDto.Roles,
             DateOfBirth = null, 
             Address = null,
             Payrate = null,
@@ -136,7 +136,7 @@ public class EmployeeService : IEmployeeService
         existingEmployee.FirstName = updatedEmployee.FirstName;
         existingEmployee.LastName = updatedEmployee.LastName;
         existingEmployee.Payrate = updatedEmployee.Payrate;
-        existingEmployee.Role = updatedEmployee.Role;
+        existingEmployee.Roles = updatedEmployee.Roles;
         existingEmployee.Skills = updatedEmployee.Skills;
 
         // Call the repository to update the employee

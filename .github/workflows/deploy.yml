@@ -1,0 +1,116 @@
+name: Deploy to OpenShift on Change
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 
+
+      - name: Install OpenShift CLI (oc)
+        run: |
+          curl -LO https://mirror.openshift.com/pub/openshift-v4/clients/oc/latest/linux/oc.tar.gz
+          tar -xzf oc.tar.gz
+          sudo mv oc /usr/local/bin/oc
+          oc version --client
+
+      - name: Log in to OpenShift
+        run: |
+          oc login ${{ secrets.OPENSHIFT_SERVER }} --token=${{ secrets.OPENSHIFT_TOKEN }} --insecure-skip-tls-verify=true
+
+      # Detect changes chnaged directories (services)
+      - name: Detect Changes
+        id: changes
+        run: |
+          # Check for changes in api-gateway and event-service directories
+          echo "Checking for changed files..."
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+          echo "Changed files: $CHANGED_FILES"
+
+          if echo "$CHANGED_FILES" | grep -q '^api-gateway/'; then
+            echo "api_gateway=true" >> $GITHUB_ENV
+          fi
+
+          if echo "$CHANGED_FILES" | grep -q '^event-service/'; then
+            echo "event_service=true" >> $GITHUB_ENV
+          fi
+
+          if echo "$CHANGED_FILES" | grep -q '^rabbitmq/'; then
+            echo "rabbitmq=true" >> $GITHUB_ENV
+          fi
+
+           if echo "$CHANGED_FILES" | grep -q '^shift-service/'; then
+            echo "shift_service=true" >> $GITHUB_ENV
+          fi
+
+      # Deploy the API Gateway
+      - name: Set OpenShift Project
+        if: env.api_gateway == 'true'
+        run: |
+          oc project ${{ secrets.NAMESPACE }}
+
+      - name: Start OpenShift Build
+        if: env.api_gateway == 'true'
+        run: |
+          oc start-build api-gateway --wait  # Trigger the build and wait for completion
+
+      - name: Restart the application by deleting the old running pod
+        if: env.api_gateway == 'true'
+        run: |
+          oc get pods --selector=app=api-gateway --field-selector=status.phase=Running -o name | xargs -I {} oc delete {} --ignore-not-found=true
+
+      # Deploy the Event Service
+      - name: Set OpenShift Project
+        if: env.event_service == 'true'
+        run: |
+          oc project ${{ secrets.NAMESPACE }}
+
+      - name: Start OpenShift Build
+        if: env.event_service == 'true'
+        run: |
+          oc start-build event-service --wait  # Trigger the build and wait for completion
+
+      - name: Restart the application by deleting the old running pod
+        if: env.event_service == 'true'
+        run: |
+          oc get pods --selector=app=event-service --field-selector=status.phase=Running -o name | xargs -I {} oc delete {} --ignore-not-found=true
+
+      # Deploy the RabbitMQ
+      - name: Set OpenShift Project
+        if: env.rabbitmq == 'true'
+        run: |
+          oc project ${{ secrets.NAMESPACE }}
+
+      - name: Start OpenShift Build
+        if: env.rabbitmq == 'true'
+        run: |
+          oc start-build rabbitmq --wait  # Trigger the build and wait for completion
+
+      - name: Restart the application by deleting the old running pod
+        if: env.rabbitmq == 'true'
+        run: |
+          oc get pods --selector=app=rabbitmq --field-selector=status.phase=Running -o name | xargs -I {} oc delete {} --ignore-not-found=true
+
+      # Deploy the Shift Service
+      - name: Set OpenShift Project
+        if: env.shift_service == 'true'
+        run: |
+          oc project ${{ secrets.NAMESPACE }}
+
+      - name: Start OpenShift Build
+        if: env.shift_service == 'true'
+        run: |
+          oc start-build shift-service --wait  # Trigger the build and wait for completion
+
+      - name: Restart the application by deleting the old running pod
+        if: env.shift_service == 'true'
+        run: |
+          oc get pods --selector=app=shift-service --field-selector=status.phase=Running -o name | xargs -I {} oc delete {} --ignore-not-found=true

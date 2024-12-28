@@ -1,11 +1,15 @@
 FROM nginx:latest
 
 # Copy both configuration files
+COPY nginx.conf /etc/nginx/nginx.conf
 COPY nginx.local.conf /etc/nginx/nginx.local.conf
 
-# Default configuration file
-ARG CONFIG=local
-RUN cp /etc/nginx/nginx.${CONFIG}.conf /etc/nginx/nginx.conf
+# Set an environment variable for local development (default to production). Change this var to nginx.local.conf for local development.
+ENV NGINX_CONFIG=nginx.local.conf 
 
-EXPOSE 80
+# Choose which config to use based on the environment variable
+RUN cp /etc/nginx/$NGINX_CONFIG /etc/nginx/nginx.conf
+
+EXPOSE 3007
+
 CMD ["nginx", "-g", "daemon off;"]

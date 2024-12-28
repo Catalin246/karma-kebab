@@ -1,12 +1,13 @@
 package main
 
 import (
-	"event-service/db"
-	"event-service/routes"
-	"event-service/services"
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/Catalin246/karma-kebab/db"
+	"github.com/Catalin246/karma-kebab/routes"
+	"github.com/Catalin246/karma-kebab/services"
 
 	"github.com/joho/godotenv"
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -38,7 +39,11 @@ func main() {
 	}
 
 	// Initialize RabbitMQ
-	conn, err := amqp.Dial("amqp://guest:guest@rabbitmq:5672/")
+	rabbitmqUrl := os.Getenv("RABBITMQ_URL")
+	if rabbitmqUrl == "" {
+		log.Fatal("Error: RABBITMQ_URL is not set")
+	}
+	conn, err := amqp.Dial(rabbitmqUrl)
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()
 

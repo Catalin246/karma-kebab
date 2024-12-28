@@ -48,8 +48,9 @@ namespace EmployeeMicroservice.Functions.Migrations
                     b.Property<decimal?>("Payrate")
                         .HasColumnType("numeric");
 
-                    b.Property<int>("Role")
-                        .HasColumnType("integer");
+                    b.PrimitiveCollection<int[]>("Roles")
+                        .IsRequired()
+                        .HasColumnType("integer[]");
 
                     b.PrimitiveCollection<string[]>("Skills")
                         .IsRequired()

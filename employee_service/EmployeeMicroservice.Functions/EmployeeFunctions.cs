@@ -31,24 +31,31 @@ namespace EmployeeMicroservice.Functions
 
             return await ExceptionService.HandleRequestAsync(async () =>
             {
-                log.LogInformation("Fetching all employees");
-
-                var employees = await _employeeService.GetAllEmployeesAsync();
-
-                // Handle the empty case explicitly
-                if (employees == null || !employees.Any())
+                try
                 {
-                    log.LogInformation("No employees found.");
-                    var emptyResponse = req.CreateResponse(HttpStatusCode.OK);
-                    await emptyResponse.WriteStringAsync("[]"); // Return an empty JSON array
-                    return emptyResponse;
+                    log.LogInformation("Fetching all employees");
+                    var employees = await _employeeService.GetAllEmployeesAsync();
+
+                    if (employees == null || !employees.Any())
+                    {
+                        log.LogInformation("No employees found.");
+                        var emptyResponse = req.CreateResponse(HttpStatusCode.OK);
+                        await emptyResponse.WriteStringAsync("[]"); // Return an empty JSON array
+                        return emptyResponse;
+                    }
+
+                    var response = req.CreateResponse(HttpStatusCode.OK);
+                    response.Headers.Add("Content-Type", "application/json");
+                    await response.WriteStringAsync(JsonConvert.SerializeObject(employees));
+                    return response;
                 }
-
-                var response = req.CreateResponse(HttpStatusCode.OK);
-                response.Headers.Add("Content-Type", "application/json");
-                await response.WriteStringAsync(JsonConvert.SerializeObject(employees));
-
-                return response;
+                catch (Exception ex)
+                {
+                    log.LogError($"Error: {ex.Message}");
+                    var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
+                    await errorResponse.WriteStringAsync($"An error occurred while fetching employees: {ex.Message}");
+                    return errorResponse;
+                }
             }, log, req);
         }
 
@@ -63,18 +70,26 @@ namespace EmployeeMicroservice.Functions
 
             return await ExceptionService.HandleRequestAsync(async () =>
             {
-                log.LogInformation($"Fetching employee with ID: {id}");
-
-                var employee = await _employeeService.GetEmployeeByIdAsync(id);
-                var response = req.CreateResponse(employee != null ? HttpStatusCode.OK : HttpStatusCode.NotFound);
-
-                if (employee != null)
+                try
                 {
-                    response.Headers.Add("Content-Type", "application/json");
-                    await response.WriteStringAsync(JsonConvert.SerializeObject(employee));
-                }
+                    log.LogInformation($"Fetching employee with ID: {id}");
+                    var employee = await _employeeService.GetEmployeeByIdAsync(id);
 
-                return response;
+                    var response = req.CreateResponse(employee != null ? HttpStatusCode.OK : HttpStatusCode.NotFound);
+                    if (employee != null)
+                    {
+                        response.Headers.Add("Content-Type", "application/json");
+                        await response.WriteStringAsync(JsonConvert.SerializeObject(employee));
+                    }
+                    return response;
+                }
+                catch (Exception ex)
+                {
+                    log.LogError($"Error: {ex.Message}");
+                    var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
+                    await errorResponse.WriteStringAsync($"An error occurred while fetching the employee: {ex.Message}");
+                    return errorResponse;
+                }
             }, log, req);
         }
 
@@ -82,32 +97,41 @@ namespace EmployeeMicroservice.Functions
         [Function("GetEmployeeByRole")]
         public async Task<HttpResponseData> GetEmployeeByRole(
             [HttpTrigger(AuthorizationLevel.Function, "get", Route = "employees/role/{role:int}")] HttpRequestData req,
-            int role,
+            int role, 
             FunctionContext executionContext)
         {
             var log = executionContext.GetLogger("GetEmployeeByRole");
 
             return await ExceptionService.HandleRequestAsync(async () =>
             {
-                log.LogInformation($"Fetching employees with Role: {role}");
-
-                // Validate role input
-                if (!Enum.IsDefined(typeof(EmployeeRole), role))
+                try
                 {
-                    log.LogWarning("Invalid role specified.");
-                    var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
-                    await errorResponse.WriteStringAsync("Invalid role specified.");
+                    log.LogInformation($"Fetching employees with Role: {role}");
+
+                    if (!Enum.IsDefined(typeof(EmployeeRole), role))
+                    {
+                        log.LogWarning("Invalid role specified.");
+                        var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+                        await errorResponse.WriteStringAsync("Invalid role specified.");
+                        return errorResponse;
+                    }
+
+                    var employeeRole = (EmployeeRole)role;
+                    var employees = await _employeeService.GetEmployeesByRoleAsync(employeeRole);
+
+                    var response = req.CreateResponse(HttpStatusCode.OK);
+                    response.Headers.Add("Content-Type", "application/json");
+                    await response.WriteStringAsync(JsonConvert.SerializeObject(employees));
+
+                    return response;
+                }
+                catch (Exception ex)
+                {
+                    log.LogError($"Error: {ex.Message}");
+                    var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
+                    await errorResponse.WriteStringAsync($"An error occurred while fetching employees by role: {ex.Message}");
                     return errorResponse;
                 }
-
-                // Fetch employees by role
-                var employees = await _employeeService.GetEmployeesByRoleAsync((EmployeeRole)role);
-
-                var response = req.CreateResponse(HttpStatusCode.OK);
-                response.Headers.Add("Content-Type", "application/json");
-                await response.WriteStringAsync(JsonConvert.SerializeObject(employees));
-
-                return response;
             }, log, req);
         }
 
@@ -122,21 +146,38 @@ namespace EmployeeMicroservice.Functions
 
             return await ExceptionService.HandleRequestAsync(async () =>
             {
-                log.LogInformation("Adding new employee");
+                try
+                {
+                    log.LogInformation("Adding new employee");
 
-                // Read body content of incoming Http request as string
-                var content = await req.ReadAsStringAsync();
-                var employeeDto = JsonConvert.DeserializeObject<EmployeeDTO>(content);
+                    var content = await req.ReadAsStringAsync();
+                    var employeeDto = JsonConvert.DeserializeObject<EmployeeDTO>(content);
 
-                logger.LogInformation($"Deserialized Employee: {JsonConvert.SerializeObject(employeeDto)}");
+                    if (employeeDto == null)
+                    {
+                        log.LogError("Invalid employee data.");
+                        var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+                        await errorResponse.WriteStringAsync("Invalid employee data provided.");
+                        return errorResponse;
+                    }
 
-                var addedEmployee = await _employeeService.AddEmployeeAsync(employeeDto);
+                    logger.LogInformation($"Deserialized Employee: {JsonConvert.SerializeObject(employeeDto)}");
 
-                var response = req.CreateResponse(HttpStatusCode.Created);
-                response.Headers.Add("Content-Type", "application/json");
-                await response.WriteStringAsync(JsonConvert.SerializeObject(addedEmployee));
+                    var addedEmployee = await _employeeService.AddEmployeeAsync(employeeDto);
 
-                return response;
+                    var response = req.CreateResponse(HttpStatusCode.Created);
+                    response.Headers.Add("Content-Type", "application/json");
+                    await response.WriteStringAsync(JsonConvert.SerializeObject(addedEmployee));
+
+                    return response;
+                }
+                catch (Exception ex)
+                {
+                    log.LogError($"Error: {ex.Message}");
+                    var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
+                    await errorResponse.WriteStringAsync($"An error occurred while adding the employee: {ex.Message}");
+                    return errorResponse;
+                }
             }, log, req);
         }
 
@@ -151,22 +192,40 @@ namespace EmployeeMicroservice.Functions
 
             return await ExceptionService.HandleRequestAsync(async () =>
             {
-                log.LogInformation($"Updating employee with ID: {id}");
-
-                var requestBody = await req.ReadAsStringAsync();
-                var updatedEmployeeDto = JsonConvert.DeserializeObject<EmployeeDTO>(requestBody);
-
-                var updatedEmployee = await _employeeService.UpdateEmployeeAsync(id, updatedEmployeeDto);
-
-                var response = req.CreateResponse(updatedEmployee != null ? HttpStatusCode.OK : HttpStatusCode.NotFound);
-
-                if (updatedEmployee != null)
+                try
                 {
-                    response.Headers.Add("Content-Type", "application/json");
-                    await response.WriteStringAsync(JsonConvert.SerializeObject(updatedEmployee));
-                }
+                    log.LogInformation($"Updating employee with ID: {id}");
 
-                return response;
+                    var requestBody = await req.ReadAsStringAsync();
+                    var updatedEmployeeDto = JsonConvert.DeserializeObject<EmployeeDTO>(requestBody);
+
+                    if (updatedEmployeeDto == null)
+                    {
+                        log.LogError("Invalid employee data.");
+                        var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+                        await errorResponse.WriteStringAsync("Invalid employee data provided.");
+                        return errorResponse;
+                    }
+
+                    var updatedEmployee = await _employeeService.UpdateEmployeeAsync(id, updatedEmployeeDto);
+
+                    var response = req.CreateResponse(updatedEmployee != null ? HttpStatusCode.OK : HttpStatusCode.NotFound);
+
+                    if (updatedEmployee != null)
+                    {
+                        response.Headers.Add("Content-Type", "application/json");
+                        await response.WriteStringAsync(JsonConvert.SerializeObject(updatedEmployee));
+                    }
+
+                    return response;
+                }
+                catch (Exception ex)
+                {
+                    log.LogError($"Error: {ex.Message}");
+                    var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
+                    await errorResponse.WriteStringAsync($"An error occurred while updating the employee: {ex.Message}");
+                    return errorResponse;
+                }
             }, log, req);
         }
 
@@ -181,12 +240,22 @@ namespace EmployeeMicroservice.Functions
 
             return await ExceptionService.HandleRequestAsync(async () =>
             {
-                log.LogInformation($"Deleting employee with ID: {id}");
+                try
+                {
+                    log.LogInformation($"Deleting employee with ID: {id}");
 
-                var result = await _employeeService.DeleteEmployeeAsync(id);
+                    var result = await _employeeService.DeleteEmployeeAsync(id);
 
-                var response = req.CreateResponse(result ? HttpStatusCode.NoContent : HttpStatusCode.NotFound);
-                return response;
+                    var response = req.CreateResponse(result ? HttpStatusCode.NoContent : HttpStatusCode.NotFound);
+                    return response;
+                }
+                catch (Exception ex)
+                {
+                    log.LogError($"Error: {ex.Message}");
+                    var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
+                    await errorResponse.WriteStringAsync($"An error occurred while deleting the employee: {ex.Message}");
+                    return errorResponse;
+                }
             }, log, req);
         }
     }
