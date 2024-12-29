@@ -63,15 +63,15 @@ func TestCreateDutyAssignments_Success(t *testing.T) {
 	mockService := new(mocks.MockDutyAssignmentService)
 	handler := handlers.NewDutyAssignmentHandler(mockService)
 
-	// Dummy data
+	// dummy data
 	shiftId := uuid.MustParse("d9b2d63d-bbf7-4f2f-9d7c-0e67f060d8b0")
-	roleId := uuid.MustParse("e9b2d63d-bbf7-4f2f-9d7c-0e67f060d8b1")
+	roleId := 1
 
 	mockService.On("CreateDutyAssignments", context.Background(), shiftId, roleId).Return(nil)
 
-	requestBody := map[string]string{
+	requestBody := map[string]interface{}{
 		"ShiftId": shiftId.String(),
-		"RoleId":  roleId.String(),
+		"RoleId":  roleId,
 	}
 	body, err := json.Marshal(requestBody)
 	require.NoError(t, err)

@@ -52,10 +52,9 @@ func (h *DutyAssignmentHandler) GetAllDutyAssignmentsByShiftId(w http.ResponseWr
 
 // creates duty assignments for a Shift based on Role
 func (h *DutyAssignmentHandler) CreateDutyAssignments(w http.ResponseWriter, r *http.Request) {
-	// parse request body
 	var request struct {
 		ShiftId string `json:"ShiftId"`
-		RoleId  string `json:"RoleId"`
+		RoleId  int    `json:"RoleId"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
@@ -63,13 +62,14 @@ func (h *DutyAssignmentHandler) CreateDutyAssignments(w http.ResponseWriter, r *
 		return
 	}
 
-	uuids, err := parseUUIDs(map[string]string{"ShiftId": request.ShiftId, "RoleId": request.RoleId})
+	// change ShiftId as UUID
+	shiftIdUUID, err := uuid.Parse(request.ShiftId)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ShiftId format: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	if err := h.service.CreateDutyAssignments(context.Background(), uuids["ShiftId"], uuids["RoleId"]); err != nil {
+	if err := h.service.CreateDutyAssignments(context.Background(), shiftIdUUID, request.RoleId); err != nil {
 		http.Error(w, "Failed to create duty assignments: "+err.Error(), http.StatusInternalServerError)
 		return
 	}

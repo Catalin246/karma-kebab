@@ -18,7 +18,7 @@ func (m *MockDutyAssignmentService) GetAllDutyAssignmentsByShiftId(ctx context.C
 	return args.Get(0).([]models.DutyAssignment), args.Error(1)
 }
 
-func (m *MockDutyAssignmentService) CreateDutyAssignments(ctx context.Context, shiftId uuid.UUID, roleId uuid.UUID) error {
+func (m *MockDutyAssignmentService) CreateDutyAssignments(ctx context.Context, shiftId uuid.UUID, roleId int) error {
 	args := m.Called(ctx, shiftId, roleId)
 	return args.Error(0)
 }
