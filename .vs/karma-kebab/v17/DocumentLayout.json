@@ -3,28 +3,24 @@
   "WorkspaceRootPath": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee_service\\EmployeeMicroservice.Functions\\Program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:employee_service\\EmployeeMicroservice.Functions\\Program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{6629A1E9-9129-4E12-9967-74ED93870AD7}|employee-service\\employee-service.csproj|c:\\users\\aizaz ahsan\\inholland year 4 minor\\karmakebabproject\\karma-kebab\\employee-service\\tests\\unittests\\employeeservicetests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6629A1E9-9129-4E12-9967-74ED93870AD7}|employee-service\\employee-service.csproj|solutionrelative:employee-service\\tests\\unittests\\employeeservicetests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee_service\\EmployeeMicroservice.Functions\\Services\\EmployeeService.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:employee_service\\EmployeeMicroservice.Functions\\Services\\EmployeeService.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{6629A1E9-9129-4E12-9967-74ED93870AD7}|employee-service\\employee-service.csproj|c:\\users\\aizaz ahsan\\inholland year 4 minor\\karmakebabproject\\karma-kebab\\employee-service\\models\\employee.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6629A1E9-9129-4E12-9967-74ED93870AD7}|employee-service\\employee-service.csproj|solutionrelative:employee-service\\models\\employee.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee_service\\EmployeeMicroservice.Functions\\EmployeeFunctions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:employee_service\\EmployeeMicroservice.Functions\\EmployeeFunctions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{6629A1E9-9129-4E12-9967-74ED93870AD7}|employee-service\\employee-service.csproj|c:\\users\\aizaz ahsan\\inholland year 4 minor\\karmakebabproject\\karma-kebab\\employee-service\\tests\\unittests\\employeefunctionstests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6629A1E9-9129-4E12-9967-74ED93870AD7}|employee-service\\employee-service.csproj|solutionrelative:employee-service\\tests\\unittests\\employeefunctionstests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee_service\\EmployeeMicroservice.Functions\\Repositories\\EmployeeRepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:employee_service\\EmployeeMicroservice.Functions\\Repositories\\EmployeeRepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{6629A1E9-9129-4E12-9967-74ED93870AD7}|employee-service\\employee-service.csproj|c:\\users\\aizaz ahsan\\inholland year 4 minor\\karmakebabproject\\karma-kebab\\employee-service\\employeefunctions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6629A1E9-9129-4E12-9967-74ED93870AD7}|employee-service\\employee-service.csproj|solutionrelative:employee-service\\employeefunctions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee_service\\EmployeeMicroservice.Functions\\Models\\Employee.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:employee_service\\EmployeeMicroservice.Functions\\Models\\Employee.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee_service\\EmployeeMicroservice.Functions\\Models\\EmployeeDTO.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:employee_service\\EmployeeMicroservice.Functions\\Models\\EmployeeDTO.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{C4BDD1D7-EF59-40C0-9755-2FFD802F22B7}|shift-service\\shift-service.csproj|c:\\users\\aizaz ahsan\\inholland year 4 minor\\karmakebabproject\\karma-kebab\\shift-service\\tests\\shiftscontrollertests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C4BDD1D7-EF59-40C0-9755-2FFD802F22B7}|shift-service\\shift-service.csproj|solutionrelative:shift-service\\tests\\shiftscontrollertests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -34,82 +30,82 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 5,
+          "SelectedChildIndex": 4,
           "Children": [
             {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "EmployeeDTO.cs",
-              "DocumentMoniker": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee_service\\EmployeeMicroservice.Functions\\Models\\EmployeeDTO.cs",
-              "RelativeDocumentMoniker": "employee_service\\EmployeeMicroservice.Functions\\Models\\EmployeeDTO.cs",
-              "ToolTip": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee_service\\EmployeeMicroservice.Functions\\Models\\EmployeeDTO.cs",
-              "RelativeToolTip": "employee_service\\EmployeeMicroservice.Functions\\Models\\EmployeeDTO.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-12-09T16:10:31.328Z"
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{0174dea2-fdbe-4ef1-8f99-c0beae78880f}"
             },
             {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "Employee.cs",
-              "DocumentMoniker": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee_service\\EmployeeMicroservice.Functions\\Models\\Employee.cs",
-              "RelativeDocumentMoniker": "employee_service\\EmployeeMicroservice.Functions\\Models\\Employee.cs",
-              "ToolTip": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee_service\\EmployeeMicroservice.Functions\\Models\\Employee.cs",
-              "RelativeToolTip": "employee_service\\EmployeeMicroservice.Functions\\Models\\Employee.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-12-09T16:10:24.095Z"
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
             },
             {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "EmployeeRepository.cs",
-              "DocumentMoniker": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee_service\\EmployeeMicroservice.Functions\\Repositories\\EmployeeRepository.cs",
-              "RelativeDocumentMoniker": "employee_service\\EmployeeMicroservice.Functions\\Repositories\\EmployeeRepository.cs",
-              "ToolTip": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee_service\\EmployeeMicroservice.Functions\\Repositories\\EmployeeRepository.cs",
-              "RelativeToolTip": "employee_service\\EmployeeMicroservice.Functions\\Repositories\\EmployeeRepository.cs",
-              "ViewState": "AgIAACwAAAAAAAAAAAAAwD4AAAAJAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-12-09T16:05:20.377Z"
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{e1b7d1f8-9b3c-49b1-8f4f-bfc63a88835d}"
             },
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "EmployeeService.cs",
-              "DocumentMoniker": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee_service\\EmployeeMicroservice.Functions\\Services\\EmployeeService.cs",
-              "RelativeDocumentMoniker": "employee_service\\EmployeeMicroservice.Functions\\Services\\EmployeeService.cs",
-              "ToolTip": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee_service\\EmployeeMicroservice.Functions\\Services\\EmployeeService.cs",
-              "RelativeToolTip": "employee_service\\EmployeeMicroservice.Functions\\Services\\EmployeeService.cs",
-              "ViewState": "AgIAAEMAAAAAAAAAAAAAwEYAAAAHAAAAAAAAAA==",
+              "Title": "Employee.cs",
+              "DocumentMoniker": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service\\Models\\Employee.cs",
+              "RelativeDocumentMoniker": "employee-service\\Models\\Employee.cs",
+              "ToolTip": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service\\Models\\Employee.cs",
+              "RelativeToolTip": "employee-service\\Models\\Employee.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-12-09T16:04:38.407Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "EmployeeFunctions.cs",
-              "DocumentMoniker": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee_service\\EmployeeMicroservice.Functions\\EmployeeFunctions.cs",
-              "RelativeDocumentMoniker": "employee_service\\EmployeeMicroservice.Functions\\EmployeeFunctions.cs",
-              "ToolTip": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee_service\\EmployeeMicroservice.Functions\\EmployeeFunctions.cs",
-              "RelativeToolTip": "employee_service\\EmployeeMicroservice.Functions\\EmployeeFunctions.cs",
-              "ViewState": "AgIAAG8AAAAAAAAAAAAqwHcAAABSAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-12-09T16:01:00.707Z",
+              "WhenOpened": "2025-01-04T17:55:31.033Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "Program.cs",
-              "DocumentMoniker": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee_service\\EmployeeMicroservice.Functions\\Program.cs",
-              "RelativeDocumentMoniker": "employee_service\\EmployeeMicroservice.Functions\\Program.cs",
-              "ToolTip": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee_service\\EmployeeMicroservice.Functions\\Program.cs",
-              "RelativeToolTip": "employee_service\\EmployeeMicroservice.Functions\\Program.cs",
-              "ViewState": "AgIAAAUAAAAAAAAAAAASwBAAAAAIAAAAAAAAAA==",
+              "Title": "EmployeeServiceTests.cs",
+              "DocumentMoniker": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service\\tests\\unitTests\\EmployeeServiceTests.cs",
+              "RelativeDocumentMoniker": "employee-service\\tests\\unitTests\\EmployeeServiceTests.cs",
+              "ToolTip": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service\\tests\\unitTests\\EmployeeServiceTests.cs",
+              "RelativeToolTip": "employee-service\\tests\\unitTests\\EmployeeServiceTests.cs",
+              "ViewState": "AgIAACAAAAAAAAAAAAAQwDUAAABiAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-12-09T16:00:51.2Z",
+              "WhenOpened": "2025-01-04T17:10:28.461Z",
               "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "EmployeeFunctionsTests.cs",
+              "DocumentMoniker": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service\\tests\\unitTests\\EmployeeFunctionsTests.cs",
+              "RelativeDocumentMoniker": "employee-service\\tests\\unitTests\\EmployeeFunctionsTests.cs",
+              "ToolTip": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service\\tests\\unitTests\\EmployeeFunctionsTests.cs",
+              "RelativeToolTip": "employee-service\\tests\\unitTests\\EmployeeFunctionsTests.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAFQAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-01-01T18:56:12.165Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "EmployeeFunctions.cs",
+              "DocumentMoniker": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service\\EmployeeFunctions.cs",
+              "RelativeDocumentMoniker": "employee-service\\EmployeeFunctions.cs",
+              "ToolTip": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service\\EmployeeFunctions.cs",
+              "RelativeToolTip": "employee-service\\EmployeeFunctions.cs",
+              "ViewState": "AgIAAAQAAAAAAAAAAAAgwBAAAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-01-01T18:20:11.515Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "ShiftsControllerTests.cs",
+              "DocumentMoniker": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\shift-service\\tests\\ShiftsControllerTests.cs",
+              "RelativeDocumentMoniker": "shift-service\\tests\\ShiftsControllerTests.cs",
+              "ToolTip": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\shift-service\\tests\\ShiftsControllerTests.cs",
+              "RelativeToolTip": "shift-service\\tests\\ShiftsControllerTests.cs",
+              "ViewState": "AgIAABYAAAAAAAAAAAAQwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-01-01T17:58:22.868Z"
             }
           ]
         }
