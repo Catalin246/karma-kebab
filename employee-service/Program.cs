@@ -36,7 +36,7 @@ var host = new HostBuilder()
     })
     .ConfigureFunctionsWorkerDefaults(worker =>
     {
-        // Register your custom middleware here if you're doing it in the isolated model
+        // Register Custom middleware for the isolated model
         worker.UseMiddleware<GatewayHeaderMiddleware>(); 
     })
     .Build();
