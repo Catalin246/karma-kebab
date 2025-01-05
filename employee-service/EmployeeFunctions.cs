@@ -11,11 +11,13 @@ namespace employee_service
     public class EmployeeFunctions
     {
         private readonly IEmployeeService _employeeService;
+        private readonly ILogger<EmployeeFunctions> _logger;
 
         // Constructor injection for EmployeeService
-        public EmployeeFunctions(IEmployeeService employeeService)
+        public EmployeeFunctions(IEmployeeService employeeService, ILogger<EmployeeFunctions> logger)
         {
             _employeeService = employeeService;
+            _logger = logger;
         }
 
         // Get All Employees
