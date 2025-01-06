@@ -7,15 +7,21 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
+	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/data/aztables"
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
+	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob/sas"
 )
 
 // Global Azure Table Storage Client
 var (
-	TableClients map[string]*aztables.Client // Store table clients for each table
+	BlobServiceClient *azblob.Client
+	AccountName       string
+	AccountKey        string
+	TableClients      map[string]*aztables.Client // Store table clients for each table
 )
 
 // Models defines the list of tables to be created
@@ -70,38 +76,83 @@ func isResourceExistsError(err error) bool {
 
 // Azure Blob for Duty Assignment images:
 
-// Global Azure Blob Storage client
-var BlobServiceClient *azblob.Client
-
 // InitAzureBlobStorage initializes the Azure Blob Storage client
-func InitAzureBlobStorage(connectionString string) (*azblob.Client, error) {
+// InitAzureBlobStorage initializes the Azure Blob Storage client and sets account details
+func InitAzureBlobStorage(connectionString, accountName, accountKey string) (*azblob.Client, error) {
 	client, err := azblob.NewClientFromConnectionString(connectionString, nil)
 	if err != nil {
 		log.Fatalf("Failed to create Azure Blob Storage client: %v", err)
 		return nil, err
 	}
 
-	BlobServiceClient = client //TODO check
+	BlobServiceClient = client
+	AccountName = accountName
+	AccountKey = accountKey
+
 	log.Println("Successfully connected to Azure Blob Storage")
 	return BlobServiceClient, nil
 }
 
-// UploadImage uploads an image to the specified container and returns the URL
+// UploadImage uploads an image to the specified container, returns the SAS URL
 func UploadImage(ctx context.Context, containerName string, blobName string, imageData io.Reader) (string, error) {
-	// Ensure the container exists (create if not)
 	_, err := BlobServiceClient.CreateContainer(ctx, containerName, nil)
 	if err != nil && !isContainerExistsError(err) {
 		return "", fmt.Errorf("failed to create blob container: %v", err)
 	}
 
-	// Upload the image to the blob storage
 	_, err = BlobServiceClient.UploadStream(ctx, containerName, blobName, imageData, nil)
 	if err != nil {
 		return "", fmt.Errorf("failed to upload image: %v", err)
 	}
 
-	// Construct the blob URL
-	blobURL := fmt.Sprintf("%s/%s/%s", BlobServiceClient.URL(), containerName, blobName)
+	sasURL, err := GenerateSASURL(containerName, blobName, time.Hour*24*90) // 3 months expiry
+	if err != nil {
+		return "", fmt.Errorf("failed to generate SAS URL: %v", err)
+	}
+
+	return sasURL, nil
+}
+
+// GenerateSASURL generates a SAS URL for a blob with the specified expiry duration
+func GenerateSASURL(containerName string, blobName string, expiry time.Duration) (string, error) {
+	permissions := sas.BlobPermissions{Read: true}
+	expiryTime := time.Now().Add(expiry)
+
+	// Default to HTTPS
+	protocol := "https"
+
+	// If using Azurite (local development), set protocol to HTTP
+	if strings.HasPrefix(AccountName, "devstoreaccount1") {
+		protocol = "http"
+	}
+
+	// Ensure that there is no double slash in the base URL
+	baseURL := fmt.Sprintf("%s://%s.blob.core.windows.net/%s", protocol, AccountName, containerName)
+	blobBaseURL := fmt.Sprintf("%s/%s", baseURL, blobName) // Ensure no extra slashes
+
+	// Set up SAS Blob Signature Values with proper protocol handling
+	sasValues := sas.BlobSignatureValues{
+		Protocol:      sas.Protocol(protocol),
+		ExpiryTime:    expiryTime,
+		ContainerName: containerName,
+		BlobName:      blobName,
+		Permissions:   permissions.String(),
+	}
+
+	cred, err := azblob.NewSharedKeyCredential(AccountName, AccountKey)
+	if err != nil {
+		return "", fmt.Errorf("failed to create shared key credential: %v", err)
+	}
+
+	// Generate the SAS query parameters
+	sasQueryParams, err := sasValues.SignWithSharedKey(cred)
+	if err != nil {
+		return "", fmt.Errorf("failed to sign SAS values: %v", err)
+	}
+
+	// Now we append the SAS token to the base blob URL
+	blobURL := fmt.Sprintf("%s?%s", blobBaseURL, sasQueryParams.Encode())
+
 	return blobURL, nil
 }
 
@@ -109,7 +160,7 @@ func UploadImage(ctx context.Context, containerName string, blobName string, ima
 func isContainerExistsError(err error) bool {
 	var responseErr *azcore.ResponseError
 	if errors.As(err, &responseErr) {
-		return responseErr.StatusCode == http.StatusConflict // 409 Conflict indicates container exists
+		return responseErr.StatusCode == http.StatusConflict
 	}
 	return false
 }
