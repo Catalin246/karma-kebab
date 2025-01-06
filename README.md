@@ -9,7 +9,8 @@ https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow
 
 `docker-compose up --build`
 
-##example to test with postman
+## example to test with postman
+
 http://localhost:3006/trucks
 
 {
