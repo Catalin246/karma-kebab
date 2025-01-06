@@ -1,0 +1,15 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\employee-service",
+    "\\employee-service\\Database",
+    "\\employee-service\\Interfaces",
+    "\\employee-service\\Models",
+    "\\employee-service\\Services",
+    "\\employee-service\\tests",
+    "\\employee-service\\tests\\unitTests",
+    "\\shift-service"
+  ],
+  "SelectedNode": "\\employee-service\\tests\\unitTests\\EmployeeFunctionsTests.cs",
+  "PreviewInSolutionExplorer": false
+}

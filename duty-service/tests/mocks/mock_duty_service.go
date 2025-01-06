@@ -4,7 +4,6 @@ import (
 	"context"
 	"duty-service/models"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -23,7 +22,7 @@ func (m *MockDutyService) GetDutyById(ctx context.Context, partitionKey, rowKey 
 	return args.Get(0).(*models.Duty), args.Error(1)
 }
 
-func (m *MockDutyService) GetDutiesByRole(ctx context.Context, roleId uuid.UUID) ([]models.Duty, error) {
+func (m *MockDutyService) GetDutiesByRole(ctx context.Context, roleId int) ([]models.Duty, error) {
 	args := m.Called(ctx, roleId)
 	return args.Get(0).([]models.Duty), args.Error(1)
 }

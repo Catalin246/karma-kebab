@@ -20,25 +20,58 @@ namespace Services
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger<RabbitMqService> _logger;
-        private readonly string _queueName = "eventCreated";
+        private readonly string _eventCreatedQueueName = "eventCreated";
         private readonly string _shiftServiceUrl;
+        private readonly string _clockInQueueName = "clockIn";
         private readonly ConnectionFactory _factory;
+        private readonly IServiceProvider _serviceProvider;
 
-        public RabbitMqService(HttpClient httpClient, ILogger<RabbitMqService> logger, IOptions<RabbitMqServiceConfig> options)
+        public RabbitMqService(HttpClient httpClient, ILogger<RabbitMqService> logger, IOptions<RabbitMqServiceConfig> options, IServiceProvider serviceProvider)
         {
             _httpClient = httpClient;
             _logger = logger;
             _factory = new ConnectionFactory { HostName = "rabbitmq" };
             if (options == null) throw new ArgumentNullException(nameof(options));
             _shiftServiceUrl = options.Value.Url;
+            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         }
-
-        public async Task StartListeningAsync()
+        public async Task PublishClockIn(ClockInDto clockInDto) // Producer - push to clockIn queue
         {
             using var connection = await _factory.CreateConnectionAsync();
             using var channel = await connection.CreateChannelAsync();
 
-            await channel.QueueDeclareAsync(queue: _queueName, durable: false, exclusive: false, autoDelete: false, arguments: null);
+            // Declare the queue
+            await channel.QueueDeclareAsync(
+                queue: _clockInQueueName, 
+                durable: false, 
+                exclusive: false, 
+                autoDelete: false
+            );
+             // Serialize the DTO
+            var message = JsonConvert.SerializeObject(clockInDto);
+            var body = Encoding.UTF8.GetBytes(message);
+
+            // Publish the message
+            await channel.BasicPublishAsync(
+                exchange: "",
+                routingKey: _clockInQueueName,
+                body: body
+            );
+
+            _logger.LogInformation($"Published Clock In/Out message for Shift {clockInDto.ShiftID}");
+        }
+
+        public async Task PublishShiftCreated() // Producer - push to shiftCreated queue
+        {
+            // TODO: Implement the logic to publish ShiftCreated messages
+        }
+
+        public async Task ListeningEventCreated() // Consumer - consume from eventCreated queue
+        {
+            using var connection = await _factory.CreateConnectionAsync();
+            using var channel = await connection.CreateChannelAsync();
+
+            await channel.QueueDeclareAsync(queue: _eventCreatedQueueName, durable: false, exclusive: false, autoDelete: false, arguments: null);
 
             _logger.LogInformation(" [*] Waiting for messages.");
 
@@ -64,31 +97,34 @@ namespace Services
                     string eventID = eventMessage.EventID;
                     string startTime = eventMessage.StartTime;
                     string endTime = eventMessage.EndTime;
-                    int shiftsNumber = eventMessage.ShiftsNumber;
+                    List<int> roleIDs = eventMessage.RoleIDs;
 
-                    // Assuming the message contains data needed to create a shift
-                    var requestData = new
+                    var createShiftDto = new CreateShiftDto
                     {
-                        employeeId = "2dc142cb-c95d-4ab5-a258-1d04c2d6c244", // TODO: This should be automatically assigned based on the availability
-                        startTime = startTime,
-                        endTime = endTime,
-                        shiftType = "Standby",
+                        StartTime = DateTime.Parse(startTime),
+                        EndTime = DateTime.Parse(endTime),
+                        EmployeeId = Guid.Empty,
+                        ShiftType = "Standby"
                     };
 
-                    var jsonContent = new StringContent(System.Text.Json.JsonSerializer.Serialize(requestData), Encoding.UTF8, "application/json");
-
-                    for (int i = 1; i <= shiftsNumber; i++)
+                    // Create a scope and resolve IShiftService within it
+                    using (var scope = _serviceProvider.CreateScope())
                     {
-                        // Send POST request to Shift Service
-                        var response = await _httpClient.PostAsync(_shiftServiceUrl, jsonContent);
+                        var shiftService = scope.ServiceProvider.GetRequiredService<IShiftService>();
 
-                        if (response.IsSuccessStatusCode)
+                        foreach (int roleID in roleIDs)
                         {
-                            _logger.LogInformation(" [✓] Shift created successfully.");
-                        }
-                        else
-                        {
-                            _logger.LogError($" [!] Failed to create shift. Status: {response.StatusCode}");
+                            // Send POST request to Shift Service through IShiftService
+                            var response = await shiftService.CreateShift(createShiftDto);
+
+                            if (response != null)
+                            {
+                                _logger.LogInformation(" [✓] Shift created successfully.");
+                            }
+                            else
+                            {
+                                _logger.LogError($" [!] Failed to create shift.");
+                            }
                         }
                     }
                 }
@@ -98,10 +134,15 @@ namespace Services
                 }
             };
 
-            await channel.BasicConsumeAsync(queue: _queueName, autoAck: true, consumer: consumer);
+            await channel.BasicConsumeAsync(queue: _eventCreatedQueueName, autoAck: true, consumer: consumer);
 
             // Prevent the method from exiting immediately
             await Task.Delay(-1);
+        }
+
+        public async Task ListeningEventDeleted() // Consumer - consume from eventDeleted queue
+        {
+            // TODO: Implement the logic to listen for EventDeleted messages
         }
     }
 }

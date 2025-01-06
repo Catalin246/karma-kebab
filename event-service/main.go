@@ -52,7 +52,13 @@ func main() {
 	defer ch.Close()
 
 	// Initialize RabbitMQService
-	rabbitMQService := services.NewRabbitMQService(ch)
+	rabbitMQService := services.NewRabbitMQService(ch, client)
+
+	// Start consuming messages from the "shiftCreated"
+	err = rabbitMQService.ConsumeMessage("shiftCreated")
+	if err != nil {
+		log.Fatalf("Error consuming messages: %v", err)
+	}
 
 	// Register routes with the service client and RabbitMQService
 	router := routes.RegisterRoutes(client, rabbitMQService)

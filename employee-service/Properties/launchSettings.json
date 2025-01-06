@@ -1,0 +1,15 @@
+{
+  "profiles": {
+    "employee_service": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7066"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker",
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
+      "containerRunArguments": "--init",
+      "httpPort": 32528,
+      "useSSL": false
+    }
+  }
+}

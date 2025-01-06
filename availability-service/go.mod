@@ -1,17 +1,19 @@
 module availability-service
 
-go 1.23.1
+go 1.20
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/data/aztables v1.3.0
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/mux v1.8.1
 	github.com/joho/godotenv v1.5.1
+	github.com/stretchr/testify v1.10.0
 )
+
+require github.com/rabbitmq/amqp091-go v1.10.0
 
 require (
 	github.com/stretchr/objx v0.5.2 // indirect
-	github.com/stretchr/testify v1.10.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
