@@ -13,7 +13,7 @@ import (
 )
 
 // RegisterRoutes registers all the routes for the event service
-func RegisterRoutes(serviceClient *aztables.ServiceClient, rabbitMQService *services.RabbitMQService) *mux.Router {
+func RegisterRoutes(serviceClient *aztables.ServiceClient, rabbitMQService services.RabbitMQServiceInterface) *mux.Router {
 	// Create the repository and service instances
 	eventRepository := repositories.NewEventRepository(serviceClient)
 	eventService := services.NewEventService(eventRepository)
@@ -32,6 +32,7 @@ func RegisterRoutes(serviceClient *aztables.ServiceClient, rabbitMQService *serv
 	r.HandleFunc("/events", eventHandler.CreateEvent).Methods(http.MethodPost)
 	r.HandleFunc("/events/{partitionKey}/{rowKey}", eventHandler.UpdateEvent).Methods(http.MethodPut)
 	r.HandleFunc("/events/{partitionKey}/{rowKey}", eventHandler.DeleteEvent).Methods(http.MethodDelete)
+	r.HandleFunc("/events/{shiftID}", eventHandler.GetEventByShiftID).Methods(http.MethodGet)
 
 	return r
 }

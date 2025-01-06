@@ -27,7 +27,6 @@ services:
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
-    # command: ["start-dev", "--import-realm"]
     ports:
       - "8080:8080"
     depends_on:
@@ -80,7 +79,7 @@ services:
   api-gateway:
     build:
       context: ./api-gateway
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.local
     container_name: api-gateway
     ports:
       - "3007:3007"
@@ -115,8 +114,44 @@ services:
     networks:
       - karama-kebab-network
 
+  employee-service:
+    build:
+      context: ./employee-service
+      dockerfile: Dockerfile
+    container_name: employees
+    environment:
+      - PostgreSQLEntityFramework="Host=employee-db;Port=5432;Database=employeedb;Username=postgres;Password=password;"
+      - FUNCTIONS_WORKER_RUNTIME=dotnet-isolated
+      - AzureWebJobsStorage=UseDevelopmentStorage=true
+    depends_on:
+      - postgres
+    ports:
+      - "3005:80"
+    networks:
+      - karama-kebab-network
+
+  postgres:
+    image: postgres:13
+    container_name: employee-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: employeedb
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - karama-kebab-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   azurite-data:
+  postgres-data:
 
 networks:
   karama-kebab-network:

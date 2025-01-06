@@ -17,11 +17,11 @@ import (
 // EventHandler struct now includes RabbitMQService
 type EventHandler struct {
 	service         services.EventServiceInteface
-	rabbitMQService *services.RabbitMQService
+	rabbitMQService services.RabbitMQServiceInterface
 }
 
 // NewEventHandler creates a new EventHandler
-func NewEventHandler(service services.EventServiceInteface, rabbitMQService *services.RabbitMQService) *EventHandler {
+func NewEventHandler(service services.EventServiceInteface, rabbitMQService services.RabbitMQServiceInterface) *EventHandler {
 	return &EventHandler{service: service, rabbitMQService: rabbitMQService}
 }
 
@@ -52,8 +52,16 @@ func (h *EventHandler) GetEvents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Constructing the response in the same format as provided.
+	response := map[string]interface{}{
+		"success": true,
+		"message": "Events retrieved successfully",
+		"data":    events, // Here, 'events' will be an array of event objects
+	}
+
+	// Set content type to JSON and return the response
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(events)
+	json.NewEncoder(w).Encode(response)
 }
 
 func (h *EventHandler) GetEventByID(w http.ResponseWriter, r *http.Request) {
@@ -92,10 +100,10 @@ func (h *EventHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 
 	// Create the JSON message you want to send
 	message := map[string]interface{}{
-		"shiftsNumber": event.ShiftsNumber,
-		"eventID":      event.RowKey,
-		"startTime":    event.StartTime,
-		"endTime":      event.EndTime,
+		"roleIDs":   event.RoleIDs,
+		"eventID":   event.RowKey,
+		"startTime": event.StartTime,
+		"endTime":   event.EndTime,
 	}
 
 	messageBytes, err := json.Marshal(message)
@@ -128,10 +136,6 @@ func (h *EventHandler) UpdateEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.rabbitMQService.PublishMessage("eventUpdated", "Event Updated!"); err != nil {
-		log.Println("Failed to publish message:", err)
-	}
-
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"message": "Event updated successfully"})
 }
@@ -157,4 +161,19 @@ func (h *EventHandler) DeleteEvent(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"message": "Event deleted successfully"})
+}
+
+func (h *EventHandler) GetEventByShiftID(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	shiftID := vars["shiftID"]
+
+	event, err := h.service.GetEventByShiftID(r.Context(), shiftID)
+	if err != nil {
+		http.Error(w, "Failed to retrieve events: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(event)
 }

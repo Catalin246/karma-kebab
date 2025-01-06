@@ -81,10 +81,10 @@ func (r *DutyRepository) GetDutyById(ctx context.Context, partitionKey, rowKey s
 }
 
 // GET DUTIES BY ROLE ID (using RoleId as filter)
-func (r *DutyRepository) GetDutiesByRole(ctx context.Context, roleId uuid.UUID) ([]models.Duty, error) {
+func (r *DutyRepository) GetDutiesByRole(ctx context.Context, roleId int) ([]models.Duty, error) {
 	tableClient := r.serviceClient.NewClient(r.tableName)
 
-	filter := fmt.Sprintf("RoleId eq '%s'", roleId.String())
+	filter := fmt.Sprintf("RoleId eq %d", roleId) // roleId is now an int
 
 	listOptions := &aztables.ListEntitiesOptions{
 		Filter: &filter,
@@ -126,8 +126,8 @@ func (r *DutyRepository) CreateDuty(ctx context.Context, duty models.Duty) error
 	// Prepare the entity for insertion
 	entity := map[string]interface{}{
 		"PartitionKey":    duty.PartitionKey,
-		"RowKey":          duty.RowKey.String(), // convert UUID to string
-		"RoleId":          duty.RoleId.String(), // convert UUID to string
+		"RowKey":          duty.RowKey.String(),
+		"RoleId":          duty.RoleId,
 		"DutyName":        duty.DutyName,
 		"DutyDescription": duty.DutyDescription,
 	}
@@ -153,14 +153,13 @@ func (r *DutyRepository) UpdateDuty(ctx context.Context, partitionKey, rowKey st
 
 	// Prepare the updated entity
 	entity := map[string]interface{}{
-		"PartitionKey":    partitionKey,
-		"RowKey":          rowKey,
-		"RoleId":          duty.RoleId.String(),
+		"PartitionKey":    duty.PartitionKey,
+		"RowKey":          duty.RowKey.String(),
+		"RoleId":          duty.RoleId,
 		"DutyName":        duty.DutyName,
 		"DutyDescription": duty.DutyDescription,
 	}
 
-	// Marshal the entity to JSON
 	entityBytes, err := json.Marshal(entity)
 	if err != nil {
 		return fmt.Errorf("failed to marshal updated entity: %v", err)
@@ -196,17 +195,17 @@ func parseDuty(dutyData map[string]interface{}) (models.Duty, error) {
 		return models.Duty{}, fmt.Errorf("failed to parse RowKey as UUID: %v", err)
 	}
 
-	// Parse RoleId as UUID
-	roleIdUUID, err := uuid.Parse(dutyData["RoleId"].(string))
-	if err != nil {
-		return models.Duty{}, fmt.Errorf("failed to parse RoleId as UUID: %v", err)
+	// Parse RoleId as int //TODO check if this is correct
+	roleIdFloat, ok := dutyData["RoleId"].(float64)
+	if !ok {
+		return models.Duty{}, fmt.Errorf("failed to parse RoleId as integer")
 	}
+	roleId := int(roleIdFloat)
 
-	// Create and return the duty object
 	return models.Duty{
 		PartitionKey:    dutyData["PartitionKey"].(string),
 		RowKey:          rowKeyUUID,
-		RoleId:          roleIdUUID,
+		RoleId:          roleId,
 		DutyName:        dutyData["DutyName"].(string),
 		DutyDescription: dutyData["DutyDescription"].(string),
 	}, nil
