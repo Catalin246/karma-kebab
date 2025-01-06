@@ -114,23 +114,25 @@ services:
     networks:
       - karama-kebab-network
 
-  # employee-service:
-  #   build:
-  #     context: ./employee_service/EmployeeMicroservice.Functions
-  #     dockerfile: Dockerfile
-  #   environment:
-  #     - PostgreSQLEntityFramework="Host=localhost;Port=5432;Database=employeedb;Username=postgres;Password=password;"
-  #     - FUNCTIONS_WORKER_RUNTIME=dotnet-isolated
-  #     - AzureWebJobsStorage=UseDevelopmentStorage=true
-  #   depends_on:
-  #     - postgres
-  #   ports:
-  #     - "3005:3005"  # Assuming the employee service runs on port 3005
-  #   networks:
-  #     - karama-kebab-network
+  employee-service:
+    build:
+      context: ./employee-service
+      dockerfile: Dockerfile
+    container_name: employees
+    environment:
+      - PostgreSQLEntityFramework="Host=employee-db;Port=5432;Database=employeedb;Username=postgres;Password=password;"
+      - FUNCTIONS_WORKER_RUNTIME=dotnet-isolated
+      - AzureWebJobsStorage=UseDevelopmentStorage=true
+    depends_on:
+      - postgres
+    ports:
+      - "3005:80"
+    networks:
+      - karama-kebab-network
 
   postgres:
     image: postgres:13
+    container_name: employee-db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
@@ -138,24 +140,14 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
     ports:
-      - "5432:5432" # PostgreSQL port
+      - "5432:5432"
     networks:
       - karama-kebab-network
-
-  # azure-functions:
-  #   build:
-  #     context: .  # The directory containing your Dockerfile
-  #     dockerfile: ./EmployeeMicroservice.Functions/Dockerfile  # Name of the Dockerfile for Azure Functions
-  #   container_name: azure-functions
-  #   environment:
-  #     FUNCTIONS_WORKER_RUNTIME: dotnet-isolated
-  #     AzureWebJobsStorage: UseDevelopmentStorage=true  # Connects to Azurite for local dev
-  #   ports:
-  #     - "7071:8080"  # Expose port 7071 on the host, mapped to 8080 inside the container
-  #   depends_on:
-  #     - azurite
-  #   networks:
-  #     - karama-kebab-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   azurite-data:
