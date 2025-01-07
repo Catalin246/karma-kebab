@@ -19,6 +19,7 @@ var (
 var Models = []string{
 	"events",
 	"persons",
+	"eventshifts",
 }
 
 // InitAzureTables initializes Azure Table Storage connections for all models
