@@ -10,6 +10,7 @@ namespace Models
             public string? StartTime { get; set; }
             public string? EndTime { get; set; }
             public string? ShiftType { get; set; }
+            public int? RoleId { get; set; } 
         }
 
 }

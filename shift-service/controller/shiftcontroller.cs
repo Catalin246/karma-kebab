@@ -120,6 +120,7 @@ public class ShiftsController : ControllerBase
             });
         }
     }
+    
     [HttpPut("{shiftId:guid}")]
     public async Task<ActionResult<ApiResponse>> UpdateShift(
         [FromRoute] Guid shiftId, 
@@ -206,7 +207,7 @@ public class ShiftsController : ControllerBase
             {
                 ShiftID = shiftId,
                 TimeStamp = DateTime.Now,
-                RoleID = updatedShift.RoleID
+                RoleId = updatedShift.RoleId
             };
 
             // Publish clock-in message to RabbitMQ - to clockin queue
