@@ -19,19 +19,18 @@ public class EmployeeService : IEmployeeService
             var employees = await _employeeRepository.GetAllEmployeesAsync();
             if (employees == null || !employees.Any())
             {
-                throw new InvalidOperationException("No employees found.");
+                return new List<Employee>(); 
             }
 
             return employees;
         }
         catch (Exception ex)
         {
-            // Log the exception and rethrow or handle it as needed
             throw new ApplicationException("An error occurred while fetching employees.", ex);
         }
     }
 
-    public async Task<Employee?> GetEmployeeByIdAsync(Guid id)
+    public async Task<Employee> GetEmployeeByIdAsync(Guid id)
     {
         if (id == Guid.Empty)
         {
@@ -96,7 +95,7 @@ public class EmployeeService : IEmployeeService
 
     }
 
-    public async Task<Employee?> UpdateEmployeeAsync(Guid employeeId, EmployeeDTO updatedEmployee)
+    public async Task<Employee> UpdateEmployeeAsync(Guid employeeId, EmployeeDTO updatedEmployee)
     {
         // Validate the updatedEmployee object
         if (updatedEmployee == null)

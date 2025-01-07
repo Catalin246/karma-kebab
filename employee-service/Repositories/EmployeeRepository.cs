@@ -20,7 +20,7 @@ public class EmployeeRepository : IEmployeeRepository
         return await context.Employees.ToListAsync();
     }
 
-    public async Task<Employee?> GetEmployeeByIdAsync(Guid id)
+    public async Task<Employee> GetEmployeeByIdAsync(Guid id)
     {
 
         await using var context = await _dbContextFactory.CreateDbContextAsync();
