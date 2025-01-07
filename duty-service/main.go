@@ -21,7 +21,7 @@ func failOnError(err error, msg string) {
 func main() {
 	// Load environment variables
 	if err := godotenv.Load(".env"); err != nil {
-		log.Fatal("Error loading .env file: ", err)
+		log.Println("Warning: .env file not found, falling back to environment variables")
 	}
 
 	// Get Azure Table Storage connection string
@@ -58,7 +58,7 @@ func main() {
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer rabbitConn.Close()
 
-	// Initialize DutyAssignmentService 
+	// Initialize DutyAssignmentService
 	dutyService := &services.DutyAssignmentService{}
 
 	// Initialize RabbitMQService
