@@ -10,7 +10,7 @@ public class ShiftDto
     public DateTime? ClockInTime { get; set; }
     public DateTime? ClockOutTime { get; set; }
     public decimal? ShiftHours { get; set; }
-    public int RoleID {get;set;}
+    public int RoleId {get;set;}
 }
 
 // DTO for creating a shift
@@ -20,6 +20,7 @@ public class CreateShiftDto
     public DateTime EndTime { get; set; }
     public Guid EmployeeId { get; set; }
     public String ShiftType { get; set; }
+    public int RoleId { get; set; } 
     }
 
 // DTO for updating a shift
@@ -31,7 +32,7 @@ public class UpdateShiftDto
     public string Status { get; set; }
     public DateTime? ClockInTime { get; set; }
     public DateTime? ClockOutTime { get; set; }
-    
+    public int RoleId { get; set; } 
 }
 
 // DTO for clocking in or clocking out 
@@ -39,5 +40,5 @@ public class ClockInDto
 {
     public Guid ShiftID {get;set;}
     public DateTime TimeStamp { get; set; }
-    public int RoleID {get;set;}
+    public int RoleId {get;set;}
 }
