@@ -1,30 +1,28 @@
-# See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
-
-# This stage is used when running from VS in fast mode (Default for Debug configuration)
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-USER $APP_UID
-WORKDIR /app
-EXPOSE 8080
-EXPOSE 8081
-
-
-# This stage is used to build the service project
+# Use the .NET SDK image to build the app
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-ARG BUILD_CONFIGURATION=Release
-WORKDIR /src
-COPY ["employee-service-web/employee-service-web.csproj", "employee-service-web/"]
-RUN dotnet restore "./employee-service-web/employee-service-web.csproj"
-COPY . .
-WORKDIR "/src/employee-service-web"
-RUN dotnet build "./employee-service-web.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
-# This stage is used to publish the service project to be copied to the final stage
-FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./employee-service-web.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
-
-# This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
-FROM base AS final
+# Set the working directory inside the container
 WORKDIR /app
-COPY --from=publish /app/publish .
+
+# Copy the csproj file and restore dependencies
+COPY ["/employee-service-web.csproj", "./"]
+RUN dotnet restore
+
+# Copy the entire project and publish the app in Release mode
+COPY . ./
+RUN dotnet publish -c Release -o /app/publish
+
+# Use the ASP.NET runtime image for running the app
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy the published app from the build stage
+COPY --from=build /app/publish ./
+
+# Expose the port the app will run on
+EXPOSE 3005
+
+# Run the application in Production mode
 ENTRYPOINT ["dotnet", "employee-service-web.dll"]

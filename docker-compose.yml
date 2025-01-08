@@ -18,21 +18,21 @@ services:
     networks:
       - karama-kebab-network
 
-  keycloak:
-    build:
-      context: ./keycloak
-      dockerfile: Dockerfile
-    volumes:
-      - ./keycloak/realm-config/:/opt/keycloak/data/import/
-    environment:
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
-    ports:
-      - "8080:8080"
-    depends_on:
-      - azurite
-    networks:
-      - karama-kebab-network
+  # keycloak:
+  #   build:
+  #     context: ./keycloak
+  #     dockerfile: Dockerfile
+  #   volumes:
+  #     - ./keycloak/realm-config/:/opt/keycloak/data/import/
+  #   environment:
+  #     KEYCLOAK_ADMIN: admin
+  #     KEYCLOAK_ADMIN_PASSWORD: admin
+  #   ports:
+  #     - "8080:8080"
+  #   depends_on:
+  #     - azurite
+  #   networks:
+  #     - karama-kebab-network
 
   rabbitmq:
     build:
@@ -55,7 +55,7 @@ services:
       - ./event-service/.env:/app/.env
     depends_on:
       - azurite
-      - keycloak
+      # - keycloak
       - rabbitmq
     ports:
       - "3001:3001"
@@ -70,7 +70,7 @@ services:
       - ./availability-service/.env:/app/.env
     depends_on:
       - azurite
-      - keycloak
+      # - keycloak
     ports:
       - "3002:3002"
     networks:
@@ -108,31 +108,29 @@ services:
       - ./duty-service/.env:/app/.env
     depends_on:
       - azurite
-      - keycloak
+      # - keycloak
     ports:
       - "3004:3004"
     networks:
       - karama-kebab-network
 
-  employee-service:
+  employee-service-web:
     build:
-      context: ./employee-service
-      dockerfile: Dockerfile
-    container_name: employees
+      context: ./employee-service-web
+      dockerfile: Dockerfile.local
+    container_name: employees-web
     environment:
       - PostgreSQLEntityFramework="Host=employee-db;Port=5432;Database=employeedb;Username=postgres;Password=password;"
-      - FUNCTIONS_WORKER_RUNTIME=dotnet-isolated
-      - AzureWebJobsStorage=UseDevelopmentStorage=true
     depends_on:
       - postgres
     ports:
-      - "3005:80"
+      - "3005:3005"
     networks:
       - karama-kebab-network
 
   postgres:
     image: postgres:13
-    container_name: employee-db
+    container_name: employee-postgres-db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
@@ -148,24 +146,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
-  # azure-functions:
-  #   build:
-  #     context: ./employee-service
-  #     dockerfile: Dockerfile
-  #   container_name: azure-functions
-  #   environment:
-  #     DBHOST: employee-db
-  #     DBNAME: employeedb
-  #     DBUSER: postgres
-  #     DBPASS: password
-  #     SSLMODE: disable
-  #   ports:
-  #     - "3006:80"  # Avoid port conflict
-  #   depends_on:
-  #     - postgres
-  #   networks:
-  #     - karama-kebab-network
 
 volumes:
   azurite-data:

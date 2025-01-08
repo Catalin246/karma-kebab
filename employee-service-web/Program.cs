@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Interfaces;
 using Repositories;
 using Services;
+using Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +32,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+// Register the custom GatewayHeaderMiddleware
+app.UseMiddleware<GatewayHeaderMiddleware>();
 
 app.UseAuthorization();
 app.MapControllers();
