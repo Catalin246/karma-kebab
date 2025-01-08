@@ -76,7 +76,14 @@ public class ShiftDbContext : IShiftDbContext
         return shifts;
     }
 
-    public async Task<IEnumerable<ShiftEntity>> GetShifts(DateTime? date = null, Guid? employeeId = null, ShiftType? shiftType = null, Guid? shiftId = null, Guid? eventId = null, int? roleId = null)
+    public async Task<IEnumerable<ShiftEntity>> GetShifts(
+        DateTime? startDate = null, 
+        DateTime? endDate = null, 
+        Guid? employeeId = null, 
+        ShiftType? shiftType = null, 
+        Guid? shiftId = null, 
+        Guid? eventId = null, 
+        int? roleId = null)
     {
         var shifts = new List<ShiftEntity>();
 
@@ -93,9 +100,14 @@ public class ShiftDbContext : IShiftDbContext
             filterList.Add($"RowKey eq '{shiftId}'"); // ShiftId is stored in RowKey
         }
 
-        if (date.HasValue)
+        if (startDate.HasValue)
         {
-            filterList.Add($"StartTime ge '{date.Value:yyyy-MM-dd}' and EndTime le '{date.Value:yyyy-MM-dd}'"); // Assuming date comparison with StartTime and EndTime
+            filterList.Add($"StartTime ge datetime'{startDate.Value:yyyy-MM-ddTHH:mm:ssZ}'");
+        }
+
+        if (endDate.HasValue)
+        {
+            filterList.Add($"EndTime le datetime'{endDate.Value:yyyy-MM-ddTHH:mm:ssZ}'");
         }
 
         if (shiftType.HasValue)
@@ -105,7 +117,6 @@ public class ShiftDbContext : IShiftDbContext
 
         if (eventId.HasValue)
         {
-            // Assuming eventId is a part of the RowKey or another column (adjust if needed)
             filterList.Add($"EventId eq '{eventId}'"); // Adjust depending on how eventId is stored
         }
 
@@ -130,6 +141,7 @@ public class ShiftDbContext : IShiftDbContext
 
         return shifts;
     }
+
 
     public async Task<ShiftEntity> AddShift(ShiftEntity shift)
     {

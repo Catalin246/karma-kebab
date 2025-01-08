@@ -19,7 +19,8 @@ public class ShiftsController : ControllerBase
 
     [HttpGet]
     public async Task<ActionResult<ApiResponse>> ListShifts(
-        [FromQuery] DateTime? date = null,
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null,
         [FromQuery] Guid? employeeId = null,
         [FromQuery] ShiftType? shiftType = null,
         [FromQuery] Guid? shiftId = null, 
@@ -27,7 +28,7 @@ public class ShiftsController : ControllerBase
     {
         try
         {
-            var shifts = await _shiftService.GetShifts(date, employeeId, shiftType, shiftId, eventId);
+            var shifts = await _shiftService.GetShifts(startDate, endDate, employeeId, shiftType, shiftId, eventId);
             return Ok(new ApiResponse 
             { 
                 Success = true,
@@ -45,6 +46,7 @@ public class ShiftsController : ControllerBase
             });
         }
     }
+
 
     [HttpGet("{shiftId:guid}")]
     public async Task<ActionResult<ApiResponse>> GetShiftById(Guid shiftId)

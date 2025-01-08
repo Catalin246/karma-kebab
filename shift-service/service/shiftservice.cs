@@ -45,9 +45,9 @@ public class ShiftService : IShiftService
         return await _dbContext.GetShiftById(shiftId);
     }
 
-    public async Task<IEnumerable<ShiftDto>> GetShifts(DateTime? date = null, Guid? employeeId = null, ShiftType? shiftType = null, Guid? shiftId = null, Guid? eventId = null)
+    public async Task<IEnumerable<ShiftDto>> GetShifts(DateTime? startDate = null, DateTime? endDate = null, Guid? employeeId = null, ShiftType? shiftType = null, Guid? shiftId = null, Guid? eventId = null)
     {
-        var shifts = await _dbContext.GetShifts(date, employeeId, shiftType, shiftId, eventId);
+        var shifts = await _dbContext.GetShifts(startDate, endDate, employeeId, shiftType, shiftId, eventId);
         return ShiftDbContext.MapToDtos(shifts);
     }
 
