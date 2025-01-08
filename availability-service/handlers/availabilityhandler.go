@@ -4,18 +4,17 @@ import (
 	"availability-service/models"
 	"context"
 	"encoding/json"
-	"log"
 	"net/http"
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
 
 // AvailabilityServiceInterface defines the methods that the service must implement
 type IAvailability interface {
 	GetAll(ctx context.Context, employeeID string, startDate, endDate *time.Time) ([]models.Availability, error)
-	GetByEmployeeID(ctx context.Context, employeeID string) ([]models.Availability, error)
 	Create(ctx context.Context, availability models.Availability) (*models.Availability, error)
 	Update(ctx context.Context, employeeID, id string, availability models.Availability) error
 	Delete(ctx context.Context, employeeID, id string) error
@@ -50,6 +49,14 @@ func (h *AvailabilityHandler) GetAll(w http.ResponseWriter, r *http.Request) {
     endDateStr := r.URL.Query().Get("endDate")
 
     var startDate, endDate *time.Time
+
+    // Validate employeeID as a valid UUID
+    if employeeID != "" {
+        if _, err := uuid.Parse(employeeID); err != nil {
+            http.Error(w, "Invalid employeeId format. Must be a valid UUID.", http.StatusBadRequest)
+            return
+        }
+    }
 
     // Define multiple date formats to try
     dateFormats := []string{
@@ -111,57 +118,12 @@ func (h *AvailabilityHandler) GetAll(w http.ResponseWriter, r *http.Request) {
         return
     }
 
+    w.Header().Set("Content-Type", "application/json")
     if err := json.NewEncoder(w).Encode(availabilities); err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
     }
 }
-// gets all availabilities of one employee
-func (h *AvailabilityHandler) GetByEmployeeID(w http.ResponseWriter, r *http.Request) {
-	// Log full request details for debugging
-	log.Printf("Received GETby emp id request: %+v", r)
 
-	// Log all URL variables
-	vars := mux.Vars(r)
-	log.Printf("URL Variables: %+v", vars)
-
-	// Use partitionKey instead of employeeId
-	partitionKey := vars["partitionKey"]
-	log.Printf("Extracted PartitionKey (EmployeeID): '%s'", partitionKey)
-
-	// Ensure partition key is provided
-	if partitionKey == "" {
-		log.Println("Error: PartitionKey is empty")
-		http.Error(w, "PartitionKey is required", http.StatusBadRequest)
-		return
-	}
-
-	availabilities, err := h.service.GetByEmployeeID(r.Context(), partitionKey)
-	if err != nil {
-		log.Printf("Service Error: %v", err)
-		if err == models.ErrNotFound {
-			http.Error(w, "Availability not found", http.StatusNotFound)
-		} else {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-		return
-	}
-
-	// Log the retrieved availabilities
-	log.Printf("Retrieved Availabilities: %+v", availabilities)
-
-	// Check if no availabilities found
-	if len(availabilities) == 0 {
-		http.Error(w, "No availabilities found for this employee", http.StatusNotFound)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(availabilities); err != nil {
-		log.Printf("JSON Encoding Error: %v", err)
-		http.Error(w, "Error encoding response", http.StatusInternalServerError)
-	}
-}
 func (h *AvailabilityHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var availability models.Availability
 	if err := json.NewDecoder(r.Body).Decode(&availability); err != nil {

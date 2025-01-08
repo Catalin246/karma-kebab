@@ -120,37 +120,6 @@ func (r *TableStorageAvailabilityRepository) GetOverlappingAvailabilities(ctx co
     return overlappingAvailabilities, nil
 }
 
-func (r *TableStorageAvailabilityRepository) GetByEmployeeID(ctx context.Context, employeeID string) ([]models.Availability, error) {
-	tableClient := r.serviceClient.NewClient(r.tableName)
-
-	// Create a filter to get all entities with this partition key
-	filter := fmt.Sprintf("PartitionKey eq '%s'", employeeID)
-
-	pager := tableClient.NewListEntitiesPager(&aztables.ListEntitiesOptions{
-		Filter: &filter,
-	})
-
-	var availabilities []models.Availability
-
-	for pager.More() {
-		page, err := pager.NextPage(ctx)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get entities: %v", err)
-		}
-
-		for _, entity := range page.Entities {
-			var availability models.Availability
-
-			err = json.Unmarshal(entity, &availability)
-			if err != nil {
-				return nil, fmt.Errorf("failed to unmarshal entity: %v", err)
-			}
-			availabilities = append(availabilities, availability)
-		}
-	}
-
-	return availabilities, nil
-}
 
 func (r *TableStorageAvailabilityRepository) GetAll(ctx context.Context, employeeID string, startDate, endDate *time.Time) ([]models.Availability, error) {
     tableClient := r.serviceClient.NewClient(r.tableName)
