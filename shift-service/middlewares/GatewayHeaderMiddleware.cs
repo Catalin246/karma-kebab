@@ -23,6 +23,7 @@ namespace Middlewares
             // Check if the X-From-Gateway header is present and valid
             if (context.Request.Headers["X-From-Gateway"] != "true")
             {
+                // Respond with Forbidden if the header is invalid or missing
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
                 await context.Response.WriteAsync("Forbidden: Invalid Gateway Header");
                 return;
