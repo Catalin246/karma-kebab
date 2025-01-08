@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/data/aztables"
@@ -151,87 +152,37 @@ func (r *TableStorageAvailabilityRepository) GetByEmployeeID(ctx context.Context
 	return availabilities, nil
 }
 
-// GetAll retrieves all availability records
-// func (r *TableStorageAvailabilityRepository) GetAll(ctx context.Context, startDate, endDate *time.Time) ([]models.Availability, error) {
-// 	tableClient := r.serviceClient.NewClient(r.tableName)
-
-// 	// Build the base query for Table Storage
-// 	filter := ""
-
-// 	// Add date filters if startDate and endDate are provided
-// 	if startDate != nil {
-// 		filter += fmt.Sprintf(" and StartDate ge datetime'%s'", startDate.Format("2006-01-02T15:04:05Z"))
-// 	}
-// 	if endDate != nil {
-// 		filter += fmt.Sprintf(" and EndDate le datetime'%s'", endDate.Format("2006-01-02T15:04:05Z"))
-// 	}
-
-// 	// Create list options with the filter
-// 	listOptions := &aztables.ListEntitiesOptions{
-// 		Filter: &filter,
-// 	}
-
-// 	// Query table storage with the filter
-// 	pager := tableClient.NewListEntitiesPager(listOptions)
-// 	var availabilities []models.Availability
-
-// 	for pager.More() {
-// 		response, err := pager.NextPage(ctx)
-// 		if err != nil {
-// 			return nil, fmt.Errorf("failed to list entities: %v", err)
-// 		}
-
-// 		for _, entityBytes := range response.Entities {
-// 			var entityData map[string]interface{}
-// 			if err := json.Unmarshal(entityBytes, &entityData); err != nil {
-// 				return nil, fmt.Errorf("failed to unmarshal entity: %v", err)
-// 			}
-
-// 			// Parse the dates
-// 			startDate, err := time.Parse(time.RFC3339, entityData["StartDate"].(string))
-// 			if err != nil {
-// 				return nil, fmt.Errorf("failed to parse start date: %v", err)
-// 			}
-
-// 			endDate, err := time.Parse(time.RFC3339, entityData["EndDate"].(string))
-// 			if err != nil {
-// 				return nil, fmt.Errorf("failed to parse end date: %v", err)
-// 			}
-
-// 			availability := models.Availability{
-// 				ID:         entityData["RowKey"].(string),
-// 				EmployeeID: entityData["PartitionKey"].(string),
-// 				StartDate:  startDate,
-// 				EndDate:    endDate,
-// 			}
-// 			availabilities = append(availabilities, availability)
-// 		}
-// 	}
-
-// 	return availabilities, nil
-// }
-func (r *TableStorageAvailabilityRepository) GetAll(ctx context.Context, startDate, endDate *time.Time) ([]models.Availability, error) {
+func (r *TableStorageAvailabilityRepository) GetAll(ctx context.Context, employeeID string, startDate, endDate *time.Time) ([]models.Availability, error) {
     tableClient := r.serviceClient.NewClient(r.tableName)
 
     // Start with an empty filter
-    filter := ""
+    var filterParts []string
 
-    // Build the filter dynamically based on provided dates
+    // Add employeeID filter if provided
+    if employeeID != "" {
+        filterParts = append(filterParts, fmt.Sprintf("PartitionKey eq '%s'", employeeID))
+    }
+
+    // Add date filters if provided
     if startDate != nil && endDate != nil {
-        // Both start and end dates provided
-        filter = fmt.Sprintf("(StartDate ge datetime'%s' and StartDate le datetime'%s') or (EndDate ge datetime'%s' and EndDate le datetime'%s') or (StartDate le datetime'%s' and EndDate ge datetime'%s')", 
+        datePart := fmt.Sprintf("(StartDate ge datetime'%s' and StartDate le datetime'%s') or (EndDate ge datetime'%s' and EndDate le datetime'%s') or (StartDate le datetime'%s' and EndDate ge datetime'%s')",
             startDate.Format("2006-01-02T15:04:05Z"),
             endDate.Format("2006-01-02T15:04:05Z"),
             startDate.Format("2006-01-02T15:04:05Z"),
             endDate.Format("2006-01-02T15:04:05Z"),
             startDate.Format("2006-01-02T15:04:05Z"),
             endDate.Format("2006-01-02T15:04:05Z"))
+        filterParts = append(filterParts, fmt.Sprintf("(%s)", datePart))
     } else if startDate != nil {
-        // Only start date provided
-        filter = fmt.Sprintf("StartDate ge datetime'%s'", startDate.Format("2006-01-02T15:04:05Z"))
+        filterParts = append(filterParts, fmt.Sprintf("StartDate ge datetime'%s'", startDate.Format("2006-01-02T15:04:05Z")))
     } else if endDate != nil {
-        // Only end date provided
-        filter = fmt.Sprintf("EndDate le datetime'%s'", endDate.Format("2006-01-02T15:04:05Z"))
+        filterParts = append(filterParts, fmt.Sprintf("EndDate le datetime'%s'", endDate.Format("2006-01-02T15:04:05Z")))
+    }
+
+    // Combine all filter parts with AND
+    var filter string
+    if len(filterParts) > 0 {
+        filter = strings.Join(filterParts, " and ")
     }
 
     // Create list options with the filter
