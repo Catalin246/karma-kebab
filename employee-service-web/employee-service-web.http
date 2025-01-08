@@ -1,6 +1,64 @@
 @employee_service_web_HostAddress = http://localhost:5125
 
-GET {{employee_service_web_HostAddress}}/weatherforecast/
+### Get All Employees
+GET {{employee_service_web_HostAddress}}/api/employees
 Accept: application/json
+
+###
+
+### Get Employee by ID
+GET {{employee_service_web_HostAddress}}/api/employees/{id:guid}
+Accept: application/json
+Content-Type: application/json
+
+###
+
+### Get Employee by Role
+GET {{employee_service_web_HostAddress}}/api/employees/role/{role:int}
+Accept: application/json
+Content-Type: application/json
+
+###
+
+### Add Employee
+POST {{employee_service_web_HostAddress}}/api/employees
+Accept: application/json
+Content-Type: application/json
+
+{
+  "FirstName": "John",
+  "LastName": "Doe",
+  "DateOfBirth": "1990-01-01T00:00:00Z",
+  "Address": "123 Main St",
+  "Payrate": 20.5,
+  "Roles": [1, 2],
+  "Email": "john.doe@example.com",
+  "Skills": ["C#", "JavaScript"]
+}
+
+###
+
+### Update Employee
+PUT {{employee_service_web_HostAddress}}/api/employees/{id:guid}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "FirstName": "John",
+  "LastName": "Doe",
+  "DateOfBirth": "1990-01-01T00:00:00Z",
+  "Address": "123 Updated St",
+  "Payrate": 22.5,
+  "Roles": [1, 3],
+  "Email": "john.doe@example.com",
+  "Skills": ["C#", "JavaScript", "Azure"]
+}
+
+###
+
+### Delete Employee
+DELETE {{employee_service_web_HostAddress}}/api/employees/{id:guid}
+Accept: application/json
+Content-Type: application/json
 
 ###

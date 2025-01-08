@@ -11,7 +11,7 @@ namespace Database
 
             // You can use the appsettings.json for your connection string
             var configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory()) // Make sure it's correct path
+                .SetBasePath(Directory.GetCurrentDirectory()) 
                 .AddJsonFile("appsettings.json")
                 .Build();
 
