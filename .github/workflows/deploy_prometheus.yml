@@ -5,8 +5,8 @@ env:
   OPENSHIFT_TOKEN: ${{ secrets.OPENSHIFT_TOKEN }}
   OPENSHIFT_NAMESPACE: "india-qa"
   APP_NAME: "prometheus-karma-kebab"
-  PROMETHEUS_PORT: "9090"  # Prometheus default port
-  DOCKER_IMAGE_NAME: "prom/prometheus:latest"  # Docker Hub Prometheus image
+  PROMETHEUS_PORT: "9090"  
+  DOCKER_IMAGE_NAME: "prom/prometheus:latest"  
 
 on:
   workflow_dispatch:
