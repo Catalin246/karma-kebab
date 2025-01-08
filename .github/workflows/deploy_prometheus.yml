@@ -3,10 +3,10 @@ name: Deploy Prometheus to OpenShift
 env:
   OPENSHIFT_SERVER: ${{ secrets.OPENSHIFT_SERVER }}
   OPENSHIFT_TOKEN: ${{ secrets.OPENSHIFT_TOKEN }}
-  OPENSHIFT_NAMESPACE: "delta-qa"
-  APP_NAME: "prometheus"
+  OPENSHIFT_NAMESPACE: "india-qa"
+  APP_NAME: "prometheus-karma-kebab"
   PROMETHEUS_PORT: "9090"  # Prometheus default port
-  GHCR_IMAGE_NAME: "ghcr.io/${{ secrets.GHCR_USERNAME }}/prometheus:latest"  # Prometheus image
+  DOCKER_IMAGE_NAME: "prom/prometheus:latest"  # Docker Hub Prometheus image
 
 on:
   workflow_dispatch:
@@ -43,35 +43,19 @@ jobs:
           echo "OPENSHIFT_SERVER=${{ secrets.OPENSHIFT_SERVER }}"
           echo "OPENSHIFT_NAMESPACE=${{ env.OPENSHIFT_NAMESPACE }}"
           echo "APP_NAME=${{ env.APP_NAME }}"
-          echo "GHCR_IMAGE_NAME=${{ env.GHCR_IMAGE_NAME }}" 
+          echo "DOCKER_IMAGE_NAME=${{ env.DOCKER_IMAGE_NAME }}" 
 
-
-      - name: Log in to GitHub Container Registry (GHCR)
+      - name: Check if Prometheus image exists in Docker Hub
         run: |
-          echo "Logging in to GHCR..."
-          echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin
-          echo "Logged in to GHCR successfully."
-
-
-      - name: Check if Prometheus image exists in GHCR
-        run: |
-          echo "Checking if the Prometheus image exists in GHCR..."
-          if docker pull ${{ env.GHCR_IMAGE_NAME }}; then
-            echo "Image already exists in GHCR, skipping pull and push."
+          echo "Checking if the Prometheus image exists in Docker Hub..."
+          if docker pull ${{ env.DOCKER_IMAGE_NAME }}; then
+            echo "Image already exists, skipping pull."
           else
-            echo "Image does not exist in GHCR, pulling from Docker Hub..."
-            docker pull prom/prometheus:latest  # Pull the official Prometheus image from Docker Hub
+            echo "Image does not exist in Docker Hub."
+            echo "Pulling Prometheus image from Docker Hub..."
+            docker pull ${{ env.DOCKER_IMAGE_NAME }}  # Pull the Prometheus image from Docker Hub
             echo "Prometheus image pulled successfully."
-          
-            echo "Tagging Prometheus image for GHCR..."
-            docker tag prom/prometheus:latest ${{ env.GHCR_IMAGE_NAME }}  # Tag it for GHCR
-            echo "Prometheus image tagged successfully for GHCR."
-
-            echo "Pushing Prometheus image to GHCR..."
-            docker push ${{ env.GHCR_IMAGE_NAME }}  # Push to GHCR
-            echo "Prometheus image pushed to GHCR successfully."
           fi
-
 
       - name: Install OpenShift CLI
         uses: redhat-actions/openshift-tools-installer@v1
@@ -111,7 +95,7 @@ jobs:
               spec:
                 containers:
                 - name: ${{ env.APP_NAME }}
-                  image: ${{ env.GHCR_IMAGE_NAME }}
+                  image: ${{ env.DOCKER_IMAGE_NAME }}
                   ports:
                   - containerPort: ${{ env.PROMETHEUS_PORT }}
                   volumeMounts:
