@@ -2,6 +2,7 @@ package main
 
 import (
 	"duty-service/db"
+	"duty-service/metrics"
 	"duty-service/routes"
 	"duty-service/services"
 	"log"
@@ -65,10 +66,17 @@ func main() {
 	rabbitMQService := services.NewRabbitMQService(dutyService, rabbitConn)
 	defer rabbitMQService.Close()
 
+	// Register the /metrics route for Prometheus to scrape
+	metrics.RegisterMetricsHandler()
+
 	// Register HTTP routes
 	router := routes.RegisterRoutes(tableClient, blobServiceClient)
 
-	// Start the server
-	log.Println("Server is running on port 3004")
-	log.Fatal(http.ListenAndServe(":3004", router))
+	// Fixed port: 3004
+	port := "3004"
+
+	// Start the server on port 3004
+	log.Println("Server is running on port", port)
+	log.Fatal(http.ListenAndServe(":"+port, router))
+
 }

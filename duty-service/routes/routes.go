@@ -21,6 +21,7 @@ func RegisterRoutes(serviceClient *aztables.ServiceClient, blobServiceClient *az
 
 	dutyHandler := handlers.NewDutyHandler(dutyService)
 	dutyAssignmentHandler := handlers.NewDutyAssignmentHandler(dutyAssignmentService)
+	metricsHandler := handlers.NewMetricsHandler()
 
 	r := mux.NewRouter()
 
@@ -29,6 +30,9 @@ func RegisterRoutes(serviceClient *aztables.ServiceClient, blobServiceClient *az
 
 	// group all routes under /duties
 	dutiesRouter := r.PathPrefix("/duties").Subrouter()
+
+	// Register the /duties/metrics route for Prometheus at the /duties path level
+	//dutiesRouter.Handle("/metrics", promhttp.Handler())
 
 	// duty routes
 	dutiesRouter.HandleFunc("", dutyHandler.GetAllDuties).Methods(http.MethodGet)
@@ -43,6 +47,9 @@ func RegisterRoutes(serviceClient *aztables.ServiceClient, blobServiceClient *az
 	dutiesRouter.HandleFunc("/duty-assignments", dutyAssignmentHandler.CreateDutyAssignments).Methods(http.MethodPost)
 	dutiesRouter.HandleFunc("/duty-assignments/{ShiftId}/{DutyId}", dutyAssignmentHandler.UpdateDutyAssignment).Methods(http.MethodPut)
 	dutiesRouter.HandleFunc("/duty-assignments/{ShiftId}/{DutyId}", dutyAssignmentHandler.DeleteDutyAssignment).Methods(http.MethodDelete)
+
+	//metrics routes:
+	dutiesRouter.HandleFunc("/metrics", metricsHandler.HandleMetrics).Methods(http.MethodGet)
 
 	return r
 }
