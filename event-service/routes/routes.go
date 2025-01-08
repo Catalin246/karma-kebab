@@ -20,11 +20,15 @@ func RegisterRoutes(serviceClient *aztables.ServiceClient, rabbitMQService servi
 
 	// Create the event handler and inject the service and RabbitMQService
 	eventHandler := handlers.NewEventHandler(eventService, rabbitMQService)
+	metricsHandler := handlers.NewMetricsHandler()
 
 	r := mux.NewRouter()
 
 	// Apply the middleware to all routes
 	r.Use(middlewares.GatewayHeaderMiddleware)
+
+	//metrics routes:
+	r.HandleFunc("/events/metrics", metricsHandler.HandleMetrics).Methods(http.MethodGet)
 
 	// Event routes
 	r.HandleFunc("/events", eventHandler.GetEvents).Methods(http.MethodGet)
