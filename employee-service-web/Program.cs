@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Database;
-using Microsoft.Extensions.DependencyInjection;
 using Interfaces;
 using Repositories;
 using Services;
@@ -14,7 +13,6 @@ builder.Services.AddDbContextFactory<ApplicationDatabase>(options =>
     var connectionString = builder.Configuration.GetConnectionString("PostgreSQLEntityFramework");
     options.UseNpgsql(connectionString);
 });
-
 
 // Register services, repositories, etc.
 builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
