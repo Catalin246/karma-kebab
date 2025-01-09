@@ -10,5 +10,7 @@ data:
     scrape_configs:
       - job_name: 'duty-service'
         static_configs:
-          - targets: ['duty-service-india-dev.apps.inholland.hcs-lab.nl:3004']
+          - targets: ['api-gateway:3007']
+        metrics_path: '/duties/metrics'
+          
 
