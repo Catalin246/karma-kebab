@@ -11,6 +11,15 @@ using System.Text.Json;
 using Services;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(builder =>
+    {
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader();
+    });
+});
 
 builder.Services.Configure<AzureStorageConfig>(
     builder.Configuration.GetSection("AzureStorage"));
@@ -41,16 +50,19 @@ builder.Services.AddSwaggerGen(c =>
 
 // Build the application
 var app = builder.Build();
-
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
+// Enable CORS
+app.UseCors();
+
 // Register the custom GatewayHeaderMiddleware
 app.UseMiddleware<GatewayHeaderMiddleware>();
 
+app.UseRouting();  // Add this line
 app.UseAuthorization();
 
 app.MapControllers();

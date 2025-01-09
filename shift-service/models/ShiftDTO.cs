@@ -40,5 +40,4 @@ public class ClockInDto
 {
     public Guid ShiftID {get;set;}
     public DateTime TimeStamp { get; set; }
-    public int RoleId {get;set;}
 }

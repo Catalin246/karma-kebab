@@ -11,10 +11,11 @@ public class ShiftsController : ControllerBase
     private readonly ILogger<ShiftsController> _logger;
     private readonly IRabbitMqService _rabbitMqService;
 
-    public ShiftsController(IShiftService shiftService, ILogger<ShiftsController> logger)
+    public ShiftsController(IShiftService shiftService, ILogger<ShiftsController> logger,IRabbitMqService rabbitMqService)  
     {
         _shiftService = shiftService;
         _logger = logger;
+        _rabbitMqService = rabbitMqService;  
     }
 
     [HttpGet]
@@ -181,21 +182,15 @@ public class ShiftsController : ControllerBase
     }
 
 
-    [HttpPost("{shiftId:guid}/clockin")]
-    public async Task<ActionResult<ApiResponse>> ClockIn(Guid shiftId)
+    [HttpPost("{shiftId:guid}/clock")]
+    public async Task<ActionResult<ApiResponse>> ClockInOut(Guid shiftId)
     {
         try
         {
-            // Create UpdateShiftDto with only ClockInTime updated
-            var updateShiftDto = new UpdateShiftDto
-            {
-                ClockInTime = DateTime.Now
-            };
-
-            // Call the existing UpdateShift method
-            var updatedShift = await _shiftService.UpdateShift(shiftId, updateShiftDto);
-
-            if (updatedShift == null)
+            // Get the current shift first to check its state
+            var currentShift = await _shiftService.GetShiftById(shiftId);
+            
+            if (currentShift == null)
             {
                 return NotFound(new ApiResponse
                 {
@@ -204,31 +199,49 @@ public class ShiftsController : ControllerBase
                 });
             }
 
-            // message for rabbitmq
-            var clockInMessage = new ClockInDto
+            var currentTime = DateTime.Now;
+            var isClockIn = !currentShift.ClockInTime.HasValue;
+            
+            // Create DTO with only the required field updated
+            var updateShiftDto = new UpdateShiftDto
+            {
+                // Only update the relevant timestamp
+                ClockInTime = isClockIn ? currentTime : currentShift.ClockInTime,
+                ClockOutTime = !isClockIn ? currentTime : null
+            };
+
+            // Call the existing UpdateShift method
+            var updatedShift = await _shiftService.UpdateShift(shiftId, updateShiftDto);
+
+            // Prepare message for RabbitMQ
+            var clockMessage = new ClockInDto
             {
                 ShiftID = shiftId,
-                TimeStamp = DateTime.Now,
+                TimeStamp = currentTime,
                 RoleId = updatedShift.RoleId
             };
 
-            // Publish clock-in message to RabbitMQ - to clockin queue
-            _rabbitMqService.PublishClockIn(clockInMessage);
+            // Publish to appropriate queue based on operation
+            if (isClockIn)
+            {
+                _rabbitMqService.PublishClockIn(clockMessage);
+            }
 
+            var operationType = isClockIn ? "Clock-in" : "Clock-out";
             return Ok(new ApiResponse
             {
                 Success = true,
-                Message = "Clock-in successful and message published",
+                Message = $"{operationType} successful and message published",
                 Data = updatedShift
             });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error clocking in for shift with ID: {ShiftId}", shiftId);
+            _logger.LogError(ex, "Error processing clock in/out for shift with ID: {ShiftId}", shiftId);
             return StatusCode(500, new ApiResponse
             {
                 Success = false,
-                Message = "Internal server error occurred while clocking in"
+                Message = "Internal server error occurred while processing clock in/out"
             });
         }
     }
