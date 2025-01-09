@@ -1,29 +1,33 @@
-@employee_service_web_HostAddress = http://localhost:5125
+@employee_service_web_HostAddress = http://localhost:3005
 
 ### Get All Employees
-GET {{employee_service_web_HostAddress}}/api/employees
+GET {{employee_service_web_HostAddress}}/employees
 Accept: application/json
+X-From-Gateway: true
 
 ###
 
 ### Get Employee by ID
-GET {{employee_service_web_HostAddress}}/api/employees/{id:guid}
+GET {{employee_service_web_HostAddress}}/employees/{id:guid}
 Accept: application/json
 Content-Type: application/json
+X-From-Gateway: true
 
 ###
 
 ### Get Employee by Role
-GET {{employee_service_web_HostAddress}}/api/employees/role/{role:int}
+GET {{employee_service_web_HostAddress}}/employees/role/{role:int}
 Accept: application/json
 Content-Type: application/json
+X-From-Gateway: true
 
 ###
 
 ### Add Employee
-POST {{employee_service_web_HostAddress}}/api/employees
+POST {{employee_service_web_HostAddress}}/employees
 Accept: application/json
 Content-Type: application/json
+X-From-Gateway: true
 
 {
   "FirstName": "John",
@@ -39,9 +43,10 @@ Content-Type: application/json
 ###
 
 ### Update Employee
-PUT {{employee_service_web_HostAddress}}/api/employees/{id:guid}
+PUT {{employee_service_web_HostAddress}}/employees/{id:guid}
 Accept: application/json
 Content-Type: application/json
+X-From-Gateway: true
 
 {
   "FirstName": "John",
@@ -57,8 +62,9 @@ Content-Type: application/json
 ###
 
 ### Delete Employee
-DELETE {{employee_service_web_HostAddress}}/api/employees/{id:guid}
+DELETE {{employee_service_web_HostAddress}}/employees/{id:guid}
 Accept: application/json
 Content-Type: application/json
+X-From-Gateway: true
 
 ###

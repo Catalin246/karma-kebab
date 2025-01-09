@@ -2,23 +2,12 @@
     "sqltools.connections": [
         {
             "previewLimit": 50,
-            "server": "localhost",
+            "server": "postgres",
             "port": 5432,
             "driver": "PostgreSQL",
             "name": "EmployeeServiceDB",
             "database": "employeedb",
             "username": "postgres",
-            "password": "password",
-            "connectionTimeout": 30
-        },
-        {
-            "previewLimit": 50,
-            "server": "localhostef",
-            "port": 5432,
-            "driver": "PostgreSQL",
-            "name": "PostgresEfDb",
-            "database": "employeedbef",
-            "username": "postgresef",
             "password": "password",
             "connectionTimeout": 30
         }

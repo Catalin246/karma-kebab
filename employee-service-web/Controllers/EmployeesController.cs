@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace employee_service_web.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class EmployeesController : ControllerBase
     {
@@ -22,8 +22,8 @@ namespace employee_service_web.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllEmployees()
         {
-            return await ExceptionService.HandleRequestAsync(async () =>
-            {
+            // return await ExceptionService.HandleRequestAsync(async () =>
+            // {
                 _logger.LogInformation("Fetching all employees");
                 var employees = await _employeeService.GetAllEmployeesAsync();
 
@@ -34,7 +34,7 @@ namespace employee_service_web.Controllers
                 }
 
                 return Ok(employees);
-            }, _logger, Request, Response);
+            // }, _logger, Request, Response);
         }
 
         // Get Employee by ID
