@@ -14,3 +14,23 @@ data:
         metrics_path: '/duties/metrics'
           
 
+  alert.rules: |
+    groups:
+      - name: example_alert
+        rules:
+          - alert: HighCPUUsage
+            expr: rate(cpu_usage_seconds_total[1m]) > 0.85
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              summary: "High CPU usage detected."
+              description: "The CPU usage has exceeded 85% for the last 5 minutes."
+          - alert: ServiceDown
+            expr: up{job="duty-service"} == 0
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Service is down."
+              description: "The duty service is unreachable or not reporting."
