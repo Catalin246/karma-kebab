@@ -2,7 +2,7 @@
     "sqltools.connections": [
         {
             "previewLimit": 50,
-            "server": "postgres",
+            "server": "localhost",
             "port": 5432,
             "driver": "PostgreSQL",
             "name": "EmployeeServiceDB",
