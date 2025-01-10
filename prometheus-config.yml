@@ -12,6 +12,10 @@ data:
         static_configs:
           - targets: ['api-gateway-india-dev.apps.inholland.hcs-lab.nl']
         metrics_path: '/duties/metrics'
+      - job_name: 'event-service'
+        static_configs:
+          - targets: ['api-gateway-india-dev.apps.inholland.hcs-lab.nl']
+        metrics_path: '/events/metrics'
           
 
   alert.rules: |
