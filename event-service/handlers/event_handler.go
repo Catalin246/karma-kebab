@@ -169,7 +169,7 @@ func (h *EventHandler) GetEventByShiftID(w http.ResponseWriter, r *http.Request)
 
 	event, err := h.service.GetEventByShiftID(r.Context(), shiftID)
 	if err != nil {
-		http.Error(w, "Failed to retrieve events: "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Failed to retrieve events for given shiftId: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
