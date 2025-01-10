@@ -114,6 +114,8 @@ namespace Services
 
                         foreach (int roleID in roleIDs)
                         {
+                            createShiftDto.RoleId = roleID;
+
                             // Send POST request to Shift Service through IShiftService
                             var response = await shiftService.CreateShift(createShiftDto);
 
