@@ -149,6 +149,49 @@ services:
   #     retries: 5
 
 
+############################################################################################################################
+
+  # employee-service-web:
+  #   build:
+  #     context: ./employee-service-web
+  #     dockerfile: Dockerfile.local
+  #   container_name: employee-service-web
+  #   ports:
+  #     - "3005:3005"
+  #   environment:
+  #     ASPNETCORE_ENVIRONMENT: Development
+  #     ConnectionStrings__EmployeeServiceDB: Host=localhost;Port=5432;Database=employeedb;Username=postgres;Password=password
+  #   depends_on:
+  #     - postgres
+  #   networks:
+  #     - karama-kebab-network
+  #   command: >
+  #     sh -c "
+  #     dotnet tool restore && 
+  #     dotnet ef migrations add docker_init &&
+  #     dotnet ef database update &&
+  #     dotnet run
+  #     "
+
+  # postgres:
+  #   image: postgres:13
+  #   container_name: employee-postgres-db
+  #   environment:
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: password
+  #     POSTGRES_DB: employeedb
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - postgres-data:/var/lib/postgresql/data
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U postgres"]
+  #     interval: 10s
+  #     retries: 5
+  #   networks:
+  #     - karama-kebab-network
+
+
   employee-service-web:
     build:
       context: ./employee-service-web
@@ -166,9 +209,7 @@ services:
     command: >
       sh -c "
       dotnet tool restore && 
-      dotnet ef migrations add docker_init &&
-      dotnet ef database update &&
-      dotnet run
+      dotnet run --urls=http://0.0.0.0:3005
       "
 
   postgres:
@@ -181,13 +222,32 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data  # Persistent database storage
+      - ./EmployeeServiceDB.session.sql:/docker-entrypoint-initdb.d/init.sql  # Initialization script
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       retries: 5
     networks:
       - karama-kebab-network
+
+  migrations:
+    container_name: service-migrations
+    build:
+      context: ./employee-service-web
+      dockerfile: Dockerfile.local
+      target: migrations
+    depends_on:
+      - postgres
+    networks:
+      - karama-kebab-network
+    command: >
+      bash -c "
+      dotnet tool install --version 6.0.9 --global dotnet-ef && 
+      dotnet ef migrations add docker_init &&
+      dotnet ef database update
+      "
+
 
 
 volumes:

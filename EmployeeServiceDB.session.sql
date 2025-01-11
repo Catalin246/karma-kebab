@@ -1,12 +1,24 @@
-Select * FROM "Employees"
-
-
+-- Ensure the pgcrypto extension is available for UUID generation
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
+-- Create the "Employees" table if it doesn't exist
+CREATE TABLE IF NOT EXISTS "Employees" (
+    "EmployeeId" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    "DateOfBirth" DATE,
+    "FirstName" VARCHAR(100),
+    "LastName" VARCHAR(100),
+    "Address" TEXT,
+    "Payrate" NUMERIC,
+    "Roles" INT[],
+    "Email" VARCHAR(100),
+    "Skills" TEXT[]
+);
+
+-- Alter the 'Skills' column to ensure it is of type 'text[]'
 ALTER TABLE "Employees"
 ALTER COLUMN "Skills" TYPE text[];
 
-
+-- Insert initial data into the 'Employees' table
 INSERT INTO "Employees" (
     "EmployeeId",
     "DateOfBirth",
@@ -18,7 +30,7 @@ INSERT INTO "Employees" (
     "Email",
     "Skills"
 ) VALUES (
-    gen_random_uuid(), -- Automatically generates a unique UUID
+    gen_random_uuid(), 
     '1997-11-28',
     'Jane',
     'Blair',
@@ -36,56 +48,27 @@ INSERT INTO "Employees" (
     "LastName",
     "Address",
     "Payrate",
-    "Role",
+    "Roles",
     "Email",
     "Skills"
 ) VALUES (
-    gen_random_uuid(), -- Automatically generates a unique UUID
+    gen_random_uuid(), 
     '1995-03-15',
     'Emily',
     'Clark',
     '456 Elm St, Metropolis, USA',
     25.50,
-    2,
+    ARRAY[2],
     'emily.clark@example.com',
     ARRAY['Cleaning', 'Waiter']
 );
 
-
-UPDATE "Employees"
-SET 
-    "DateOfBirth" = '1990-05-20',
-    "FirstName" = 'John',
-    "LastName" = 'Doe',
-    "Address" = '123 Maple St, Gotham, USA',
-    "Payrate" = 30.00,
-    "Role" = 3,
-    "Email" = 'john.doe@example.com',
-    "Skills" = ARRAY['Cleaning', 'Cooking']
-WHERE 
-    "EmployeeId" = '27044b39-df22-4d32-8f0e-d96cc3963750';
-
-
-DROP TABLE employees;
-
-INSERT INTO "Employees" ("EmployeeId", "DateOfBirth", "FirstName", "LastName", "Address", "Payrate", "Role", "Email", "Skills")
-SELECT "employee_id", "date_of_birth", "first_name", "last_name", "address", "payrate", "role", "email", "skills"::integer[]
-FROM employees;
-
-SELECT "Skills" FROM "Employees";
-
-ALTER TABLE "Employees"
-ALTER COLUMN "Skills" TYPE text[];
-
-ALTER TABLE "employeesbefore" RENAME TO "employees";
-
-ALTER TABLE "Employees" ALTER COLUMN "Skills" TYPE integer[];
-
-
-DELETE FROM "Employees"
-WHERE "EmployeeId" IN (
-    -- Provide the exact UUIDs here
-    '2240799a-b126-43d1-b00e-d51e181f053d', 
-    'db5f466a-a152-46e6-93b6-0a7d0b5ad918'
-);
-
+-- Add more entries if needed
+-- Example:
+-- INSERT INTO "Employees" (
+--     "EmployeeId", "DateOfBirth", "FirstName", "LastName", "Address", 
+--     "Payrate", "Role", "Email", "Skills"
+-- ) VALUES (
+--     gen_random_uuid(), '1992-07-01', 'Alice', 'Johnson', 
+--     '789 Oak St, Gotham, USA', 30.00, 3, 'alice.johnson@example.com', ARRAY['Management']
+-- );
