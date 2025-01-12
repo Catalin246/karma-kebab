@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/Catalin246/karma-kebab/db"
+	"github.com/Catalin246/karma-kebab/metrics"
 	"github.com/Catalin246/karma-kebab/routes"
 	"github.com/Catalin246/karma-kebab/services"
 
@@ -59,6 +60,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error consuming messages: %v", err)
 	}
+
+	metrics.RegisterMetricsHandler()
 
 	// Register routes with the service client and RabbitMQService
 	router := routes.RegisterRoutes(client, rabbitMQService)
