@@ -55,7 +55,7 @@ DELETE http://localhost:3007/shifts/delete/e2923af0-b60b-4c34-8e5d-cf1f06f3e1f0
 
 
 ### Clock In/Out for a Shift
-POST http://localhost:3007/shifts/2e1acd99-487e-48b5-b945-76b2d98b45b3/clock
+PUT http://localhost:3007/shifts/2e1acd99-487e-48b5-b945-76b2d98b45b3/clock
 Accept: application/json
 Content-Type: application/json
 

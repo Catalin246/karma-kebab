@@ -182,85 +182,90 @@ public class ShiftsController : ControllerBase
     }
 
 
-   [HttpPost("{shiftId:guid}/clock")]
-public async Task<ActionResult<ApiResponse>> ClockInOut(Guid shiftId)
-{
-    try
+   [HttpGet("clock/{shiftId:guid}")]
+    public async Task<ActionResult<ApiResponse>> ClockInOut([FromRoute] Guid shiftId)
     {
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-        
-        // Get the current shift first to check its state
-        var currentShift = await _shiftService.GetShiftById(shiftId)
-            .WaitAsync(cts.Token);
-        
-        if (currentShift == null)
+        try
         {
-            return NotFound(new ApiResponse
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            
+            // Get the current shift first to check its state
+            var currentShift = await _shiftService.GetShiftById(shiftId)
+                .WaitAsync(cts.Token);
+            
+        _logger.LogInformation("Fetching shift with ID: {ShiftId}", shiftId);
+            var currentShift = await _shiftService.GetShiftById(shiftId);
+            if (currentShift == null)
             {
-                Success = false,
-                Message = $"Shift with ID {shiftId} not found"
+                _logger.LogWarning("Shift with ID: {ShiftId} not found", shiftId);
+            }
+
+            var currentTime = DateTime.Now;
+            var isClockIn = !currentShift.ClockInTime.HasValue;
+            _logger.LogInformation("shift clocking controller")
+            var updateShiftDto = new UpdateShiftDto
+            {
+                StartTime = currentShift.StartTime, // Preserve the existing start time
+                EndTime = currentShift.EndTime,     // Preserve the existing end time
+                ShiftType = currentShift.ShiftType, // Preserve the existing shift type
+                Status = currentShift.Status, // Update status
+                ClockInTime = isClockIn ? currentTime : currentShift.ClockInTime, // Set clock-in time if clocking in
+                ClockOutTime = !isClockIn ? currentTime : currentShift.ClockOutTime, // Set clock-out time if clocking out
+                RoleId = currentShift.RoleId // Preserve the existing role ID
+            };
+    }
+
+
+            // Call the existing UpdateShift method with timeout
+            var updatedShift = await _shiftService.UpdateShift(shiftId, updateShiftDto)
+                .WaitAsync(cts.Token);
+
+            if (isClockIn && _rabbitMqService != null)
+            {
+                var clockMessage = new ClockInDto
+                {
+                    ShiftID = shiftId,
+                    TimeStamp = currentTime,
+                    RoleId = updatedShift.RoleId
+                };
+                
+                try
+                {
+                    _rabbitMqService.PublishClockIn(clockMessage);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to publish clock message to RabbitMQ, but shift was updated");
+                    // Continue execution since the shift update was successful
+                }
+            }
+
+            var operationType = isClockIn ? "Clock-in" : "Clock-out";
+            return Ok(new ApiResponse
+            {
+                Success = true,
+                Message = $"{operationType} successful" + (isClockIn ? " and message published" : ""),
+                Data = updatedShift
             });
         }
-
-        var currentTime = DateTime.Now;
-        var isClockIn = !currentShift.ClockInTime.HasValue;
-        
-        var updateShiftDto = new UpdateShiftDto
+        catch (OperationCanceledException)
         {
-            ClockInTime = isClockIn ? currentTime : currentShift.ClockInTime,
-            ClockOutTime = !isClockIn ? currentTime : null
-        };
-
-        // Call the existing UpdateShift method with timeout
-        var updatedShift = await _shiftService.UpdateShift(shiftId, updateShiftDto)
-            .WaitAsync(cts.Token);
-
-        if (isClockIn && _rabbitMqService != null)
-        {
-            var clockMessage = new ClockInDto
+            return StatusCode(503, new ApiResponse
             {
-                ShiftID = shiftId,
-                TimeStamp = currentTime,
-                RoleId = updatedShift.RoleId
-            };
-            
-            try
-            {
-                _rabbitMqService.PublishClockIn(clockMessage);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to publish clock message to RabbitMQ, but shift was updated");
-                // Continue execution since the shift update was successful
-            }
+                Success = false,
+                Message = "The operation timed out. Please try again."
+            });
         }
-
-        var operationType = isClockIn ? "Clock-in" : "Clock-out";
-        return Ok(new ApiResponse
+        catch (Exception ex)
         {
-            Success = true,
-            Message = $"{operationType} successful" + (isClockIn ? " and message published" : ""),
-            Data = updatedShift
-        });
+            _logger.LogError(ex, "Error processing clock in/out for shift with ID: {ShiftId}", shiftId);
+            return StatusCode(500, new ApiResponse
+            {
+                Success = false,
+                Message = "Internal server error occurred while processing clock in/out"
+            });
+        }
     }
-    catch (OperationCanceledException)
-    {
-        return StatusCode(503, new ApiResponse
-        {
-            Success = false,
-            Message = "The operation timed out. Please try again."
-        });
-    }
-    catch (Exception ex)
-    {
-        _logger.LogError(ex, "Error processing clock in/out for shift with ID: {ShiftId}", shiftId);
-        return StatusCode(500, new ApiResponse
-        {
-            Success = false,
-            Message = "Internal server error occurred while processing clock in/out"
-        });
-    }
-}
 
 
     [HttpDelete("{shiftId:guid}")]
