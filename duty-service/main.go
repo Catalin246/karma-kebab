@@ -37,6 +37,12 @@ func main() {
 		log.Fatal("Error: AZURE_STORAGE_CONNECTION_STRING for blob is not set")
 	}
 
+	// Fetch the public key PEM from environment variables
+	publicKeyPEM := os.Getenv("PUBLIC_KEY_PEM")
+	if publicKeyPEM == "" {
+		log.Fatal("Error: PUBLIC_KEY_PEM is not set in the environment")
+	}
+
 	// Initialize Azure Table Storage
 	tableClient, err := db.InitAzureTables(tableConnectionString)
 	if err != nil {
@@ -70,7 +76,7 @@ func main() {
 	metrics.RegisterMetricsHandler()
 
 	// Register HTTP routes
-	router := routes.RegisterRoutes(tableClient, blobServiceClient)
+	router := routes.RegisterRoutes(tableClient, blobServiceClient, publicKeyPEM)
 
 	// Fixed port: 3004
 	port := "3004"
