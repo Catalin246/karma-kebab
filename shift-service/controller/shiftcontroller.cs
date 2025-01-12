@@ -182,69 +182,85 @@ public class ShiftsController : ControllerBase
     }
 
 
-    [HttpPost("{shiftId:guid}/clock")]
-    public async Task<ActionResult<ApiResponse>> ClockInOut(Guid shiftId)
+   [HttpPost("{shiftId:guid}/clock")]
+public async Task<ActionResult<ApiResponse>> ClockInOut(Guid shiftId)
+{
+    try
     {
-        try
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        
+        // Get the current shift first to check its state
+        var currentShift = await _shiftService.GetShiftById(shiftId)
+            .WaitAsync(cts.Token);
+        
+        if (currentShift == null)
         {
-            // Get the current shift first to check its state
-            var currentShift = await _shiftService.GetShiftById(shiftId);
-            
-            if (currentShift == null)
+            return NotFound(new ApiResponse
             {
-                return NotFound(new ApiResponse
-                {
-                    Success = false,
-                    Message = $"Shift with ID {shiftId} not found"
-                });
-            }
+                Success = false,
+                Message = $"Shift with ID {shiftId} not found"
+            });
+        }
 
-            var currentTime = DateTime.Now;
-            var isClockIn = !currentShift.ClockInTime.HasValue;
-            
-            // Create DTO with only the required field updated
-            var updateShiftDto = new UpdateShiftDto
-            {
-                // Only update the relevant timestamp
-                ClockInTime = isClockIn ? currentTime : currentShift.ClockInTime,
-                ClockOutTime = !isClockIn ? currentTime : null
-            };
+        var currentTime = DateTime.Now;
+        var isClockIn = !currentShift.ClockInTime.HasValue;
+        
+        var updateShiftDto = new UpdateShiftDto
+        {
+            ClockInTime = isClockIn ? currentTime : currentShift.ClockInTime,
+            ClockOutTime = !isClockIn ? currentTime : null
+        };
 
-            // Call the existing UpdateShift method
-            var updatedShift = await _shiftService.UpdateShift(shiftId, updateShiftDto);
+        // Call the existing UpdateShift method with timeout
+        var updatedShift = await _shiftService.UpdateShift(shiftId, updateShiftDto)
+            .WaitAsync(cts.Token);
 
-            // Prepare message for RabbitMQ
+        if (isClockIn && _rabbitMqService != null)
+        {
             var clockMessage = new ClockInDto
             {
                 ShiftID = shiftId,
                 TimeStamp = currentTime,
                 RoleId = updatedShift.RoleId
             };
-
-            // Publish to appropriate queue based on operation
-            if (isClockIn)
+            
+            try
             {
                 _rabbitMqService.PublishClockIn(clockMessage);
             }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to publish clock message to RabbitMQ, but shift was updated");
+                // Continue execution since the shift update was successful
+            }
+        }
 
-            var operationType = isClockIn ? "Clock-in" : "Clock-out";
-            return Ok(new ApiResponse
-            {
-                Success = true,
-                Message = $"{operationType} successful and message published",
-                Data = updatedShift
-            });
-        }
-        catch (Exception ex)
+        var operationType = isClockIn ? "Clock-in" : "Clock-out";
+        return Ok(new ApiResponse
         {
-            _logger.LogError(ex, "Error processing clock in/out for shift with ID: {ShiftId}", shiftId);
-            return StatusCode(500, new ApiResponse
-            {
-                Success = false,
-                Message = "Internal server error occurred while processing clock in/out"
-            });
-        }
+            Success = true,
+            Message = $"{operationType} successful" + (isClockIn ? " and message published" : ""),
+            Data = updatedShift
+        });
     }
+    catch (OperationCanceledException)
+    {
+        return StatusCode(503, new ApiResponse
+        {
+            Success = false,
+            Message = "The operation timed out. Please try again."
+        });
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Error processing clock in/out for shift with ID: {ShiftId}", shiftId);
+        return StatusCode(500, new ApiResponse
+        {
+            Success = false,
+            Message = "Internal server error occurred while processing clock in/out"
+        });
+    }
+}
 
 
     [HttpDelete("{shiftId:guid}")]

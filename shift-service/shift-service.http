@@ -52,3 +52,14 @@ DELETE http://localhost:3007/shifts/5f0aebe1-5611-484d-8632-afc7027ee793
 ### DOESNT WORK Delete a Shifts by Employee ID - needs to be discussed
 DELETE http://localhost:3007/shifts/delete/e2923af0-b60b-4c34-8e5d-cf1f06f3e1f0
 # Authorization: Bearer <your-jwt-token-if-needed>
+
+
+### Clock In/Out for a Shift
+POST http://localhost:3007/shifts/2e1acd99-487e-48b5-b945-76b2d98b45b3/clock
+Accept: application/json
+Content-Type: application/json
+
+### Clock In/Out for another Shift (for testing both states)
+POST http://localhost:3007/shifts/d4adb10b-25ff-4fbf-80b4-08a2bbb830a4/clock
+Accept: application/json
+Content-Type: application/json

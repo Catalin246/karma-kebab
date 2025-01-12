@@ -50,6 +50,25 @@ builder.Services.AddSwaggerGen(c =>
 
 // Build the application
 var app = builder.Build();
+
+// Add error handling middleware
+app.Use(async (context, next) =>
+{
+    try
+    {
+        await next();
+    }
+    catch (TaskCanceledException)
+    {
+        context.Response.StatusCode = 503;
+        await context.Response.WriteAsJsonAsync(new ApiResponse
+        {
+            Success = false,
+            Message = "The request timed out. Please try again."
+        });
+    }
+});
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
