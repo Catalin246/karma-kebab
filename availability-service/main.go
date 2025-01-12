@@ -30,13 +30,19 @@ func main() {
 		log.Fatal("Error: AZURE_STORAGE_CONNECTION_STRING is not set")
 	}
 
+	// Fetch the public key PEM from environment variables
+	publicKeyPEM := os.Getenv("PUBLIC_KEY_PEM")
+	if publicKeyPEM == "" {
+		log.Fatal("Error: PUBLIC_KEY_PEM is not set in the environment")
+	}
+
 	// Initialize Azure Table Storage
 	client, err := db.InitAzureTables(connectionString)
 	if err != nil {
 		log.Fatal("Error initializing Azure Table Storage: ", err)
 	}
 
-	// Initialize RabbitMQ 
+	// Initialize RabbitMQ
 	conn, err := amqp.Dial("amqp://guest:guest@rabbitmq:5672/")
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()
@@ -45,11 +51,12 @@ func main() {
 	failOnError(err, "Failed to open a channel")
 	defer ch.Close()
 
-	// Initialize RabbitMQService 
+	// Initialize RabbitMQService
 	rabbitMQService := service.NewRabbitMQService(ch)
 
 	// Register routes with the service client and RabbitMQService
-	router := routes.RegisterRoutes(client, rabbitMQService)
+	// Pass the public key PEM to your routes or middleware
+	router := routes.RegisterRoutes(client, rabbitMQService, publicKeyPEM)
 
 	// Start the server
 	log.Println("Server is running on port 3002")
