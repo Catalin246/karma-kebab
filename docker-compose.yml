@@ -9,10 +9,10 @@ services:
       --location /workspace --debug /workspace/debug.log
     volumes:
       - azurite-data:/data
-    ports:
-      - "10000:10000" # Blob service endpoint
-      - "10001:10001" # Queue service endpoint
-      - "10002:10002" # Table service endpoint
+    # ports:
+    #   - "10000:10000" # Blob service endpoint
+    #   - "10001:10001" # Queue service endpoint
+    #   - "10002:10002" # Table service endpoint
     networks:
       - karama-kebab-network
 
@@ -32,47 +32,47 @@ services:
   #   networks:
   #     - karama-kebab-network
 
-  rabbitmq:
-    build:
-      context: ./rabbitmq
-      dockerfile: Dockerfile
-    environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
-    ports:
-      - "5672:5672" # RabbitMQ messaging port
-      - "15672:15672" # RabbitMQ management console
-    networks:
-      - karama-kebab-network
+  # rabbitmq:
+  #   build:
+  #     context: ./rabbitmq
+  #     dockerfile: Dockerfile
+  #   environment:
+  #     RABBITMQ_DEFAULT_USER: guest
+  #     RABBITMQ_DEFAULT_PASS: guest
+  #   ports:
+  #     - "5672:5672" # RabbitMQ messaging port
+  #     - "15672:15672" # RabbitMQ management console
+  #   networks:
+  #     - karama-kebab-network
 
-  event-service:
-    build:
-      context: ./event-service
-      dockerfile: Dockerfile
-    volumes:
-      - ./event-service/.env:/app/.env
-    depends_on:
-      - azurite
-      # - keycloak
-      - rabbitmq
-    ports:
-      - "3001:3001"
-    networks:
-      - karama-kebab-network
+  # event-service:
+  #   build:
+  #     context: ./event-service
+  #     dockerfile: Dockerfile
+  #   volumes:
+  #     - ./event-service/.env:/app/.env
+  #   depends_on:
+  #     - azurite
+  #     # - keycloak
+  #     - rabbitmq
+  #   ports:
+  #     - "3001:3001"
+  #   networks:
+  #     - karama-kebab-network
 
-  availability-service:
-    build:
-      context: ./availability-service
-      dockerfile: Dockerfile
-    volumes:
-      - ./availability-service/.env:/app/.env
-    depends_on:
-      - azurite
-      # - keycloak
-    ports:
-      - "3002:3002"
-    networks:
-      - karama-kebab-network
+  # availability-service:
+  #   build:
+  #     context: ./availability-service
+  #     dockerfile: Dockerfile
+  #   volumes:
+  #     - ./availability-service/.env:/app/.env
+  #   depends_on:
+  #     - azurite
+  #     # - keycloak
+  #   ports:
+  #     - "3002:3002"
+  #   networks:
+  #     - karama-kebab-network
 
   api-gateway:
     build:
@@ -98,19 +98,19 @@ services:
 #    networks:
 #      - karama-kebab-network
 
-  duty-service:
-    build:
-      context: ./duty-service
-      dockerfile: Dockerfile
-    volumes:
-      - ./duty-service/.env:/app/.env
-    depends_on:
-      - azurite
-      # - keycloak
-    ports:
-      - "3004:3004"
-    networks:
-      - karama-kebab-network
+  # duty-service:
+  #   build:
+  #     context: ./duty-service
+  #     dockerfile: Dockerfile
+  #   volumes:
+  #     - ./duty-service/.env:/app/.env
+  #   depends_on:
+  #     - azurite
+  #     # - keycloak
+  #   ports:
+  #     - "3004:3004"
+  #   networks:
+  #     - karama-kebab-network
 
   # employee-service-web:
   #   build:
@@ -201,7 +201,7 @@ services:
       - "3005:3005"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__EmployeeServiceDB: Host=localhost;Port=5432;Database=employeedb;Username=postgres;Password=password
+      ConnectionStrings__EmployeeServiceDB: "Server=postgres;Port=5432;Database=employeedb;Username=postgres;Password=password;"
     depends_on:
       - postgres
     networks:
@@ -220,7 +220,7 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: employeedb
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data  # Persistent database storage
       - ./EmployeeServiceDB.session.sql:/docker-entrypoint-initdb.d/init.sql  # Initialization script
