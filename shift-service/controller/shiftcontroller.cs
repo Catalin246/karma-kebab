@@ -185,22 +185,15 @@ public class ShiftsController : ControllerBase
         }
     }
 
-
-    [HttpPost("{shiftId:guid}/clockin")]
+    [HttpGet("{shiftId:guid}/clockin")]
     public async Task<ActionResult<ApiResponse>> ClockIn(Guid shiftId)
     {
         try
         {
-            // Create UpdateShiftDto with only ClockInTime updated
-            var updateShiftDto = new UpdateShiftDto
-            {
-                ClockInTime = DateTime.Now
-            };
+            // Fetch the existing shift first
+            var existingShift = await _shiftService.GetShiftById(shiftId);
 
-            // Call the existing UpdateShift method
-            var updatedShift = await _shiftService.UpdateShift(shiftId, updateShiftDto);
-
-            if (updatedShift == null)
+            if (existingShift == null)
             {
                 return NotFound(new ApiResponse
                 {
@@ -209,7 +202,30 @@ public class ShiftsController : ControllerBase
                 });
             }
 
-            // message for rabbitmq
+            // Create UpdateShiftDto with only ClockInTime updated
+            var updateShiftDto = new UpdateShiftDto
+            {
+                StartTime = existingShift.StartTime,
+                EndTime = existingShift.EndTime,
+                ShiftType = existingShift.ShiftType.ToString(),  
+                Status = existingShift.Status.ToString(),        
+                ClockInTime = DateTime.UtcNow,
+                RoleId = existingShift.RoleId
+            };
+
+            // Call the existing UpdateShift method to update the ClockInTime
+            var updatedShift = await _shiftService.UpdateShift(shiftId, updateShiftDto);
+
+            if (updatedShift == null)
+            {
+                return NotFound(new ApiResponse
+                {
+                    Success = false,
+                    Message = $"Shift with ID {shiftId} could not be updated"
+                });
+            }
+
+            // Create message for RabbitMQ to be published to the clockin queue
             var clockInMessage = new ClockInDto
             {
                 ShiftID = shiftId,
@@ -217,7 +233,7 @@ public class ShiftsController : ControllerBase
                 RoleId = updatedShift.RoleId
             };
 
-            // Publish clock-in message to RabbitMQ - to clockin queue
+            // Publish clock-in message to RabbitMQ
             _rabbitMqProducerService.PublishClockIn(clockInMessage);
 
             return Ok(new ApiResponse
