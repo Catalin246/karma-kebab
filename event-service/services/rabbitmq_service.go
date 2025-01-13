@@ -92,56 +92,54 @@ func (r *RabbitMQService) ConsumeMessage(queueName string) error {
 	}
 
 	// This must come from the message
-	shiftID := "da1d0a6d-d41d-482a-aec0-f239e3ad6b29" // Come from the message
+	shiftID := "bfd29d6a-9e14-466a-a398-cdaaa46e00c5" // Come from the message
 	parsedShiftID, err := uuid.Parse(shiftID)
 	if err != nil {
 		log.Printf("[!] Error parsing ShiftID: %v\n", err)
 		return err
 	}
 
-	rowKey := "62ba06f4-fcbe-4a17-b196-a5348dc62d11"                      // Come from the message
-	partitionKey := "event-group-winter"                                  // Come from the message
-	startTime := time.Date(2024, time.December, 18, 9, 0, 0, 0, time.UTC) // December 18, 2024 at 09:00 UTC
-	endTime := time.Date(2024, time.December, 18, 17, 0, 0, 0, time.UTC)  // December 18, 2024 at 17:00 UTC
+	rowKey := "80419e67-d617-489a-b5e5-20c5cc0ee6e9" // Come from the message
+	partitionKey := "event-group"                    // Come from the message
 
-	// Assuming rowKey is a string, convert it to uuid.UUID
-	parsedRowKey, err := uuid.Parse(rowKey) // Convert the string to uuid.UUID
+	// Fetch the existing event using the repository
+	existingEvent, err := r.EventRepository.GetByID(context.Background(), partitionKey, rowKey)
 	if err != nil {
-		log.Printf("[!] Error parsing RowKey: %v\n", err)
-		return err // Handle error accordingly
+		log.Printf("[!] Error fetching existing event: %v\n", err)
+		return err
 	}
 
+	// Create the updated event using old values where applicable
 	updatedEvent := models.Event{
-		PartitionKey: partitionKey,               // Example partition key
-		RowKey:       parsedRowKey,               // Use the UUID (RowKey) from the message
-		StartTime:    startTime,                  // Use the parsed start time (e.g., from the message)
-		EndTime:      endTime,                    // Use the parsed end time (e.g., from the message)
-		Address:      "Event Street",             // Hardcoded address
-		Venue:        "The Grand Hall",           // Hardcoded venue
-		Description:  "Annual GoLang Conference", // Hardcoded description
-		Money:        0.00,                       // Hardcoded money value
-		Status:       models.Status("Cancelled"), // Hardcoded status (ensure it's one of the defined statuses)
+		PartitionKey: partitionKey,
+		RowKey:       existingEvent.RowKey,      // Use the existing RowKey
+		StartTime:    existingEvent.StartTime,   // Use the existing StartTime
+		EndTime:      existingEvent.EndTime,     // Use the existing EndTime
+		Address:      existingEvent.Address,     // Use the existing Address
+		Venue:        existingEvent.Venue,       // Use the existing Venue
+		Description:  existingEvent.Description, // Use the existing Description
+		Money:        existingEvent.Money,       // Use the existing Money
+		Status:       existingEvent.Status,      // Use the existing Status
 		Person: models.Person{
-			FirstName: "John",                // Hardcoded first name
-			LastName:  "Doe",                 // Hardcoded last name
-			Email:     "johndoe@example.com", // Hardcoded email
+			FirstName: existingEvent.Person.FirstName, // Use the existing first name
+			LastName:  existingEvent.Person.LastName,  // Use the existing last name
+			Email:     existingEvent.Person.Email,     // Use the existing email
 		},
-		Note:     "Registration opens at 8:00 AM.", // Hardcoded note
-		ShiftIDs: []uuid.UUID{parsedShiftID},       // Use the parsed shift ID (e.g., from the message)
+		Note:     existingEvent.Note,                            // Use the existing note
+		ShiftIDs: append(existingEvent.ShiftIDs, parsedShiftID), // Append the new ShiftID
 	}
-	// ...
 
 	ctx := context.Background()
 	err = r.EventRepository.Update(ctx, partitionKey, rowKey, updatedEvent)
+	if err != nil {
+		log.Printf("[!] Error updating event: %v\n", err)
+		return err
+	}
 
 	// Consume messages asynchronously
 	go func() {
 		for msg := range msgs {
-			if err != nil {
-				log.Printf("[!] Error updating event: %v\n", err)
-			} else {
-				log.Printf("[x] Successfully updated event: %s\n", msg.Body)
-			}
+			log.Printf("[x] Successfully updated event: %s\n", msg.Body)
 		}
 	}()
 
