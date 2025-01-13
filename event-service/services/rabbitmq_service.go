@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 	"time"
 
@@ -91,54 +92,65 @@ func (r *RabbitMQService) ConsumeMessage(queueName string) error {
 		return err
 	}
 
-	// This must come from the message
-	shiftID := "bfd29d6a-9e14-466a-a398-cdaaa46e00c5" // Come from the message
-	parsedShiftID, err := uuid.Parse(shiftID)
-	if err != nil {
-		log.Printf("[!] Error parsing ShiftID: %v\n", err)
-		return err
-	}
-
-	rowKey := "80419e67-d617-489a-b5e5-20c5cc0ee6e9" // Come from the message
-	partitionKey := "event-group"                    // Come from the message
-
-	// Fetch the existing event using the repository
-	existingEvent, err := r.EventRepository.GetByID(context.Background(), partitionKey, rowKey)
-	if err != nil {
-		log.Printf("[!] Error fetching existing event: %v\n", err)
-		return err
-	}
-
-	// Create the updated event using old values where applicable
-	updatedEvent := models.Event{
-		PartitionKey: partitionKey,
-		RowKey:       existingEvent.RowKey,      // Use the existing RowKey
-		StartTime:    existingEvent.StartTime,   // Use the existing StartTime
-		EndTime:      existingEvent.EndTime,     // Use the existing EndTime
-		Address:      existingEvent.Address,     // Use the existing Address
-		Venue:        existingEvent.Venue,       // Use the existing Venue
-		Description:  existingEvent.Description, // Use the existing Description
-		Money:        existingEvent.Money,       // Use the existing Money
-		Status:       existingEvent.Status,      // Use the existing Status
-		Person: models.Person{
-			FirstName: existingEvent.Person.FirstName, // Use the existing first name
-			LastName:  existingEvent.Person.LastName,  // Use the existing last name
-			Email:     existingEvent.Person.Email,     // Use the existing email
-		},
-		Note:     existingEvent.Note,                            // Use the existing note
-		ShiftIDs: append(existingEvent.ShiftIDs, parsedShiftID), // Append the new ShiftID
-	}
-
-	ctx := context.Background()
-	err = r.EventRepository.Update(ctx, partitionKey, rowKey, updatedEvent)
-	if err != nil {
-		log.Printf("[!] Error updating event: %v\n", err)
-		return err
-	}
-
 	// Consume messages asynchronously
 	go func() {
 		for msg := range msgs {
+			// Deserialize message to extract required fields
+			var payload struct {
+				ShiftID      string `json:"shift_id"`
+				RowKey       string `json:"row_key"`
+				PartitionKey string `json:"partition_key"`
+			}
+			err := json.Unmarshal(msg.Body, &payload)
+			if err != nil {
+				log.Printf("[!] Error unmarshaling message: %v\n", err)
+				continue
+			}
+
+			// Parse ShiftID
+			parsedShiftID, err := uuid.Parse(payload.ShiftID)
+			if err != nil {
+				log.Printf("[!] Error parsing ShiftID: %v\n", err)
+				continue
+			}
+
+			// Fetch the existing event using the repository
+			existingEvent, err := r.EventRepository.GetByID(context.Background(), payload.PartitionKey, payload.RowKey)
+			if err != nil {
+				log.Printf("[!] Error fetching existing event: %v\n", err)
+				continue
+			}
+
+			// Empty the list with shift ids in order to add only the new shifts
+			existingEvent.ShiftIDs = nil
+
+			// Create the updated event using old values where applicable
+			updatedEvent := models.Event{
+				PartitionKey: payload.PartitionKey,
+				RowKey:       existingEvent.RowKey,      // Use the existing RowKey
+				StartTime:    existingEvent.StartTime,   // Use the existing StartTime
+				EndTime:      existingEvent.EndTime,     // Use the existing EndTime
+				Address:      existingEvent.Address,     // Use the existing Address
+				Venue:        existingEvent.Venue,       // Use the existing Venue
+				Description:  existingEvent.Description, // Use the existing Description
+				Money:        existingEvent.Money,       // Use the existing Money
+				Status:       existingEvent.Status,      // Use the existing Status
+				Person: models.Person{
+					FirstName: existingEvent.Person.FirstName, // Use the existing first name
+					LastName:  existingEvent.Person.LastName,  // Use the existing last name
+					Email:     existingEvent.Person.Email,     // Use the existing email
+				},
+				Note:     existingEvent.Note,                            // Use the existing note
+				ShiftIDs: append(existingEvent.ShiftIDs, parsedShiftID), // Append the new ShiftID
+			}
+
+			ctx := context.Background()
+			err = r.EventRepository.Update(ctx, payload.PartitionKey, payload.RowKey, updatedEvent)
+			if err != nil {
+				log.Printf("[!] Error updating event: %v\n", err)
+				continue
+			}
+
 			log.Printf("[x] Successfully updated event: %s\n", msg.Body)
 		}
 	}()

@@ -100,19 +100,19 @@ services:
     networks:
       - karama-kebab-network
 
-  duty-service:
-    build:
-      context: ./duty-service
-      dockerfile: Dockerfile
-    volumes:
-      - ./duty-service/.env:/app/.env
-    depends_on:
-      - azurite
-      - keycloak
-    ports:
-      - "3004:3004"
-    networks:
-      - karama-kebab-network
+  # duty-service:
+  #   build:
+  #     context: ./duty-service
+  #     dockerfile: Dockerfile
+  #   volumes:
+  #     - ./duty-service/.env:/app/.env
+  #   depends_on:
+  #     - azurite
+  #     - keycloak
+  #   ports:
+  #     - "3004:3004"
+  #   networks:
+  #     - karama-kebab-network
 
   employee-service:
     build:
@@ -130,24 +130,24 @@ services:
     networks:
       - karama-kebab-network
   
-  truck-service:
-    build:
-      context: ./truck-service
-      dockerfile: Dockerfile
-    container_name: trucks-flask
-    environment:
-      - FLASK_ENV=development
-      - DBHOST=postgres-truck
-      - DBNAME=truck
-      - DBUSER=postgres
-      - DBPASS=postgres
-      - SSLMODE=disable 
-    depends_on:
-      - postgres-truck
-    ports:
-      - "3006:3006"
-    networks:
-      - karama-kebab-network
+  # truck-service:
+  #   build:
+  #     context: ./truck-service
+  #     dockerfile: Dockerfile
+  #   container_name: trucks-flask
+  #   environment:
+  #     - FLASK_ENV=development
+  #     - DBHOST=postgres-truck
+  #     - DBNAME=truck
+  #     - DBUSER=postgres
+  #     - DBPASS=postgres
+  #     - SSLMODE=disable 
+  #   depends_on:
+  #     - postgres-truck
+  #   ports:
+  #     - "3006:3006"
+  #   networks:
+  #     - karama-kebab-network
 
   postgres:
     image: postgres:13
