@@ -19,7 +19,7 @@ builder.Services.AddSwaggerGen();
 // Bind TableStorageSettings to the "TableStorage" section in appsettings.json
 builder.Services
     .AddOptions<TableStorageSettings>()
-    .Bind(builder.Configuration.GetSection("TableStorage"))
+    .Bind(builder.Configuration.GetSection("AzureStorage"))
     .ValidateDataAnnotations()
     .Validate(settings => !string.IsNullOrEmpty(settings.ConnectionString),
               "Connection string must be provided");
@@ -35,7 +35,6 @@ builder.Services.AddSingleton<TableServiceClient>(sp =>
 builder.Services.AddSingleton<ITableStorageService, TableStorageService>();
 builder.Services.AddSingleton<IEmployeeRepository, EmployeeRepository>(); // Adjust as needed
 builder.Services.AddSingleton<IEmployeeService, EmployeeService>(); // Adjust as needed
-
 builder.Services.AddHttpClient<EmployeesController>(); // Adjust as needed
 
 var app = builder.Build();
