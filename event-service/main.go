@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/base64"
 	"log"
 	"net/http"
 	"os"
@@ -15,7 +14,6 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-// failOnError logs the error and exits the program if the error is not nil
 func failOnError(err error, msg string) {
 	if err != nil {
 		log.Fatalf("%s: %s", msg, err)
@@ -23,27 +21,11 @@ func failOnError(err error, msg string) {
 }
 
 func main() {
-	// Try loading the .env file (optional for production)
+	// Load environment variables
 	if err := godotenv.Load(".env"); err != nil {
 		log.Println("Warning: .env file not found, falling back to environment variables")
 	}
 
-	// Fetch the base64 encoded public key PEM from environment variables
-	encodedPEM := os.Getenv("PUBLIC_KEY_PEM")
-	if encodedPEM == "" {
-		log.Fatal("Error: PUBLIC_KEY_PEM is not set in the environment")
-	}
-
-	// Decode the base64 string
-	publicKeyPEM, err := base64.StdEncoding.DecodeString(encodedPEM)
-	if err != nil {
-		log.Fatalf("Error decoding base64 PEM: %v", err)
-	}
-
-	// Log the decoded PEM for verification
-	log.Printf("Decoded PEM: %s", string(publicKeyPEM))
-
-	// Fetch environment variable
 	connectionString := os.Getenv("AZURE_STORAGE_CONNECTION_STRING")
 	if connectionString == "" {
 		log.Fatal("Error: AZURE_STORAGE_CONNECTION_STRING is not set")
@@ -51,9 +33,7 @@ func main() {
 
 	// Initialize Azure Table Storage
 	client, err := db.InitAzureTables(connectionString)
-	if err != nil {
-		log.Fatal("Error initializing Azure Table Storage: ", err)
-	}
+	failOnError(err, "Error initializing Azure Table Storage")
 
 	// Initialize RabbitMQ
 	rabbitmqUrl := os.Getenv("RABBITMQ_URL")
@@ -69,18 +49,16 @@ func main() {
 	defer ch.Close()
 
 	// Initialize RabbitMQService
-	rabbitMQService := services.NewRabbitMQService(ch, client)
+	rabbitMQService := services.NewRabbitMQService(ch) // Pass both arguments
+	failOnError(err, "Failed to initialize RabbitMQService")
 
-	// Start consuming messages from the "shiftCreated"
+	// Start consuming messages
 	err = rabbitMQService.ConsumeMessage("shiftCreated")
-	if err != nil {
-		log.Fatalf("Error consuming messages: %v", err)
-	}
+	failOnError(err, "Error consuming messages")
 
+	// Register routes
 	metrics.RegisterMetricsHandler()
-
-	// Register routes with the service client and RabbitMQService
-	router := routes.RegisterRoutes(client, rabbitMQService, string(publicKeyPEM))
+	router := routes.RegisterRoutes(client, rabbitMQService)
 
 	// Start the server
 	log.Println("Server is running on port 3001")
