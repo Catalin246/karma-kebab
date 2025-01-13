@@ -147,7 +147,7 @@ public class ShiftDbContext : IShiftDbContext
     {
         try
         {
-            if (shift.RoleId <= 0)
+            if (shift.RoleId < 0)
                 throw new ArgumentException("RoleId must be a positive integer", nameof(shift.RoleId));
 
             if (string.IsNullOrEmpty(shift.PartitionKey))
