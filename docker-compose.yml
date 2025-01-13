@@ -120,7 +120,7 @@ services:
       dockerfile: Dockerfile
     container_name: employees
     environment:
-      - PostgreSQLEntityFramework="Host=employee-db;Port=5432;Database=employeedb;Username=postgres;Password=password;"
+      - PostgreSQLEntityFramework="Host=employeee-db;Port=5432;Database=employeedb;Username=postgres;Password=password;"
       - FUNCTIONS_WORKER_RUNTIME=dotnet-isolated
       - AzureWebJobsStorage=UseDevelopmentStorage=true
     depends_on:
@@ -129,10 +129,29 @@ services:
       - "3005:80"
     networks:
       - karama-kebab-network
+  
+  truck-service:
+    build:
+      context: ./truck-service
+      dockerfile: Dockerfile
+    container_name: trucks-flask
+    environment:
+      - FLASK_ENV=development
+      - DBHOST=postgres-truck
+      - DBNAME=truck
+      - DBUSER=postgres
+      - DBPASS=postgres
+      - SSLMODE=disable 
+    depends_on:
+      - postgres-truck
+    ports:
+      - "3006:3006"
+    networks:
+      - karama-kebab-network
 
   postgres:
     image: postgres:13
-    container_name: employee-db
+    container_name: employeee-db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
@@ -149,9 +168,24 @@ services:
       timeout: 5s
       retries: 5
 
+  postgres-truck:
+    image: postgres:13
+    container_name: postgresdb
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: truck
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres-truck-data:/var/lib/postgresql/data
+    networks:
+      - karama-kebab-network
+
 volumes:
   azurite-data:
   postgres-data:
+  postgres-truck-data:
 
 networks:
   karama-kebab-network:

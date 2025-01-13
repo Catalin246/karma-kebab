@@ -1,5 +1,0 @@
-*.pyc
-__pycache__/
-.env
-local.settings.json
-.git

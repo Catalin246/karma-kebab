@@ -23,13 +23,21 @@ func JWTMiddleware(publicKeyPEM string, next http.Handler) http.Handler {
 		// Parse the certificate
 		block, _ := pem.Decode([]byte(publicKeyPEM))
 		if block == nil {
+<<<<<<< HEAD
+			fmt.Println("Failed to decode PEM block")
+			fmt.Println("Public Key PEM:")
+			fmt.Println(publicKeyPEM)
+=======
 			log.Println("Failed to decode PEM block")
 			log.Println("Public Key PEM:", publicKeyPEM)
+>>>>>>> 48ed2991c699ba46fea45c2f6764695289657e9b
 			http.Error(w, "Failed to parse certificate", http.StatusInternalServerError)
 			return
 		}
 		cert, err := x509.ParseCertificate(block.Bytes)
 		if err != nil {
+			fmt.Println("Public Key PEM:")
+			fmt.Println(publicKeyPEM)
 			http.Error(w, "Failed to parse certificate", http.StatusInternalServerError)
 			return
 		}
