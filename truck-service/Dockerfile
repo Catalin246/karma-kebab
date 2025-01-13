@@ -1,23 +1,25 @@
-FROM python:3.11 AS build
+# Use the official Python image from the Docker Hub
+FROM python:3.9-slim
+
+# Set the working directory in the container
+WORKDIR /app
+
 RUN apt-get update && apt-get install -y \
     libpq-dev \
     gcc \
-    g++ \
-    make \
-    python3-dev
+    && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt /
-RUN pip install --target /home/site/wwwroot -r /requirements.txt
+# Copy the requirements file into the container
+COPY requirements.txt .
+
+# Install the dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the rest of the application code into the container
+COPY . .
+
+# Expose the port the app runs on
 EXPOSE 3006
 
-
-FROM mcr.microsoft.com/azure-functions/python:4-python3.11
-
-ENV AzureWebJobsScriptRoot=/home/site/wwwroot \
-    AzureFunctionsJobHost__Logging__Console__IsEnabled=true \
-    WEBSITES_INCLUDE_CLOUD_CERTS=true
-
-COPY --from=build /home/site/wwwroot /home/site/wwwroot
-COPY . /home/site/wwwroot
-
-RUN pip install -r /home/site/wwwroot/requirements.txt
+# Define the command to run the application
+CMD ["python", "run.py"]
