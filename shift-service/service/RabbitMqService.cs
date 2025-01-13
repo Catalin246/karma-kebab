@@ -35,36 +35,6 @@ namespace Services
             _shiftServiceUrl = options.Value.Url;
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         }
-        public async Task PublishClockIn(ClockInDto clockInDto) // Producer - push to clockIn queue
-        {
-            using var connection = await _factory.CreateConnectionAsync();
-            using var channel = await connection.CreateChannelAsync();
-
-            // Declare the queue
-            await channel.QueueDeclareAsync(
-                queue: _clockInQueueName,
-                durable: false,
-                exclusive: false,
-                autoDelete: false
-            );
-            // Serialize the DTO
-            var message = JsonConvert.SerializeObject(clockInDto);
-            var body = Encoding.UTF8.GetBytes(message);
-
-            // Publish the message
-            await channel.BasicPublishAsync(
-                exchange: "",
-                routingKey: _clockInQueueName,
-                body: body
-            );
-
-            _logger.LogInformation($"Published Clock In/Out message for Shift {clockInDto.ShiftID}");
-        }
-
-        public async Task PublishShiftCreated() // Producer - push to shiftCreated queue
-        {
-            // TODO: Implement the logic to publish ShiftCreated messages
-        }
 
         public async Task ListeningEventCreated() // Consumer - consume from eventCreated queue
         {

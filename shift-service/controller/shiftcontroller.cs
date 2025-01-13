@@ -10,11 +10,13 @@ public class ShiftsController : ControllerBase
     private readonly IShiftService _shiftService;
     private readonly ILogger<ShiftsController> _logger;
     private readonly IRabbitMqService _rabbitMqService;
+    private readonly IRabbitMqProducerService _rabbitMqProducerService;
 
-    public ShiftsController(IShiftService shiftService, ILogger<ShiftsController> logger)
+    public ShiftsController(IShiftService shiftService, ILogger<ShiftsController> logger, IRabbitMqProducerService rabbitMqProducerService)
     {
         _shiftService = shiftService;
         _logger = logger;
+        _rabbitMqProducerService = rabbitMqProducerService;
     }
 
     [HttpGet]
@@ -93,6 +95,9 @@ public class ShiftsController : ControllerBase
 
             _logger.LogInformation("Controller - object being passed is: {CreateShiftDto}", JsonSerializer.Serialize(createshiftDto, new JsonSerializerOptions { WriteIndented = true }));
             var createdShift = await _shiftService.CreateShift(createshiftDto);
+
+            await _rabbitMqProducerService.PublishShiftCreated();
+
             return CreatedAtAction(
                 nameof(GetShiftById),
                 new { shiftId = createdShift.ShiftId },
@@ -213,7 +218,7 @@ public class ShiftsController : ControllerBase
             };
 
             // Publish clock-in message to RabbitMQ - to clockin queue
-            _rabbitMqService.PublishClockIn(clockInMessage);
+            _rabbitMqProducerService.PublishClockIn(clockInMessage);
 
             return Ok(new ApiResponse
             {

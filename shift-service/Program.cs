@@ -24,6 +24,7 @@ builder.Services.AddLogging();
 builder.Services.AddControllers();
 
 // Add RabbitMQ Service
+builder.Services.AddScoped<IRabbitMqProducerService, RabbitMqProducerService>();
 builder.Services.AddHttpClient<IRabbitMqService, RabbitMqService>();
 builder.Services.AddHostedService<RabbitMqHostedService>();
 
