@@ -3,33 +3,12 @@ package services
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"time"
 
 	"github.com/Catalin246/karma-kebab/models"
-	"github.com/google/uuid"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
-
-const (
-	ShiftServiceEventCreatedQueue = "shift-service.event.created"
-	ShiftServiceEventDeletedQueue = "shift-service.event.deleted"
-)
-
-// EventCreatedMessage represents the structure of the event created message
-type EventCreatedMessage struct {
-	RoleIDs   []int  `json:"roleIds"`
-	EventID   string `json:"eventId"` // UUID will be converted to string
-	StartTime string `json:"startTime"`
-	EndTime   string `json:"endTime"`
-}
-
-// EventDeletedMessage represents the structure of the event deleted message
-type EventDeletedMessage struct {
-	ShiftIDs []uuid.UUID `json:"shiftIds"`
-	EventID  string      `json:"eventId"` // UUID will be converted to string
-}
 
 // RabbitMQService handles RabbitMQ messaging operations
 type RabbitMQService struct {
@@ -37,56 +16,20 @@ type RabbitMQService struct {
 }
 
 // NewRabbitMQService initializes a new RabbitMQService
-func NewRabbitMQService(ch *amqp.Channel) (*RabbitMQService, error) {
-	service := &RabbitMQService{channel: ch}
-	if err := service.initializeQueues(); err != nil {
-		return nil, fmt.Errorf("failed to initialize queues: %w", err)
-	}
-	return service, nil
-}
-
-// initializeQueues declares all required queues
-func (r *RabbitMQService) initializeQueues() error {
-	// Declare event.created queue
-	_, err := r.channel.QueueDeclare(
-		ShiftServiceEventCreatedQueue,
-		true,  // durable
-		false, // auto-delete
-		false, // exclusive
-		false, // no-wait
-		nil,   // arguments
-	)
-	if err != nil {
-		return fmt.Errorf("failed to declare event.created queue: %w", err)
-	}
-
-	// Declare event.deleted queue
-	_, err = r.channel.QueueDeclare(
-		ShiftServiceEventDeletedQueue,
-		true,  // durable
-		false, // auto-delete
-		false, // exclusive
-		false, // no-wait
-		nil,   // arguments
-	)
-	if err != nil {
-		return fmt.Errorf("failed to declare event.deleted queue: %w", err)
-	}
-
-	return nil
+func NewRabbitMQService(ch *amqp.Channel) *RabbitMQService {
+	return &RabbitMQService{channel: ch}
 }
 
 // PublishMessage publishes a generic message to the RabbitMQ queue
-func (r *RabbitMQService) PublishMessage(ctx context.Context, queueName string, message []byte) error {
-	return r.channel.PublishWithContext(
-		ctx,
-		"",        // exchange
-		queueName, // routing key (queue name)
-		true,      // mandatory
-		false,     // immediate
+func (r *RabbitMQService) PublishMessage(queueName, message string) error {
+	return r.channel.Publish(
+		"",           // exchange
+		queueName,    // routing key (queue name)
+		false,        // mandatory
+		false,        // immediate
 		amqp.Publishing{
-			ContentType:  "application/json",
-			Body:        message,
+			ContentType: "text/plain",
+			Body:        []byte(message),
 			DeliveryMode: amqp.Persistent,
 			Timestamp:   time.Now(),
 		},
@@ -95,111 +38,72 @@ func (r *RabbitMQService) PublishMessage(ctx context.Context, queueName string, 
 
 // PublishEventCreated publishes an event created message
 func (r *RabbitMQService) PublishEventCreated(ctx context.Context, event models.Event) error {
-	message := EventCreatedMessage{
-		RoleIDs:   event.RoleIDs,
-		EventID:   event.RowKey.String(), //stores as string in db
-		StartTime: event.StartTime.String(),
-		EndTime:   event.EndTime.String(),
+	message := map[string]interface{}{
+		"roleIDs":   event.RoleIDs,
+		"eventID":   event.RowKey,
+		"startTime": event.StartTime,
+		"endTime":   event.EndTime,
 	}
 
 	messageBytes, err := json.Marshal(message)
 	if err != nil {
-		return fmt.Errorf("failed to marshal event created message: %w", err)
+		return err
 	}
 
-	if err := r.PublishMessage(ctx, ShiftServiceEventCreatedQueue, messageBytes); err != nil {
-		return fmt.Errorf("failed to publish event created message: %w", err)
-	}
-
-	log.Printf("Published event created message for event %s", event.RowKey.String())
-	return nil
+	return r.PublishMessage("event.created", string(messageBytes))
 }
 
 // PublishEventDeleted publishes an event deleted message
-func (r *RabbitMQService) PublishEventDeleted(ctx context.Context, eventID uuid.UUID, shiftIDs []uuid.UUID) error {
-	message := EventDeletedMessage{
-		EventID:  eventID.String(), // Convert UUID to string
-		ShiftIDs: shiftIDs,
+func (r *RabbitMQService) PublishEventDeleted(ctx context.Context, eventID string, partitionKey string) error {
+	message := map[string]string{
+		"eventID":     eventID,
+		"partitionKey": partitionKey,
 	}
 
 	messageBytes, err := json.Marshal(message)
 	if err != nil {
-		return fmt.Errorf("failed to marshal event deleted message: %w", err)
+		return err
 	}
 
-	if err := r.PublishMessage(ctx, ShiftServiceEventDeletedQueue, messageBytes); err != nil {
-		return fmt.Errorf("failed to publish event deleted message: %w", err)
-	}
-
-	log.Printf("Published event deleted message for event %s", eventID.String())
-	return nil
+	return r.PublishMessage("event.deleted", string(messageBytes))
 }
-
-// ConsumeMessages sets up message consumption for all queues
-func (r *RabbitMQService) ConsumeMessages(ctx context.Context) error {
-	// Set up event.created consumer
-	createdMsgs, err := r.channel.Consume(
-		ShiftServiceEventCreatedQueue,
-		"",    // consumer tag
-		false, // auto-ack
-		false, // exclusive
-		false, // no-local
-		false, // no-wait
-		nil,   // arguments
+// ConsumeMessage consumes messages from a specified queue - to add to in future
+func (r *RabbitMQService) ConsumeMessage(queueName string) error {
+	// Declare the queue (make sure it exists)
+	q, err := r.channel.QueueDeclare(
+		queueName, // Queue name
+		true,      // durable
+		false,     // auto-delete
+		false,     // exclusive
+		false,     // no-wait
+		nil,       // arguments
 	)
 	if err != nil {
-		return fmt.Errorf("failed to set up event.created consumer: %w", err)
+		return err
 	}
 
-	// Set up event.deleted consumer
-	deletedMsgs, err := r.channel.Consume(
-		ShiftServiceEventDeletedQueue,
-		"",    // consumer tag
-		false, // auto-ack
-		false, // exclusive
-		false, // no-local
-		false, // no-wait
-		nil,   // arguments
+	// Set up the consumer
+	msgs, err := r.channel.Consume(
+		q.Name,    // queue
+		"",        // consumer tag
+		true,      // auto-acknowledge
+		false,     // exclusive
+		false,     // no-local
+		false,     // no-wait
+		nil,       // arguments
 	)
 	if err != nil {
-		return fmt.Errorf("failed to set up event.deleted consumer: %w", err)
+		return err
 	}
 
-	// Handle messages in separate goroutines
-	go r.handleEventCreatedMessages(ctx, createdMsgs)
-	go r.handleEventDeletedMessages(ctx, deletedMsgs)
+	// Start listening for messages
+	go func() {
+		for msg := range msgs {
+			// Process message
+			log.Printf("Received a message: %s", msg.Body)
+			// Add message handling logic here, depending on the message type
+		}
+	}()
 
 	return nil
-}
-
-func (r *RabbitMQService) handleEventCreatedMessages(ctx context.Context, msgs <-chan amqp.Delivery) {
-	for msg := range msgs {
-		var eventMessage EventCreatedMessage
-		if err := json.Unmarshal(msg.Body, &eventMessage); err != nil {
-			log.Printf("Error unmarshaling event created message: %v", err)
-			msg.Nack(false, true) // Negative acknowledgment, requeue
-			continue
-		}
-
-		// Process the message
-		log.Printf("Processing event created message for event %s", eventMessage.EventID)
-		
-		msg.Ack(false) // Acknowledge the message
-	}
-}
-
-func (r *RabbitMQService) handleEventDeletedMessages(ctx context.Context, msgs <-chan amqp.Delivery) {
-	for msg := range msgs {
-		var eventMessage EventDeletedMessage
-		if err := json.Unmarshal(msg.Body, &eventMessage); err != nil {
-			log.Printf("Error unmarshaling event deleted message: %v", err)
-			msg.Nack(false, true) // Negative acknowledgment, requeue
-			continue
-		}
-
-		// Process the message
-		log.Printf("Processing event deleted message for event %s", eventMessage.EventID)
-		
-		msg.Ack(false) // Acknowledge the message
-	}
 }
