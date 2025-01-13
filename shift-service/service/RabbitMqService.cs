@@ -42,12 +42,12 @@ namespace Services
 
             // Declare the queue
             await channel.QueueDeclareAsync(
-                queue: _clockInQueueName, 
-                durable: false, 
-                exclusive: false, 
+                queue: _clockInQueueName,
+                durable: false,
+                exclusive: false,
                 autoDelete: false
             );
-             // Serialize the DTO
+            // Serialize the DTO
             var message = JsonConvert.SerializeObject(clockInDto);
             var body = Encoding.UTF8.GetBytes(message);
 
@@ -97,7 +97,7 @@ namespace Services
                     string eventID = eventMessage.EventID;
                     string startTime = eventMessage.StartTime;
                     string endTime = eventMessage.EndTime;
-                    List<int> roleIDs = eventMessage.RoleIDs;
+                    List<int> roleIDs = eventMessage.RoleIds;
 
                     var createShiftDto = new CreateShiftDto
                     {

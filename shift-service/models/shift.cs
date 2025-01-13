@@ -8,6 +8,7 @@ public class Shift
     public ShiftStatus Status { get; set; }
     public DateTime? ClockInTime { get; set; }
     public DateTime? ClockOutTime { get; set; }
+    public int RoleId { get; set; }  
     public decimal ShiftHours
     {
         get

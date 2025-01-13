@@ -55,6 +55,10 @@ jobs:
             echo "availability_service=true" >> $GITHUB_ENV
           fi
 
+          if echo "$CHANGED_FILES" | grep -q '^duty-service/'; then
+            echo "duty_service=true" >> $GITHUB_ENV
+          fi
+
       # Deploy the API Gateway
       - name: API Gateway - Set OpenShift Project
         if: env.api_gateway == 'true'
@@ -134,4 +138,19 @@ jobs:
         if: env.availability_service == 'true'
         run: |
           oc get pods --selector=app=availability-service --field-selector=status.phase=Running -o name | xargs -I {} oc delete {} --ignore-not-found=true
-      
+
+      # Deploy the Duty Service
+      - name: Duty Service - Set OpenShift Project
+        if: env.duty_service == 'true'
+        run: |
+          oc project ${{ secrets.NAMESPACE }}
+
+      - name: Start OpenShift Build
+        if: env.duty_service == 'true'
+        run: |
+          oc start-build duty-service --wait  # Trigger the build and wait for completion
+        
+      - name: Restart the application by deleting the old running pod
+        if: env.duty_service == 'true'
+        run: |
+          oc get pods --selector=app=duty-service --field-selector=status.phase=Running -o name | xargs -I {} oc delete {} --ignore-not-found=true     

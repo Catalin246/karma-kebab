@@ -20,7 +20,7 @@ public class ShiftDbContext : IShiftDbContext
         IOptions<AzureStorageConfig> options)
     {
         if (options == null) throw new ArgumentNullException(nameof(options));
-        
+
         var connectionString = options.Value.ConnectionString;
         if (string.IsNullOrEmpty(connectionString))
         {
@@ -29,7 +29,7 @@ public class ShiftDbContext : IShiftDbContext
 
         _tableClient = new TableClient(connectionString, TableName);
         _tableClient.CreateIfNotExists();
-        }
+    }
 
     public async Task<ShiftEntity> GetShift(string partitionKey, string rowKey)
     {
@@ -66,20 +66,27 @@ public class ShiftDbContext : IShiftDbContext
     {
         var filter = $"EmployeeId eq '{employeeId}'";
         var shifts = new List<ShiftEntity>();
-        
+
         var queryResults = _tableClient.QueryAsync<ShiftEntity>(filter);
         await foreach (var shift in queryResults)
         {
             shifts.Add(shift);
         }
-        
+
         return shifts;
     }
 
-    public async Task<IEnumerable<ShiftEntity>> GetShifts(DateTime? date = null, Guid? employeeId = null, ShiftType? shiftType = null, Guid? shiftId = null, Guid? eventId = null)
+    public async Task<IEnumerable<ShiftEntity>> GetShifts(
+        DateTime? startDate = null, 
+        DateTime? endDate = null, 
+        Guid? employeeId = null, 
+        ShiftType? shiftType = null, 
+        Guid? shiftId = null, 
+        Guid? eventId = null, 
+        int? roleId = null)
     {
         var shifts = new List<ShiftEntity>();
-        
+
         // Start building the filter string
         var filterList = new List<string>();
 
@@ -93,9 +100,14 @@ public class ShiftDbContext : IShiftDbContext
             filterList.Add($"RowKey eq '{shiftId}'"); // ShiftId is stored in RowKey
         }
 
-        if (date.HasValue)
+        if (startDate.HasValue)
         {
-            filterList.Add($"StartTime ge '{date.Value:yyyy-MM-dd}' and EndTime le '{date.Value:yyyy-MM-dd}'"); // Assuming date comparison with StartTime and EndTime
+            filterList.Add($"StartTime ge datetime'{startDate.Value:yyyy-MM-ddTHH:mm:ssZ}'");
+        }
+
+        if (endDate.HasValue)
+        {
+            filterList.Add($"EndTime le datetime'{endDate.Value:yyyy-MM-ddTHH:mm:ssZ}'");
         }
 
         if (shiftType.HasValue)
@@ -105,18 +117,22 @@ public class ShiftDbContext : IShiftDbContext
 
         if (eventId.HasValue)
         {
-            // Assuming eventId is a part of the RowKey or another column (adjust if needed)
             filterList.Add($"EventId eq '{eventId}'"); // Adjust depending on how eventId is stored
+        }
+
+        if (roleId.HasValue)
+        {
+            filterList.Add($"RoleId eq {roleId}");
         }
 
         // Combine all filters using "and"
         string filter = string.Join(" and ", filterList);
 
         // If no filters are applied, query all shifts
-        var queryResults = string.IsNullOrEmpty(filter) 
-            ? _tableClient.QueryAsync<ShiftEntity>() 
+        var queryResults = string.IsNullOrEmpty(filter)
+            ? _tableClient.QueryAsync<ShiftEntity>()
             : _tableClient.QueryAsync<ShiftEntity>(filter);
-        
+
         // Collect results
         await foreach (var shift in queryResults)
         {
@@ -126,31 +142,37 @@ public class ShiftDbContext : IShiftDbContext
         return shifts;
     }
 
-    public async Task<ShiftEntity> AddShift(ShiftEntity shift)
-{
-    try
-    {
-        if (string.IsNullOrEmpty(shift.PartitionKey))
-            throw new ArgumentException("PartitionKey must be set", nameof(shift));
-        
-        if (string.IsNullOrEmpty(shift.RowKey))
-            throw new ArgumentException("RowKey must be set", nameof(shift));
 
-        await _tableClient.AddEntityAsync(shift);
-        return shift;
-    }
-    catch (Azure.RequestFailedException ex)
+    public async Task<ShiftEntity> AddShift(ShiftEntity shift)
     {
-        throw; 
+        try
+        {
+            if (shift.RoleId <= 0)
+                throw new ArgumentException("RoleId must be a positive integer", nameof(shift.RoleId));
+
+            if (string.IsNullOrEmpty(shift.PartitionKey))
+                throw new ArgumentException("PartitionKey must be set", nameof(shift));
+
+            if (string.IsNullOrEmpty(shift.RowKey))
+                throw new ArgumentException("RowKey must be set", nameof(shift));
+
+            await _tableClient.AddEntityAsync(shift);
+            return shift;
+        }
+        catch (Azure.RequestFailedException ex)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            throw;
+        }
     }
-    catch (Exception ex)
-    {
-        throw;
-    }
-}
 
     public async Task<ShiftEntity> UpdateShift(ShiftEntity shift)
     {
+        if (shift.RoleId <= 0)
+                throw new ArgumentException("RoleId must be a positive integer", nameof(shift.RoleId));
         await _tableClient.UpdateEntityAsync(shift, shift.ETag);
         return shift;
     }
@@ -160,21 +182,22 @@ public class ShiftDbContext : IShiftDbContext
         await _tableClient.DeleteEntityAsync(partitionKey, rowKey);
     }
 
-public static ShiftDto MapToDto(ShiftEntity shift)
-{
-    return new ShiftDto
+    public static ShiftDto MapToDto(ShiftEntity shift)
     {
-        ShiftId = shift.ShiftId,
-        EmployeeId = shift.EmployeeId,
-        ShiftType = Enum.Parse<ShiftType>(shift.ShiftType),
-        Status = Enum.Parse<ShiftStatus>(shift.Status),
-        StartTime = shift.StartTime, 
-        EndTime = shift.EndTime,     
-        ClockInTime = shift.ClockInTime, 
-        ClockOutTime = shift.ClockOutTime, 
-        ShiftHours = shift.ShiftHours.HasValue ? shift.ShiftHours.Value : null
-    };
-}
+        return new ShiftDto
+        {
+            ShiftId = shift.ShiftId,
+            EmployeeId = shift.EmployeeId,
+            ShiftType = Enum.Parse<ShiftType>(shift.ShiftType),
+            Status = Enum.Parse<ShiftStatus>(shift.Status),
+            StartTime = shift.StartTime,
+            EndTime = shift.EndTime,
+            ClockInTime = shift.ClockInTime,
+            ClockOutTime = shift.ClockOutTime,
+            ShiftHours = shift.ShiftHours.HasValue ? shift.ShiftHours.Value : null,
+            RoleId = shift.RoleId
+        };
+    }
 
 
     // Convert a collection of ShiftEntities to ShiftDtos

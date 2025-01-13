@@ -2,8 +2,10 @@ package main
 
 import (
 	"duty-service/db"
+	"duty-service/metrics"
 	"duty-service/routes"
 	"duty-service/services"
+	"encoding/base64"
 	"log"
 	"net/http"
 	"os"
@@ -21,7 +23,7 @@ func failOnError(err error, msg string) {
 func main() {
 	// Load environment variables
 	if err := godotenv.Load(".env"); err != nil {
-		log.Fatal("Error loading .env file: ", err)
+		log.Println("Warning: .env file not found, falling back to environment variables")
 	}
 
 	// Get Azure Table Storage connection string
@@ -35,6 +37,21 @@ func main() {
 	if blobConnectionString == "" {
 		log.Fatal("Error: AZURE_STORAGE_CONNECTION_STRING for blob is not set")
 	}
+
+	// Fetch the base64 encoded public key PEM from environment variables
+	encodedPEM := os.Getenv("PUBLIC_KEY_PEM")
+	if encodedPEM == "" {
+		log.Fatal("Error: PUBLIC_KEY_PEM is not set in the environment")
+	}
+
+	// Decode the base64 string
+	publicKeyPEM, err := base64.StdEncoding.DecodeString(encodedPEM)
+	if err != nil {
+		log.Fatalf("Error decoding base64 PEM: %v", err)
+	}
+
+	// Log the decoded PEM for verification
+	log.Printf("Decoded PEM: %s", string(publicKeyPEM))
 
 	// Initialize Azure Table Storage
 	tableClient, err := db.InitAzureTables(tableConnectionString)
@@ -58,17 +75,24 @@ func main() {
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer rabbitConn.Close()
 
-	// Initialize DutyAssignmentService 
+	// Initialize DutyAssignmentService
 	dutyService := &services.DutyAssignmentService{}
 
 	// Initialize RabbitMQService
 	rabbitMQService := services.NewRabbitMQService(dutyService, rabbitConn)
 	defer rabbitMQService.Close()
 
-	// Register HTTP routes
-	router := routes.RegisterRoutes(tableClient, blobServiceClient)
+	// Register the /metrics route for Prometheus to scrape
+	metrics.RegisterMetricsHandler()
 
-	// Start the server
-	log.Println("Server is running on port 3004")
-	log.Fatal(http.ListenAndServe(":3004", router))
+	// Register HTTP routes
+	router := routes.RegisterRoutes(tableClient, blobServiceClient, string(publicKeyPEM))
+
+	// Fixed port: 3004
+	port := "3004"
+
+	// Start the server on port 3004
+	log.Println("Server is running on port", port)
+	log.Fatal(http.ListenAndServe(":"+port, router))
+
 }

@@ -21,18 +21,9 @@ func NewAvailabilityService(repo repository.AvailabilityRepository) *Availabilit
 	}
 }
 
-// Fetch all availability records for a specific EmployeeID with optional date range filter
-func (s *AvailabilityService) GetAll(ctx context.Context, startDate, endDate *time.Time) ([]models.Availability, error) {
-
-	return s.repo.GetAll(ctx, startDate, endDate)
-}
-
-// Fetch a specific availability record by EmployeeID
-func (s *AvailabilityService) GetByEmployeeID(ctx context.Context, employeeID string) ([]models.Availability, error) {
-	if employeeID == "" {
-		return nil, models.ErrInvalidID
-	}
-	return s.repo.GetByEmployeeID(ctx, employeeID)
+// Fetch all availability records with optional date range filter and empID
+func (s *AvailabilityService) GetAll(ctx context.Context, employeeID string, startDate, endDate *time.Time) ([]models.Availability, error) {
+    return s.repo.GetAll(ctx, employeeID, startDate, endDate)
 }
 
 // Create a new availability record
