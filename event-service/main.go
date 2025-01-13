@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"log"
 	"net/http"
 	"os"
@@ -26,6 +27,21 @@ func main() {
 	if err := godotenv.Load(".env"); err != nil {
 		log.Println("Warning: .env file not found, falling back to environment variables")
 	}
+
+	// Fetch the base64 encoded public key PEM from environment variables
+	encodedPEM := os.Getenv("PUBLIC_KEY_PEM")
+	if encodedPEM == "" {
+		log.Fatal("Error: PUBLIC_KEY_PEM is not set in the environment")
+	}
+
+	// Decode the base64 string
+	publicKeyPEM, err := base64.StdEncoding.DecodeString(encodedPEM)
+	if err != nil {
+		log.Fatalf("Error decoding base64 PEM: %v", err)
+	}
+
+	// Log the decoded PEM for verification
+	log.Printf("Decoded PEM: %s", string(publicKeyPEM))
 
 	// Fetch environment variable
 	connectionString := os.Getenv("AZURE_STORAGE_CONNECTION_STRING")
@@ -64,7 +80,7 @@ func main() {
 	metrics.RegisterMetricsHandler()
 
 	// Register routes with the service client and RabbitMQService
-	router := routes.RegisterRoutes(client, rabbitMQService)
+	router := routes.RegisterRoutes(client, rabbitMQService, string(publicKeyPEM))
 
 	// Start the server
 	log.Println("Server is running on port 3001")
