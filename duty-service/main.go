@@ -5,6 +5,7 @@ import (
 	"duty-service/metrics"
 	"duty-service/routes"
 	"duty-service/services"
+	"encoding/base64"
 	"log"
 	"net/http"
 	"os"
@@ -36,6 +37,21 @@ func main() {
 	if blobConnectionString == "" {
 		log.Fatal("Error: AZURE_STORAGE_CONNECTION_STRING for blob is not set")
 	}
+
+	// Fetch the base64 encoded public key PEM from environment variables
+	encodedPEM := os.Getenv("PUBLIC_KEY_PEM")
+	if encodedPEM == "" {
+		log.Fatal("Error: PUBLIC_KEY_PEM is not set in the environment")
+	}
+
+	// Decode the base64 string
+	publicKeyPEM, err := base64.StdEncoding.DecodeString(encodedPEM)
+	if err != nil {
+		log.Fatalf("Error decoding base64 PEM: %v", err)
+	}
+
+	// Log the decoded PEM for verification
+	log.Printf("Decoded PEM: %s", string(publicKeyPEM))
 
 	// Initialize Azure Table Storage
 	tableClient, err := db.InitAzureTables(tableConnectionString)
@@ -70,7 +86,7 @@ func main() {
 	metrics.RegisterMetricsHandler()
 
 	// Register HTTP routes
-	router := routes.RegisterRoutes(tableClient, blobServiceClient)
+	router := routes.RegisterRoutes(tableClient, blobServiceClient, string(publicKeyPEM))
 
 	// Fixed port: 3004
 	port := "3004"
