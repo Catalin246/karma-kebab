@@ -1,75 +1,120 @@
-using Microsoft.EntityFrameworkCore;
-using Interfaces;
+using Azure;
+using Azure.Data.Tables;
 using Database;
+using Interfaces;
 using Models;
+using Utility;
 
-namespace Repositories;
-
-public class EmployeeRepository : IEmployeeRepository
+namespace Repositories
 {
-    private readonly IDbContextFactory<ApplicationDatabase> _dbContextFactory;
-
-    public EmployeeRepository(IDbContextFactory<ApplicationDatabase> dbContextFactory)
+    public class EmployeeRepository : IEmployeeRepository
     {
-        _dbContextFactory = dbContextFactory;
-    }
+        private readonly ITableStorageService _tableStorageService;
+        private const string TableName = "Employees"; // Table name constant
 
-    public async Task<IEnumerable<Employee>> GetAllEmployeesAsync()
-    {
-        await using var context = await _dbContextFactory.CreateDbContextAsync();
-        return await context.Employees.ToListAsync();
-    }
+        public EmployeeRepository(ITableStorageService tableStorageService)
+        {
+            _tableStorageService = tableStorageService;
+        }
 
-    public async Task<Employee> GetEmployeeByIdAsync(Guid id)
-    {
+        public async Task<IEnumerable<Employee>> GetAllEmployeesAsync()
+        {
+            var employees = new List<Employee>();
+            await _tableStorageService.CreateTableIfNotExistsAsync(TableName); // Ensure the table exists
+            var tableClient = _tableStorageService.GetTableClient(TableName);
 
-        await using var context = await _dbContextFactory.CreateDbContextAsync();
-        var employee = await context.Employees.FindAsync(id);
+            await foreach (var entity in tableClient.QueryAsync<TableEntity>())
+            {
+                // Use EmployeeMapper to map TableEntity to Employee
+                var employee = EmployeeMapper.MapTableEntityToEmployee(entity);
+                employees.Add(employee);
+            }
 
-        return employee;
-    }
+            return employees;
+        }
 
-    public async Task<IEnumerable<Employee>> GetEmployeesByRoleAsync(EmployeeRole role)
-    {
+        public async Task<Employee?> GetEmployeeByIdAsync(Guid id)
+        {
+            try
+            {
+                await _tableStorageService.CreateTableIfNotExistsAsync(TableName); // Ensure the table exists
+                var entity = await _tableStorageService.GetEntityAsync(TableName, id.ToString(), id.ToString());
 
-        await using var context = await _dbContextFactory.CreateDbContextAsync();
+                // Use EmployeeMapper to map TableEntity to Employee
+                return EmployeeMapper.MapTableEntityToEmployee(entity);
+            }
+            catch (RequestFailedException)
+            {
+                return null; // Handle "not found" gracefully
+            }
+        }
 
-        var employees = await context.Employees
-            .Where(e => e.Roles.Contains(role))
-            .ToListAsync();
+        public async Task<IEnumerable<Employee>> GetEmployeesByRoleAsync(EmployeeRole role)
+        {
+            var employees = new List<Employee>();
+            await _tableStorageService.CreateTableIfNotExistsAsync(TableName); // Ensure the table exists
+            var tableClient = _tableStorageService.GetTableClient(TableName);
 
-        return employees;
-    }
+            await foreach (var entity in tableClient.QueryAsync<TableEntity>(filter: $"PartitionKey eq '{role}'"))
+            {
+                // Use EmployeeMapper to map TableEntity to Employee
+                var employee = EmployeeMapper.MapTableEntityToEmployee(entity);
+                employees.Add(employee);
+            }
 
-    public async Task<Employee> AddEmployeeAsync(Employee employee)
-    {
+            return employees;
+        }
 
-        await using var context = await _dbContextFactory.CreateDbContextAsync();
+        public async Task<Employee> AddEmployeeAsync(Employee employee)
+        {
+            await _tableStorageService.CreateTableIfNotExistsAsync(TableName); // Ensure the table exists
+            var tableClient = _tableStorageService.GetTableClient(TableName);
 
-        context.Employees.Add(employee);
-        await context.SaveChangesAsync();
-        return employee;
-    }
+            // Use EmployeeMapper to map Employee to TableEntity
+            var entity = EmployeeMapper.MapEmployeeToTableEntity(employee);
 
-    public async Task<Employee> UpdateEmployeeAsync(Employee employee)
-    {
+            // Use UpsertEntityAsync for insert or update
+            await tableClient.UpsertEntityAsync(entity); // Upsert the entity
 
-        await using var context = await _dbContextFactory.CreateDbContextAsync();
+            return employee; // Return the Employee object, which will be mapped to DTO in the service
+        }
+        
 
-        context.Employees.Update(employee);
-        await context.SaveChangesAsync();
+        public async Task<Employee?> UpdateEmployeeAsync(Employee updatedEmployee)
+        {
+            try
+            {
+                await _tableStorageService.CreateTableIfNotExistsAsync(TableName); // Ensure the table exists
+                var tableClient = _tableStorageService.GetTableClient(TableName);
 
-        return employee;
-    }
+                // Use EmployeeMapper to map Employee to TableEntity
+                var entity = EmployeeMapper.MapEmployeeToTableEntity(updatedEmployee);
 
-    public async Task<bool> DeleteEmployeeAsync(Guid id)
-    {
+                // Update the entity in the table
+                await tableClient.UpdateEntityAsync(entity, ETag.All, TableUpdateMode.Replace);
 
-        await using var context = await _dbContextFactory.CreateDbContextAsync();
-        var employee = await context.Employees.FindAsync(id);
+                return updatedEmployee; // Return the updated Employee object
+            }
+            catch (RequestFailedException)
+            {
+                return null; // Handle failure appropriately
+            }
+        }
 
-        context.Employees.Remove(employee);
-        await context.SaveChangesAsync();
-        return true;
+
+        public async Task<bool> DeleteEmployeeAsync(Guid id)
+        {
+            try
+            {
+                await _tableStorageService.CreateTableIfNotExistsAsync(TableName); // Ensure the table exists
+                var tableClient = _tableStorageService.GetTableClient(TableName);
+                await tableClient.DeleteEntityAsync(id.ToString(), id.ToString());
+                return true;
+            }
+            catch (RequestFailedException)
+            {
+                return false; // Handle deletion errors gracefully
+            }
+        }
     }
 }

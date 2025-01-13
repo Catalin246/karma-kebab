@@ -1,8 +1,9 @@
 ﻿using Interfaces;
 using Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
-namespace employee_service_web.Controllers
+namespace Controllers
 {
     [Route("[controller]")]
     [ApiController]
@@ -22,47 +23,54 @@ namespace employee_service_web.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllEmployees()
         {
-            // return await ExceptionService.HandleRequestAsync(async () =>
-            // {
-                _logger.LogInformation("Fetching all employees");
+            _logger.LogInformation("Fetching all employees from Table Storage");
+            try
+            {
                 var employees = await _employeeService.GetAllEmployeesAsync();
-
                 if (employees == null || !employees.Any())
                 {
                     _logger.LogInformation("No employees found.");
                     return Ok(new List<EmployeeDTO>()); // Return an empty list
                 }
 
-                return Ok(employees);
-            // }, _logger, Request, Response);
+                return Ok(employees); // Return the EmployeeDTO list
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching all employees.");
+                return StatusCode(500, "Internal server error");
+            }
         }
 
         // Get Employee by ID
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetEmployeeById(Guid id)
         {
-            return await ExceptionService.HandleRequestAsync(async () =>
+            _logger.LogInformation($"Fetching employee with ID: {id} from Table Storage");
+            try
             {
-                _logger.LogInformation($"Fetching employee with ID: {id}");
                 var employee = await _employeeService.GetEmployeeByIdAsync(id);
-
                 if (employee == null)
                 {
                     return NotFound();
                 }
 
-                return Ok(employee);
-            }, _logger, Request, Response);
+                return Ok(employee); // Return the EmployeeDTO directly
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching employee by ID.");
+                return StatusCode(500, "Internal server error");
+            }
         }
 
-        // Get By Role
+        // Get Employees by Role
         [HttpGet("role/{role:int}")]
         public async Task<IActionResult> GetEmployeeByRole(int role)
         {
-            return await ExceptionService.HandleRequestAsync(async () =>
+            _logger.LogInformation($"Fetching employees with Role: {role} from Table Storage");
+            try
             {
-                _logger.LogInformation($"Fetching employees with Role: {role}");
-
                 if (!Enum.IsDefined(typeof(EmployeeRole), role))
                 {
                     _logger.LogWarning("Invalid role specified.");
@@ -71,71 +79,108 @@ namespace employee_service_web.Controllers
 
                 var employeeRole = (EmployeeRole)role;
                 var employees = await _employeeService.GetEmployeesByRoleAsync(employeeRole);
-
-                return Ok(employees);
-            }, _logger, Request, Response);
+                return Ok(employees); // Return the EmployeeDTO list
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching employees by role.");
+                return StatusCode(500, "Internal server error");
+            }
         }
 
         // Add Employee
         [HttpPost]
         public async Task<IActionResult> AddEmployee([FromBody] EmployeeDTO employeeDto)
         {
-            return await ExceptionService.HandleRequestAsync(async () =>
+            _logger.LogInformation("Adding new employee");
+
+            if (employeeDto == null)
             {
-                _logger.LogInformation("Adding new employee");
+                return BadRequest("Invalid employee data provided.");
+            }
 
-                if (employeeDto == null)
-                {
-                    return BadRequest("Invalid employee data provided.");
-                }
+            try
+            {
+                // Manually generate a new GUID for the employee
+                Guid employeeId = Guid.NewGuid();
 
-                var addedEmployee = await _employeeService.AddEmployeeAsync(employeeDto);
+                // Add the employee with the generated ID
+                var addedEmployee = await _employeeService.AddEmployeeAsync(employeeDto, employeeId);
 
-                return CreatedAtAction(nameof(GetEmployeeById), new { id = addedEmployee.EmployeeId }, addedEmployee);
-            }, _logger, Request, Response);
+                // Return CreatedAtAction with the newly created employee ID
+                return CreatedAtAction(nameof(GetEmployeeById), new { id = employeeId }, addedEmployee);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while adding the employee.");
+                return StatusCode(500, "Internal server error");
+            }
         }
 
         // Update Employee
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> UpdateEmployee(Guid id, [FromBody] EmployeeDTO updatedEmployeeDto)
         {
-            return await ExceptionService.HandleRequestAsync(async () =>
-            {
-                _logger.LogInformation($"Updating employee with ID: {id}");
+            _logger.LogInformation($"Updating employee with ID: {id} in Table Storage");
 
-                if (updatedEmployeeDto == null)
+            if (updatedEmployeeDto == null)
+            {
+                return BadRequest("Invalid employee data provided.");
+            }
+
+            try
+            {
+                // Step 1: Retrieve the existing employee by ID
+                var existingEmployee = await _employeeService.GetEmployeeByIdAsync(id);
+                
+                // Step 2: Handle case where employee doesn't exist
+                if (existingEmployee == null)
                 {
-                    return BadRequest("Invalid employee data provided.");
+                    _logger.LogWarning($"Employee with ID {id} not found.");
+                    return NotFound(); // Employee not found
                 }
 
+                // Step 3: Update the employee using service method
                 var updatedEmployee = await _employeeService.UpdateEmployeeAsync(id, updatedEmployeeDto);
 
+                // Step 4: Handle case where update fails (optional)
                 if (updatedEmployee == null)
                 {
-                    return NotFound();
+                    return NotFound(); // Employee couldn't be updated
                 }
 
-                return Ok(updatedEmployee);
-            }, _logger, Request, Response);
+                // Step 5: Return the updated employee DTO
+                return Ok(updatedEmployee); // Return the updated EmployeeDTO
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while updating the employee.");
+                return StatusCode(500, "Internal server error");
+            }
         }
+
 
         // Delete Employee
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteEmployee(Guid id)
         {
-            return await ExceptionService.HandleRequestAsync(async () =>
+            _logger.LogInformation($"Deleting employee with ID: {id} from Table Storage");
+
+            try
             {
-                _logger.LogInformation($"Deleting employee with ID: {id}");
-
                 var result = await _employeeService.DeleteEmployeeAsync(id);
-
                 if (!result)
                 {
                     return NotFound();
                 }
 
                 return NoContent();
-            }, _logger, Request, Response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while deleting the employee.");
+                return StatusCode(500, "Internal server error");
+            }
         }
     }
 }
