@@ -93,6 +93,7 @@ func (h *EventHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 
 	event.RowKey = uuid.New()
 
+	// Create event in the service
 	if err := h.service.Create(context.Background(), event); err != nil {
 		http.Error(w, "Failed to create event: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -156,8 +157,9 @@ func (h *EventHandler) DeleteEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.rabbitMQService.PublishMessage("eventDeleted", "Event Deleted!"); err != nil {
-		log.Println("Failed to publish message:", err)
+	// Publish event deleted message
+	if err := h.rabbitMQService.PublishEventDeleted(context.Background(), rowKey, partitionKey); err != nil {
+		log.Println("Failed to publish event deleted message:", err)
 	}
 
 	w.WriteHeader(http.StatusOK)
