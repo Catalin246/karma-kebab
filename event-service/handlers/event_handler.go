@@ -100,10 +100,11 @@ func (h *EventHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 
 	// Create the JSON message you want to send
 	message := map[string]interface{}{
-		"roleIDs":   event.RoleIDs,
-		"eventID":   event.RowKey,
-		"startTime": event.StartTime,
-		"endTime":   event.EndTime,
+		"roleIDs":      event.RoleIDs,
+		"rowKey":       event.RowKey,
+		"partitionKey": event.PartitionKey,
+		"startTime":    event.StartTime,
+		"endTime":      event.EndTime,
 	}
 
 	messageBytes, err := json.Marshal(message)

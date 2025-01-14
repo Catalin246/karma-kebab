@@ -97,9 +97,9 @@ func (r *RabbitMQService) ConsumeMessage(queueName string) error {
 		for msg := range msgs {
 			// Deserialize message to extract required fields
 			var payload struct {
-				ShiftID      string `json:"shift_id"`
-				RowKey       string `json:"row_key"`
-				PartitionKey string `json:"partition_key"`
+				ShiftID      string `json:"ShiftId"`
+				RowKey       string `json:"RowKey"`
+				PartitionKey string `json:"PartitionKey"`
 			}
 			err := json.Unmarshal(msg.Body, &payload)
 			if err != nil {

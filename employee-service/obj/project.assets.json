@@ -13340,23 +13340,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Aizaz Ahsan\\.nuget\\packages\\": {},
+    "C:\\Users\\avorn\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service\\employee-service.csproj",
+      "projectUniqueName": "C:\\Users\\avorn\\source\\repos\\karma-kebab\\employee-service\\employee-service.csproj",
       "projectName": "employee-service",
-      "projectPath": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service\\employee-service.csproj",
-      "packagesPath": "C:\\Users\\Aizaz Ahsan\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service\\obj\\",
+      "projectPath": "C:\\Users\\avorn\\source\\repos\\karma-kebab\\employee-service\\employee-service.csproj",
+      "packagesPath": "C:\\Users\\avorn\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\avorn\\source\\repos\\karma-kebab\\employee-service\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\Aizaz Ahsan\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\avorn\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],

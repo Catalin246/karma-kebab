@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Azure;
 using System.Text.Json;
 using Services;
+// using Models;
 
 [ApiController]
 [Route("[controller]")]
@@ -10,13 +11,11 @@ public class ShiftsController : ControllerBase
     private readonly IShiftService _shiftService;
     private readonly ILogger<ShiftsController> _logger;
     private readonly IRabbitMqService _rabbitMqService;
-    private readonly IRabbitMqProducerService _rabbitMqProducerService;
 
-    public ShiftsController(IShiftService shiftService, ILogger<ShiftsController> logger, IRabbitMqProducerService rabbitMqProducerService)
+    public ShiftsController(IShiftService shiftService, ILogger<ShiftsController> logger)
     {
         _shiftService = shiftService;
         _logger = logger;
-        _rabbitMqProducerService = rabbitMqProducerService;
     }
 
     [HttpGet]
@@ -95,8 +94,6 @@ public class ShiftsController : ControllerBase
 
             _logger.LogInformation("Controller - object being passed is: {CreateShiftDto}", JsonSerializer.Serialize(createshiftDto, new JsonSerializerOptions { WriteIndented = true }));
             var createdShift = await _shiftService.CreateShift(createshiftDto);
-
-            await _rabbitMqProducerService.PublishShiftCreated();
 
             return CreatedAtAction(
                 nameof(GetShiftById),
@@ -226,15 +223,15 @@ public class ShiftsController : ControllerBase
             }
 
             // Create message for RabbitMQ to be published to the clockin queue
-            var clockInMessage = new ClockInDto
-            {
-                ShiftID = shiftId,
-                TimeStamp = DateTime.Now,
-                RoleId = updatedShift.RoleId
-            };
+            // var clockInMessage = new ClockInDto
+            // {
+            //     ShiftID = shiftId,
+            //     TimeStamp = DateTime.Now,
+            //     RoleId = updatedShift.RoleId
+            // };
 
-            // Publish clock-in message to RabbitMQ
-            _rabbitMqProducerService.PublishClockIn(clockInMessage);
+            // // Publish clock-in message to RabbitMQ
+            // _rabbitMqProducerService.PublishClockIn(clockInMessage);
 
             return Ok(new ApiResponse
             {

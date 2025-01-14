@@ -21,7 +21,9 @@ public class CreateShiftDto
     public Guid EmployeeId { get; set; }
     public String ShiftType { get; set; }
     public int RoleId { get; set; } 
-    }
+    public string? RowKey { get; set; } 
+    public string? PartitionKey { get; set; }
+}
 
 // DTO for updating a shift
 public class UpdateShiftDto
@@ -38,7 +40,22 @@ public class UpdateShiftDto
 // DTO for clocking in or clocking out 
 public class ClockInDto
 {
-    public Guid ShiftID {get;set;}
+    public Guid ShiftID { get; set; }
     public DateTime TimeStamp { get; set; }
     public int RoleId {get;set;}
+}
+
+public class ShiftCreatedMessage
+{
+    public Guid ShiftId { get; set; }
+    public Guid RowKey { get; set; }
+    public String PartitionKey { get; set; }
+
+    // Constructor that accepts parameters
+    public ShiftCreatedMessage(Guid shiftId, Guid rowKey, string partitionKey)
+    {
+        ShiftId = shiftId;
+        RowKey = rowKey;
+        PartitionKey = partitionKey;
+    }
 }

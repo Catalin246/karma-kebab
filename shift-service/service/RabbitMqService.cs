@@ -64,7 +64,8 @@ namespace Services
                     }
 
                     // Now you can assign the values to individual variables
-                    string eventID = eventMessage.EventID;
+                    string rowKey = eventMessage.RowKey;
+                    string partitionKey = eventMessage.PartitionKey;
                     string startTime = eventMessage.StartTime;
                     string endTime = eventMessage.EndTime;
                     List<int> roleIDs = eventMessage.RoleIds;
@@ -74,7 +75,9 @@ namespace Services
                         StartTime = DateTime.Parse(startTime),
                         EndTime = DateTime.Parse(endTime),
                         EmployeeId = Guid.Empty,
-                        ShiftType = "Standby"
+                        ShiftType = "Standby",
+                        RowKey = rowKey,
+                        PartitionKey = partitionKey
                     };
 
                     // Create a scope and resolve IShiftService within it

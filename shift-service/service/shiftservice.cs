@@ -1,16 +1,21 @@
 using System;
 using System.Threading.Tasks;
 using Azure;
+using Models;
+using Services;
 
 public class ShiftService : IShiftService
 {
     private readonly IShiftDbContext _dbContext;
     private readonly ILogger<ShiftService> _logger;
 
-    public ShiftService(IShiftDbContext dbContext, ILogger<ShiftService> logger)
+    private readonly IRabbitMqProducerService _rabbitMqProducerService;
+
+    public ShiftService(IShiftDbContext dbContext, ILogger<ShiftService> logger, IRabbitMqProducerService rabbitMqProducerService)
     {
         _dbContext = dbContext;
         _logger = logger;
+        _rabbitMqProducerService = rabbitMqProducerService;
     }
 
     public async Task<ShiftDto> CreateShift(CreateShiftDto createshiftDto)
@@ -25,10 +30,24 @@ public class ShiftService : IShiftService
 
             createshiftDto.StartTime = createshiftDto.StartTime.ToUniversalTime();
             createshiftDto.EndTime = createshiftDto.EndTime.ToUniversalTime();
+             
+            string uuidString = createshiftDto.RowKey;
+            Guid rowKey = Guid.Parse(uuidString);
+            string partitionKey = createshiftDto.PartitionKey;
 
             var shiftEntity = MapToEntity(createshiftDto);
 
             var savedShift = await _dbContext.AddShift(shiftEntity);
+
+            // Prepare the shift created message
+            ShiftCreatedMessage shiftCreatedMessage = new ShiftCreatedMessage(
+                savedShift.ShiftId,                           
+                rowKey,                                           
+                partitionKey                                  
+            );
+
+            // Call the method to publish shift created message, passing the shift created data
+            await _rabbitMqProducerService.PublishShiftCreated(shiftCreatedMessage);
 
             return ShiftDbContext.MapToDto(savedShift);
         }
