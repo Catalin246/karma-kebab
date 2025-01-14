@@ -62,53 +62,51 @@ public class EmployeeService : IEmployeeService
     }
 
 
-public async Task<EmployeeDTO> AddEmployeeAsync(EmployeeDTO employeeDTO, Guid employeeId)
-{
-    try
+    public async Task<EmployeeDTO> AddEmployeeAsync(EmployeeDTO employeeDTO, Guid employeeId)
     {
-        _logger.LogInformation("Adding new employee.");
-        
-        // Map EmployeeDTO to Employee
-        var employee = EmployeeMapper.MapEmployeeDTOToEmployee(employeeDTO);
+        try
+        {
+            _logger.LogInformation("Adding new employee.");
+            
+            // Map EmployeeDTO to Employee
+            var employee = EmployeeMapper.MapEmployeeDTOToEmployee(employeeDTO);
 
-        // Assign the generated employee ID to the employee
-        employee.EmployeeId = employeeId; // Assign the passed GUID to the Employee entity
+            // Assign the generated employee ID to the employee
+            employee.EmployeeId = employeeId; // Assign the passed GUID to the Employee entity
 
-        // Add the employee to the repository
-        var addedEmployee = await _employeeRepository.AddEmployeeAsync(employee);
-        
-        // Map added Employee back to EmployeeDTO and return    
-        return EmployeeMapper.MapEmployeeToEmployeeDTO(addedEmployee);
+            // Add the employee to the repository
+            var addedEmployee = await _employeeRepository.AddEmployeeAsync(employee);
+            
+            // Map added Employee back to EmployeeDTO and return    
+            return EmployeeMapper.MapEmployeeToEmployeeDTO(addedEmployee);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while adding the employee.");
+            throw new ApplicationException("An error occurred while adding the employee.", ex);
+        }
     }
-    catch (Exception ex)
-    {
-        _logger.LogError(ex, "An error occurred while adding the employee.");
-        throw new ApplicationException("An error occurred while adding the employee.", ex);
-    }
-}
 
 
     public async Task<EmployeeDTO?> UpdateEmployeeAsync(Guid id, EmployeeDTO updatedEmployeeDTO)
     {
         try
         {
-            // Step 1: Retrieve the existing employee by ID
             var existingEmployee = await _employeeRepository.GetEmployeeByIdAsync(id);
             
-            // Step 2: Handle case where employee doesn't exist
             if (existingEmployee == null)
             {
                 _logger.LogWarning($"Employee with ID {id} not found.");
                 return null; // or throw an exception if needed
             }
 
-            // Step 3: Map the updated EmployeeDTO to the Employee entity
+            // Map the updated EmployeeDTO to the Employee entity
             var updatedEmployee = EmployeeMapper.MapEmployeeDTOToEmployee(updatedEmployeeDTO);
 
-            // Step 4: Perform the update using the repository method
+            // Perform the update using the repository method
             var updatedEntity = await _employeeRepository.UpdateEmployeeAsync(updatedEmployee);
             
-            // Step 5: Map back the updated Employee entity to EmployeeDTO
+            // Map back the updated Employee entity to EmployeeDTO
             return updatedEntity == null ? null : EmployeeMapper.MapEmployeeToEmployeeDTO(updatedEntity);
         }
         catch (Exception ex)

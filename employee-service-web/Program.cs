@@ -5,7 +5,7 @@ using Interfaces;
 using Repositories;
 using Services;
 using Controllers;
-
+using Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,9 +33,9 @@ builder.Services.AddSingleton<TableServiceClient>(sp =>
 
 // Register services, repositories, and other dependencies
 builder.Services.AddSingleton<ITableStorageService, TableStorageService>();
-builder.Services.AddSingleton<IEmployeeRepository, EmployeeRepository>(); // Adjust as needed
-builder.Services.AddSingleton<IEmployeeService, EmployeeService>(); // Adjust as needed
-builder.Services.AddHttpClient<EmployeesController>(); // Adjust as needed
+builder.Services.AddSingleton<IEmployeeRepository, EmployeeRepository>(); 
+builder.Services.AddSingleton<IEmployeeService, EmployeeService>(); 
+builder.Services.AddHttpClient<EmployeesController>(); 
 
 var app = builder.Build();
 
@@ -47,6 +47,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseMiddleware<GatewayHeaderMiddleware>();
 
 app.UseAuthorization();
 
