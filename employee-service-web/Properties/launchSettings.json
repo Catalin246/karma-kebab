@@ -5,7 +5,8 @@
       "launchBrowser": true,
       "launchUrl": "swagger",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "PostgreSQLEntityFramework": "Server=karama-kebab-network;Port=5432;Database=employeedb;Username=postgres;Password=password;"
       },
       "dotnetRunMessages": true,
       "applicationUrl": "http://localhost:3005"
@@ -15,7 +16,8 @@
       "launchBrowser": true,
       "launchUrl": "swagger",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "PostgreSQLEntityFramework": "Server=karama-kebab-network;Port=5432;Database=employeedb;Username=postgres;Password=password;"
       },
       "dotnetRunMessages": true,
       "applicationUrl": "https://localhost:3005;http://localhost:3007"
@@ -25,7 +27,8 @@
       "launchBrowser": true,
       "launchUrl": "swagger",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "PostgreSQLEntityFramework": "Server=karama-kebab-network;Port=5432;Database=employeedb;Username=postgres;Password=password;"
       }
     },
   },

@@ -10,7 +10,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Register DbContext with PostgreSQL connection string from appsettings.json
 builder.Services.AddDbContextFactory<ApplicationDatabase>(options =>
 {
-    var connectionString = builder.Configuration.GetConnectionString("PostgreSQLEntityFramework");
+    var connectionString = Environment.GetEnvironmentVariable("PostgreSQLEntityFramework");
+    System.Console.WriteLine(connectionString);
     options.UseNpgsql(connectionString);
 });
 

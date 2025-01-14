@@ -201,7 +201,7 @@ services:
       - "3005:3005"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__EmployeeServiceDB: "Server=postgres;Port=5432;Database=employeedb;Username=postgres;Password=password;"
+      PostgreSQLEntityFramework: "Server=karama-kebab-network;Port=5432;Database=employeedb;Username=postgres;Password=password;"
     depends_on:
       - postgres
     networks:
@@ -231,22 +231,22 @@ services:
     networks:
       - karama-kebab-network
 
-  migrations:
-    container_name: service-migrations
-    build:
-      context: ./employee-service-web
-      dockerfile: Dockerfile.local
-      target: migrations
-    depends_on:
-      - postgres
-    networks:
-      - karama-kebab-network
-    command: >
-      bash -c "
-      dotnet tool install --version 6.0.9 --global dotnet-ef && 
-      dotnet ef migrations add docker_init &&
-      dotnet ef database update
-      "
+  # migrations:
+  #   container_name: service-migrations
+  #   build:
+  #     context: ./employee-service-web
+  #     dockerfile: Dockerfile.local
+  #     target: migrations
+  #   depends_on:
+  #     - postgres
+  #   networks:
+  #     - karama-kebab-network
+  #   command: >
+  #     bash -c "
+  #     dotnet tool install --version 6.0.9 --global dotnet-ef && 
+  #     dotnet ef migrations add docker_init &&
+  #     dotnet ef database update
+  #     "
 
 
 
