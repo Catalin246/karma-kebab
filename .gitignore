@@ -2,3 +2,13 @@
 shift-service/obj/Debug/net8.0/shift-service.AssemblyInfo.cs
 shift-service/obj/Debug/net8.0/shift-service.AssemblyInfo.cs
 /shift-service/obj
+employee-service/obj/Debug/net8.0/*
+employee-service-web/obj/Debug/net8.0/*
+shift-service/obj/Debug/net8.0/*
+
+**/bin/
+**/obj/
+# IDE-specific folders
+.idea/
+.vs/
+.vscode/
