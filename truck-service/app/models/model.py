@@ -32,8 +32,10 @@ class Connect:
 
     def get_connection(self):
         try:
-            db_uri = f"postgresql://{self.dbuser}:{self.dbpass}@{self.dbhost}/{self.dbname}?sslmode={self.sslmode}"
+            #db_uri = f"postgresql://{self.dbuser}:{self.dbpass}@{self.dbhost}/{self.dbname}?sslmode={self.sslmode}"
             #db_uri = "postgresql://postgres:postgres@db:5432/postgres"
+
+            db_uri = "postgresql://postgres:#KarmaKebab1234@truck.postgres.database.azure.com:5432/postgres?sslmode=require"
             return psycopg.connect(db_uri)
         except Exception as e:
             logging.error(f"Error connecting to PostgreSQL: {e}")
