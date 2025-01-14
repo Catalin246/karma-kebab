@@ -14,70 +14,61 @@ public class ShiftService : IShiftService
     }
 
     public async Task<ShiftDto> CreateShift(CreateShiftDto createshiftDto)
-{
-    try 
     {
-        if (createshiftDto == null)
-            throw new ArgumentNullException(nameof(createshiftDto), "Shift data cannot be null");
+        try
+        {
+            if (createshiftDto == null)
+                throw new ArgumentNullException(nameof(createshiftDto), "Shift data cannot be null");
 
-        if (!Enum.TryParse<ShiftType>(createshiftDto.ShiftType, out var shiftType))
-            throw new ArgumentException("Invalid shift type", nameof(createshiftDto.ShiftType));
+            if (!Enum.TryParse<ShiftType>(createshiftDto.ShiftType.ToString(), out var shiftType))
+                throw new ArgumentException("Invalid shift type", nameof(createshiftDto.ShiftType));
 
-        createshiftDto.StartTime = createshiftDto.StartTime.ToUniversalTime();
-        createshiftDto.EndTime = createshiftDto.EndTime.ToUniversalTime();
+            createshiftDto.StartTime = createshiftDto.StartTime.ToUniversalTime();
+            createshiftDto.EndTime = createshiftDto.EndTime.ToUniversalTime();
 
-        var shiftEntity = MapToEntity(createshiftDto);
+            var shiftEntity = MapToEntity(createshiftDto);
 
-        var savedShift = await _dbContext.AddShift(shiftEntity);
+            var savedShift = await _dbContext.AddShift(shiftEntity);
 
-        return ShiftDbContext.MapToDto(savedShift);
+            return ShiftDbContext.MapToDto(savedShift);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating shift");
+            throw;
+        }
     }
-    catch (Exception ex) 
-    {
-        _logger.LogError(ex, "Error creating shift");
-        throw; 
-    }
-}
+
 
     public async Task<ShiftDto> GetShiftById(Guid shiftId)
     {
         return await _dbContext.GetShiftById(shiftId);
     }
 
-//this one still needs to be tested (filtering by date for example)
-    public async Task<IEnumerable<ShiftDto>> GetShifts(DateTime? date = null, Guid? employeeId = null, ShiftType? shiftType = null, Guid? shiftId = null, Guid? eventId = null)
+    public async Task<IEnumerable<ShiftDto>> GetShifts(DateTime? startDate = null, DateTime? endDate = null, Guid? employeeId = null, ShiftType? shiftType = null, Guid? shiftId = null, Guid? eventId = null)
     {
-        var shifts = await _dbContext.GetShifts(date, employeeId, shiftType, shiftId, eventId);
+        var shifts = await _dbContext.GetShifts(startDate, endDate, employeeId, shiftType, shiftId, eventId);
         return ShiftDbContext.MapToDtos(shifts);
     }
 
     public async Task<ShiftDto> UpdateShift(Guid shiftId, UpdateShiftDto updateShiftDto)
     {
-        try 
+        try
         {
-            // Retrieve the existing entity
             var response = await _dbContext.GetShiftById(shiftId);
             var existingShift = MapToEntity(response);
 
             if (existingShift == null)
                 return null;
 
-            // Retrieve the full entity to get the current ETag
             var tableEntity = await _dbContext.GetShift(existingShift.PartitionKey, existingShift.RowKey);
 
-            var newShift = MapToEntity(updateShiftDto, existingShift);
-            // Use the ETag from the retrieved table entity
+            var newShift = MapToEntity(updateShiftDto, existingShift);  
             newShift.ETag = tableEntity.ETag;
 
             await _dbContext.UpdateShift(newShift);
 
             return MapToDto(newShift);
-        }
-        catch (RequestFailedException ex)
-        {
-            _logger.LogError(ex, "Azure Storage error updating shift with ID: {ShiftId}. Status: {Status}, ErrorCode: {ErrorCode}",
-                shiftId, ex.Status, ex.ErrorCode);
-            throw;
         }
         catch (Exception ex)
         {
@@ -85,22 +76,23 @@ public class ShiftService : IShiftService
             throw;
         }
     }
+
     public async Task<bool> DeleteShift(Guid shiftId)
+    {
+        try
         {
-            try
-            {
-                var shiftDto = await _dbContext.GetShiftById(shiftId); 
-                if (shiftDto == null) return false;
-                var shiftEntity = MapToEntity(shiftDto);
-                await _dbContext.DeleteShift(shiftEntity.PartitionKey, shiftEntity.RowKey);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error deleting shift with ID: {ShiftId}", shiftId);
-                throw;
-            }
+            var shiftDto = await _dbContext.GetShiftById(shiftId);
+            if (shiftDto == null) return false;
+            var shiftEntity = MapToEntity(shiftDto);
+            await _dbContext.DeleteShift(shiftEntity.PartitionKey, shiftEntity.RowKey);
+            return true;
         }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting shift with ID: {ShiftId}", shiftId);
+            throw;
+        }
+    }
     public async Task<decimal> GetTotalHoursByEmployee(Guid employeeId)
     {
         try
@@ -116,94 +108,99 @@ public class ShiftService : IShiftService
         }
     }
     private static ShiftDto MapToDto(ShiftEntity shift)
-{
-    return new ShiftDto
     {
-        ShiftId = shift.ShiftId,
-        StartTime = shift.StartTime,
-        EndTime = shift.EndTime,
-        EmployeeId = shift.EmployeeId,
-        ShiftType = shift.GetShiftTypeEnum(),
-        Status = shift.GetStatusEnum(),
-        ClockInTime = shift.ClockInTime,
-        ClockOutTime = shift.ClockOutTime,
-        ShiftHours = shift.ShiftHours
-    };
-}
+        return new ShiftDto
+        {
+            ShiftId = shift.ShiftId,
+            StartTime = shift.StartTime,
+            EndTime = shift.EndTime,
+            EmployeeId = shift.EmployeeId,
+            ShiftType = shift.GetShiftTypeEnum(),
+            Status = shift.GetStatusEnum(),
+            ClockInTime = shift.ClockInTime,
+            ClockOutTime = shift.ClockOutTime,
+            ShiftHours = shift.ShiftHours,
+            RoleId = shift.RoleId
+        };
+    }
 
-    private static ShiftEntity MapToEntity(ShiftDto shiftDto) 
+    private static ShiftEntity MapToEntity(ShiftDto shiftDto)
     {
-        if (shiftDto == null){
+        if (shiftDto == null)
+        {
             throw new ArgumentNullException(nameof(shiftDto));
         }
 
-        return new ShiftEntity 
+        return new ShiftEntity
         {
             ShiftId = shiftDto.ShiftId,
             StartTime = shiftDto.StartTime,
             EndTime = shiftDto.EndTime,
-            EmployeeId = shiftDto.EmployeeId,
+            EmployeeId = shiftDto.EmployeeId ?? Guid.Empty,
             ShiftType = shiftDto.ShiftType.ToString(),
             Status = shiftDto.Status.ToString(),
             ClockInTime = shiftDto.ClockInTime,
             ClockOutTime = shiftDto.ClockOutTime,
-            ShiftHours = shiftDto.ShiftHours.HasValue ? shiftDto.ShiftHours.Value : (decimal?)null
+            ShiftHours = shiftDto.ShiftHours.HasValue ? shiftDto.ShiftHours.Value : (decimal?)null,
+            RoleId = shiftDto.RoleId
         };
     }
     private static ShiftEntity MapToEntity(CreateShiftDto createShiftDto)
     {
-        if (createShiftDto == null){
+        if (createShiftDto == null)
+        {
             throw new ArgumentNullException(nameof(createShiftDto));
         }
         var newShiftId = Guid.NewGuid();
 
-        return new ShiftEntity 
+        return new ShiftEntity
         {
             ShiftId = newShiftId,
             EmployeeId = createShiftDto.EmployeeId,
             StartTime = createShiftDto.StartTime,
             EndTime = createShiftDto.EndTime,
-            ShiftType = createShiftDto.ShiftType, 
+            ShiftType = createShiftDto.ShiftType,
             Status = ShiftStatus.Unconfirmed.ToString(), // Default status
             ClockInTime = null,
             ClockOutTime = null,
-            ShiftHours = null
+            ShiftHours = null,
+            RoleId = createShiftDto.RoleId
         };
     }
-private static ShiftEntity MapToEntity(UpdateShiftDto updateShiftDto, ShiftEntity existingEntity)
-{
-    if (existingEntity == null)
-        throw new ArgumentNullException(nameof(existingEntity), "Existing shift entity must be provided");
-
-    // Specify UTC Kind for all DateTime properties 
-    existingEntity.StartTime = updateShiftDto.StartTime.Kind == DateTimeKind.Unspecified 
-        ? DateTime.SpecifyKind(updateShiftDto.StartTime, DateTimeKind.Utc) 
-        : updateShiftDto.StartTime;
-
-    existingEntity.EndTime = updateShiftDto.EndTime.Kind == DateTimeKind.Unspecified 
-        ? DateTime.SpecifyKind(updateShiftDto.EndTime, DateTimeKind.Utc) 
-        : updateShiftDto.EndTime;
-
-    existingEntity.ShiftType = updateShiftDto.ShiftType.ToString();
-    
-    if (updateShiftDto.Status != default)
+    private static ShiftEntity MapToEntity(UpdateShiftDto updateShiftDto, ShiftEntity existingEntity)
     {
-        existingEntity.Status = updateShiftDto.Status.ToString();
+        if (existingEntity == null)
+            throw new ArgumentNullException(nameof(existingEntity), "Existing shift entity must be provided");
+
+        // Specify UTC Kind for all DateTime properties 
+        existingEntity.StartTime = updateShiftDto.StartTime.Kind == DateTimeKind.Unspecified
+            ? DateTime.SpecifyKind(updateShiftDto.StartTime, DateTimeKind.Utc)
+            : updateShiftDto.StartTime;
+
+        existingEntity.EndTime = updateShiftDto.EndTime.Kind == DateTimeKind.Unspecified
+            ? DateTime.SpecifyKind(updateShiftDto.EndTime, DateTimeKind.Utc)
+            : updateShiftDto.EndTime;
+
+        existingEntity.ShiftType = updateShiftDto.ShiftType.ToString();
+
+        if (updateShiftDto.Status != default)
+        {
+            existingEntity.Status = updateShiftDto.Status.ToString();
+        }
+        existingEntity.ClockInTime = updateShiftDto.ClockInTime.HasValue
+            ? (updateShiftDto.ClockInTime.Value.Kind == DateTimeKind.Unspecified
+                ? DateTime.SpecifyKind(updateShiftDto.ClockInTime.Value, DateTimeKind.Utc)
+                : updateShiftDto.ClockInTime.Value)
+            : (DateTime?)null;
+
+        existingEntity.ClockOutTime = updateShiftDto.ClockOutTime.HasValue
+            ? (updateShiftDto.ClockOutTime.Value.Kind == DateTimeKind.Unspecified
+                ? DateTime.SpecifyKind(updateShiftDto.ClockOutTime.Value, DateTimeKind.Utc)
+                : updateShiftDto.ClockOutTime.Value)
+            : (DateTime?)null;
+
+        existingEntity.RoleId = updateShiftDto.RoleId;
+        return existingEntity;
     }
-    existingEntity.ClockInTime = updateShiftDto.ClockInTime.HasValue
-        ? (updateShiftDto.ClockInTime.Value.Kind == DateTimeKind.Unspecified 
-            ? DateTime.SpecifyKind(updateShiftDto.ClockInTime.Value, DateTimeKind.Utc) 
-            : updateShiftDto.ClockInTime.Value)
-        : (DateTime?)null;
-
-    existingEntity.ClockOutTime = updateShiftDto.ClockOutTime.HasValue
-        ? (updateShiftDto.ClockOutTime.Value.Kind == DateTimeKind.Unspecified 
-            ? DateTime.SpecifyKind(updateShiftDto.ClockOutTime.Value, DateTimeKind.Utc) 
-            : updateShiftDto.ClockOutTime.Value)
-        : (DateTime?)null;
-
-    return existingEntity;
-}
 
 }
-

@@ -47,12 +47,25 @@ jobs:
             echo "rabbitmq=true" >> $GITHUB_ENV
           fi
 
-           if echo "$CHANGED_FILES" | grep -q '^shift-service/'; then
+          if echo "$CHANGED_FILES" | grep -q '^shift-service/'; then
             echo "shift_service=true" >> $GITHUB_ENV
           fi
 
+          if echo "$CHANGED_FILES" | grep -q '^availability-service/'; then
+            echo "availability_service=true" >> $GITHUB_ENV
+          fi
+
+          if echo "$CHANGED_FILES" | grep -q '^duty-service/'; then
+            echo "duty_service=true" >> $GITHUB_ENV
+          fi
+
+          if echo "$CHANGED_FILES" | grep -q '^truck-service/'; then
+            echo "truck_service=true" >> $GITHUB_ENV
+          fi
+          
+
       # Deploy the API Gateway
-      - name: Set OpenShift Project
+      - name: API Gateway - Set OpenShift Project
         if: env.api_gateway == 'true'
         run: |
           oc project ${{ secrets.NAMESPACE }}
@@ -68,7 +81,7 @@ jobs:
           oc get pods --selector=app=api-gateway --field-selector=status.phase=Running -o name | xargs -I {} oc delete {} --ignore-not-found=true
 
       # Deploy the Event Service
-      - name: Set OpenShift Project
+      - name: Event Service - Set OpenShift Project
         if: env.event_service == 'true'
         run: |
           oc project ${{ secrets.NAMESPACE }}
@@ -84,7 +97,7 @@ jobs:
           oc get pods --selector=app=event-service --field-selector=status.phase=Running -o name | xargs -I {} oc delete {} --ignore-not-found=true
 
       # Deploy the RabbitMQ
-      - name: Set OpenShift Project
+      - name: RabbitMQ - Set OpenShift Project
         if: env.rabbitmq == 'true'
         run: |
           oc project ${{ secrets.NAMESPACE }}
@@ -100,7 +113,7 @@ jobs:
           oc get pods --selector=app=rabbitmq --field-selector=status.phase=Running -o name | xargs -I {} oc delete {} --ignore-not-found=true
 
       # Deploy the Shift Service
-      - name: Set OpenShift Project
+      - name: Shift Service - Set OpenShift Project
         if: env.shift_service == 'true'
         run: |
           oc project ${{ secrets.NAMESPACE }}
@@ -114,3 +127,51 @@ jobs:
         if: env.shift_service == 'true'
         run: |
           oc get pods --selector=app=shift-service --field-selector=status.phase=Running -o name | xargs -I {} oc delete {} --ignore-not-found=true
+
+      # Deploy the Availability Service
+      - name: Availability Service - Set OpenShift Project
+        if: env.availability_service == 'true'
+        run: |
+          oc project ${{ secrets.NAMESPACE }}
+
+      - name: Start OpenShift Build
+        if: env.availability_service == 'true'
+        run: |
+          oc start-build availability-service --wait  # Trigger the build and wait for completion
+  
+      - name: Restart the application by deleting the old running pod
+        if: env.availability_service == 'true'
+        run: |
+          oc get pods --selector=app=availability-service --field-selector=status.phase=Running -o name | xargs -I {} oc delete {} --ignore-not-found=true
+
+      # Deploy the Duty Service
+      - name: Duty Service - Set OpenShift Project
+        if: env.duty_service == 'true'
+        run: |
+          oc project ${{ secrets.NAMESPACE }}
+
+      - name: Start OpenShift Build
+        if: env.duty_service == 'true'
+        run: |
+          oc start-build duty-service --wait  # Trigger the build and wait for completion
+        
+      - name: Restart the application by deleting the old running pod
+        if: env.duty_service == 'true'
+        run: |
+          oc get pods --selector=app=duty-service --field-selector=status.phase=Running -o name | xargs -I {} oc delete {} --ignore-not-found=true     
+      
+      # Deploy the Truck Service
+      - name: Truck Service - Set OpenShift Project
+        if: env.truck_service == 'true'
+        run: |
+          oc project ${{ secrets.NAMESPACE }}
+
+      - name: Start OpenShift Build
+        if: env.truck_service == 'true'
+        run: |
+          oc start-build truck-service --wait  # Trigger the build and wait for completion
+
+      - name: Restart the application by deleting the old running pod
+        if: env.truck_service == 'true'
+        run: |
+          oc get pods --selector=app=truck-service --field-selector=status.phase=Running -o name | xargs -I {} oc delete {} --ignore-not-found=true

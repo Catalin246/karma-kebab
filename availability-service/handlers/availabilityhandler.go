@@ -4,18 +4,17 @@ import (
 	"availability-service/models"
 	"context"
 	"encoding/json"
-	"log"
 	"net/http"
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
 
 // AvailabilityServiceInterface defines the methods that the service must implement
 type IAvailability interface {
-	GetAll(ctx context.Context, startDate, endDate *time.Time) ([]models.Availability, error)
-	GetByEmployeeID(ctx context.Context, employeeID string) ([]models.Availability, error)
+	GetAll(ctx context.Context, employeeID string, startDate, endDate *time.Time) ([]models.Availability, error)
 	Create(ctx context.Context, availability models.Availability) (*models.Availability, error)
 	Update(ctx context.Context, employeeID, id string, availability models.Availability) error
 	Delete(ctx context.Context, employeeID, id string) error
@@ -45,121 +44,86 @@ func NewAvailabilityHandler(service IAvailability) *AvailabilityHandler {
 }
 
 func (h *AvailabilityHandler) GetAll(w http.ResponseWriter, r *http.Request) {
-	startDateStr := r.URL.Query().Get("startDate")
-	endDateStr := r.URL.Query().Get("endDate")
+    employeeID := r.URL.Query().Get("employeeId")
+    startDateStr := r.URL.Query().Get("startDate")
+    endDateStr := r.URL.Query().Get("endDate")
 
-	var startDate, endDate *time.Time
+    var startDate, endDate *time.Time
 
-	// Define multiple date formats to try
-	dateFormats := []string{
-		time.RFC3339,
-		"2006-01-02T15:04:05Z07:00",
-		"2006-01-02T15:04:05Z",
-		"2006-01-02",
-	}
+    // Validate employeeID as a valid UUID
+    if employeeID != "" {
+        if _, err := uuid.Parse(employeeID); err != nil {
+            http.Error(w, "Invalid employeeId format. Must be a valid UUID.", http.StatusBadRequest)
+            return
+        }
+    }
 
-	if startDateStr != "" {
-		// Remove quotes if they exist
-		startDateStr = strings.Trim(startDateStr, "\"")
+    // Define multiple date formats to try
+    dateFormats := []string{
+        time.RFC3339,
+        "2006-01-02T15:04:05Z07:00",
+        "2006-01-02T15:04:05Z",
+        "2006-01-02",
+    }
 
-		var parsedStartDate time.Time
-		var err error
+    if startDateStr != "" {
+        // Remove quotes if they exist
+        startDateStr = strings.Trim(startDateStr, "\"")
 
-		// Try parsing with different formats
-		for _, format := range dateFormats {
-			parsedStartDate, err = time.Parse(format, startDateStr)
-			if err == nil {
-				break
-			}
-		}
+        var parsedStartDate time.Time
+        var err error
 
-		if err != nil {
-			http.Error(w, "Invalid startDate format. Use RFC3339 format.", http.StatusBadRequest)
-			return
-		}
+        // Try parsing with different formats
+        for _, format := range dateFormats {
+            parsedStartDate, err = time.Parse(format, startDateStr)
+            if err == nil {
+                break
+            }
+        }
 
-		startDate = &parsedStartDate
-	}
+        if err != nil {
+            http.Error(w, "Invalid startDate format. Use RFC3339 format.", http.StatusBadRequest)
+            return
+        }
 
-	if endDateStr != "" {
-		// Remove quotes if they exist
-		endDateStr = strings.Trim(endDateStr, "\"")
+        startDate = &parsedStartDate
+    }
 
-		var parsedEndDate time.Time
-		var err error
+    if endDateStr != "" {
+        // Remove quotes if they exist
+        endDateStr = strings.Trim(endDateStr, "\"")
 
-		// Try parsing with different formats
-		for _, format := range dateFormats {
-			parsedEndDate, err = time.Parse(format, endDateStr)
-			if err == nil {
-				break
-			}
-		}
+        var parsedEndDate time.Time
+        var err error
 
-		if err != nil {
-			http.Error(w, "Invalid endDate format. Use RFC3339 format.", http.StatusBadRequest)
-			return
-		}
+        // Try parsing with different formats
+        for _, format := range dateFormats {
+            parsedEndDate, err = time.Parse(format, endDateStr)
+            if err == nil {
+                break
+            }
+        }
 
-		endDate = &parsedEndDate
-	}
+        if err != nil {
+            http.Error(w, "Invalid endDate format. Use RFC3339 format.", http.StatusBadRequest)
+            return
+        }
 
-	availabilities, err := h.service.GetAll(r.Context(), startDate, endDate)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+        endDate = &parsedEndDate
+    }
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(availabilities)
+    availabilities, err := h.service.GetAll(r.Context(), employeeID, startDate, endDate)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+
+    w.Header().Set("Content-Type", "application/json")
+    if err := json.NewEncoder(w).Encode(availabilities); err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+    }
 }
 
-// gets all availabilities of one employee
-func (h *AvailabilityHandler) GetByEmployeeID(w http.ResponseWriter, r *http.Request) {
-	// Log full request details for debugging
-	log.Printf("Received GETby emp id request: %+v", r)
-
-	// Log all URL variables
-	vars := mux.Vars(r)
-	log.Printf("URL Variables: %+v", vars)
-
-	// Use partitionKey instead of employeeId
-	partitionKey := vars["partitionKey"]
-	log.Printf("Extracted PartitionKey (EmployeeID): '%s'", partitionKey)
-
-	// Ensure partition key is provided
-	if partitionKey == "" {
-		log.Println("Error: PartitionKey is empty")
-		http.Error(w, "PartitionKey is required", http.StatusBadRequest)
-		return
-	}
-
-	availabilities, err := h.service.GetByEmployeeID(r.Context(), partitionKey)
-	if err != nil {
-		log.Printf("Service Error: %v", err)
-		if err == models.ErrNotFound {
-			http.Error(w, "Availability not found", http.StatusNotFound)
-		} else {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-		return
-	}
-
-	// Log the retrieved availabilities
-	log.Printf("Retrieved Availabilities: %+v", availabilities)
-
-	// Check if no availabilities found
-	if len(availabilities) == 0 {
-		http.Error(w, "No availabilities found for this employee", http.StatusNotFound)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(availabilities); err != nil {
-		log.Printf("JSON Encoding Error: %v", err)
-		http.Error(w, "Error encoding response", http.StatusInternalServerError)
-	}
-}
 func (h *AvailabilityHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var availability models.Availability
 	if err := json.NewDecoder(r.Body).Decode(&availability); err != nil {

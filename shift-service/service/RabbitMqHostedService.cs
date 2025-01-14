@@ -15,7 +15,7 @@ namespace Services
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            await _rabbitMqService.StartListeningAsync();
+            await _rabbitMqService.ListeningEventCreated();
         }
     }
 }

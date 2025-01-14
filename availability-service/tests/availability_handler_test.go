@@ -39,102 +39,82 @@ func createRequestWithVars(method, path string, vars map[string]string, body int
 }
 
 func TestGetAll(t *testing.T) {
-	t.Run("Successful Retrieval", func(t *testing.T) {
-		// Create mock service
+    t.Run("Get By EmployeeID Filter Successful", func(t *testing.T) {
 		mockService := new(MockAvailabilityService)
 		handler := handlers.NewAvailabilityHandler(mockService)
-
-		// Prepare mock data
-		mockAvailabilities := []models.Availability{
-			{
-				ID:         "1",
-				EmployeeID: "emp1",
-				StartDate:  time.Now(),
-				EndDate:    time.Now().Add(24 * time.Hour),
-			},
+	
+		empID := "2a105d01-58a1-4bfa-a1c9-d9468c2583a3"
+		expectedAvailability := models.Availability{
+			ID:         "2bfbfc40-5dd7-4b0d-aff8-4bd830804962",
+			EmployeeID: empID,
+			StartDate:  time.Date(2025, 2, 12, 14, 0, 0, 0, time.UTC),
+			EndDate:    time.Date(2025, 2, 15, 22, 0, 0, 0, time.UTC),
 		}
-
-		mockService.On("GetAll", mock.Anything, mock.Anything, mock.Anything).
-			Return(mockAvailabilities, nil)
-
-		req, err := http.NewRequest("GET", "/availabilities", nil)
-		assert.NoError(t, err)
-
+	
+		mockAvailabilities := []models.Availability{expectedAvailability}
+		mockService.On("GetAll", mock.Anything, empID, mock.Anything, mock.Anything).
+			Return(mockAvailabilities, nil).Once()
+	
+		req := httptest.NewRequest("GET", "/availability?employeeId="+empID, nil)
 		w := httptest.NewRecorder()
-
+	
 		handler.GetAll(w, req)
-
+	
+		t.Logf("Response Body: %s", w.Body.String()) // Add log to inspect the response
 		assert.Equal(t, http.StatusOK, w.Code)
-
-		var receivedAvailabilities []models.Availability
-		err = json.Unmarshal(w.Body.Bytes(), &receivedAvailabilities)
-		assert.NoError(t, err)
-		assert.Len(t, receivedAvailabilities, 1)
-	})
-
-	t.Run("Error Scenario", func(t *testing.T) {
-		mockService := new(MockAvailabilityService)
-		handler := handlers.NewAvailabilityHandler(mockService)
-
-		mockService.On("GetAll", mock.Anything, mock.Anything, mock.Anything).
-			Return([]models.Availability{}, errors.New("service error"))
-
-		req, err := http.NewRequest("GET", "/availabilities", nil)
-		assert.NoError(t, err)
-
-		w := httptest.NewRecorder()
-		handler.GetAll(w, req)
-
-		assert.Equal(t, http.StatusInternalServerError, w.Code)
-	})
-}
-
-func TestGetByEmployeeID(t *testing.T) {
-	t.Run("Successful Retrieval", func(t *testing.T) {
-		mockService := new(MockAvailabilityService)
-		handler := handlers.NewAvailabilityHandler(mockService)
-
-		mockAvailabilities := []models.Availability{
-			{
-				ID:         "1",
-				EmployeeID: "emp1",
-				StartDate:  time.Now(),
-				EndDate:    time.Now().Add(24 * time.Hour),
-			},
-		}
-
-		mockService.On("GetByEmployeeID", mock.Anything, "emp1").
-			Return(mockAvailabilities, nil)
-
-		req := createRequestWithVars("GET", "/employees/emp1/availabilities",
-			map[string]string{"partitionKey": "emp1"}, nil)
-
-		w := httptest.NewRecorder()
-		handler.GetByEmployeeID(w, req)
-
-		assert.Equal(t, http.StatusOK, w.Code)
-
+	
 		var receivedAvailabilities []models.Availability
 		err := json.Unmarshal(w.Body.Bytes(), &receivedAvailabilities)
 		assert.NoError(t, err)
 		assert.Len(t, receivedAvailabilities, 1)
+		assert.Equal(t, expectedAvailability, receivedAvailabilities[0])
+	
+		mockService.AssertExpectations(t)
 	})
 
-	t.Run("No Availabilities Found", func(t *testing.T) {
-		mockService := new(MockAvailabilityService)
-		handler := handlers.NewAvailabilityHandler(mockService)
+    t.Run("Invalid UUID Format", func(t *testing.T) {
+        mockService := new(MockAvailabilityService)
+        handler := handlers.NewAvailabilityHandler(mockService)
 
-		mockService.On("GetByEmployeeID", mock.Anything, "emp1").
-			Return([]models.Availability{}, models.ErrNotFound)
+        // Create request with invalid UUID format
+        req := httptest.NewRequest("GET", "/availability?employeeId=invalid-uuid", nil)
 
-		req := createRequestWithVars("GET", "/employees/emp1/availabilities",
-			map[string]string{"partitionKey": "emp1"}, nil)
+        w := httptest.NewRecorder()
+        handler.GetAll(w, req)
 
-		w := httptest.NewRecorder()
-		handler.GetByEmployeeID(w, req)
+        assert.Equal(t, http.StatusBadRequest, w.Code)
+    })
 
-		assert.Equal(t, http.StatusNotFound, w.Code)
-	})
+    t.Run("Invalid Date Format", func(t *testing.T) {
+        mockService := new(MockAvailabilityService)
+        handler := handlers.NewAvailabilityHandler(mockService)
+
+        empID := "89ji0k34-k087-159j-fu3l-30718f822j434"
+        // Create request with invalid date format
+        req := httptest.NewRequest("GET", "/availability?employeeId="+empID+"&startDate=invalid-date", nil)
+
+        w := httptest.NewRecorder()
+        handler.GetAll(w, req)
+
+        assert.Equal(t, http.StatusBadRequest, w.Code)
+    })
+
+    t.Run("Service Error", func(t *testing.T) {
+        mockService := new(MockAvailabilityService)
+        handler := handlers.NewAvailabilityHandler(mockService)
+
+        empID := "89ji0k34-k087-159j-fu3l-30718f822j434"
+        // Mock the GetAll service call returning an error
+        mockService.On("GetAll", mock.Anything, empID, mock.Anything, mock.Anything).
+            Return(nil, errors.New("service error"))
+
+        req := httptest.NewRequest("GET", "/availability?employeeId="+empID, nil)
+
+        w := httptest.NewRecorder()
+        handler.GetAll(w, req)
+
+        assert.Equal(t, http.StatusBadRequest, w.Code)
+    })
 }
 
 func TestCreate(t *testing.T) {

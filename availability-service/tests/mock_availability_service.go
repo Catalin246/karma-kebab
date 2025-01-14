@@ -17,14 +17,9 @@ type MockAvailabilityService struct {
 	mock.Mock
 }
 
-func (m *MockAvailabilityService) GetAll(ctx context.Context, startDate, endDate *time.Time) ([]models.Availability, error) {
-	args := m.Called(ctx, startDate, endDate)
-	return args.Get(0).([]models.Availability), args.Error(1)
-}
-
-func (m *MockAvailabilityService) GetByEmployeeID(ctx context.Context, employeeID string) ([]models.Availability, error) {
-	args := m.Called(ctx, employeeID)
-	return args.Get(0).([]models.Availability), args.Error(1)
+func (m *MockAvailabilityService) GetAll(ctx context.Context, employeeID string, startDate, endDate *time.Time) ([]models.Availability, error) {
+    args := m.Called(ctx, employeeID, startDate, endDate)
+    return args.Get(0).([]models.Availability), args.Error(1)
 }
 
 func (m *MockAvailabilityService) Create(ctx context.Context, availability models.Availability) (*models.Availability, error) {

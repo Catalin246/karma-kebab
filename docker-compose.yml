@@ -9,147 +9,108 @@ services:
       --location /workspace --debug /workspace/debug.log
     volumes:
       - azurite-data:/data
-    # ports:
-    #   - "10000:10000" # Blob service endpoint
-    #   - "10001:10001" # Queue service endpoint
-    #   - "10002:10002" # Table service endpoint
+    ports:
+      - "10000:10000" # Blob service endpoint
+      - "10001:10001" # Queue service endpoint
+      - "10002:10002" # Table service endpoint
     networks:
       - karama-kebab-network
 
-  # keycloak:
-  #   build:
-  #     context: ./keycloak
-  #     dockerfile: Dockerfile
-  #   volumes:
-  #     - ./keycloak/realm-config/:/opt/keycloak/data/import/
-  #   environment:
-  #     KEYCLOAK_ADMIN: admin
-  #     KEYCLOAK_ADMIN_PASSWORD: admin
-  #   ports:
-  #     - "8080:8080"
-  #   depends_on:
-  #     - azurite
-  #   networks:
-  #     - karama-kebab-network
+  keycloak:
+    build:
+      context: ./keycloak
+      dockerfile: Dockerfile
+    volumes:
+      - ./keycloak/realm-config/:/opt/keycloak/data/import/
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8080:8080"
+    depends_on:
+      - azurite
+    networks:
+      - karama-kebab-network
 
-  # rabbitmq:
-  #   build:
-  #     context: ./rabbitmq
-  #     dockerfile: Dockerfile
-  #   environment:
-  #     RABBITMQ_DEFAULT_USER: guest
-  #     RABBITMQ_DEFAULT_PASS: guest
-  #   ports:
-  #     - "5672:5672" # RabbitMQ messaging port
-  #     - "15672:15672" # RabbitMQ management console
-  #   networks:
-  #     - karama-kebab-network
+  rabbitmq:
+    build:
+      context: ./rabbitmq
+      dockerfile: Dockerfile
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672" # RabbitMQ messaging port
+      - "15672:15672" # RabbitMQ management console
+    networks:
+      - karama-kebab-network
 
-  # event-service:
-  #   build:
-  #     context: ./event-service
-  #     dockerfile: Dockerfile
-  #   volumes:
-  #     - ./event-service/.env:/app/.env
-  #   depends_on:
-  #     - azurite
-  #     # - keycloak
-  #     - rabbitmq
-  #   ports:
-  #     - "3001:3001"
-  #   networks:
-  #     - karama-kebab-network
+  event-service:
+    build:
+      context: ./event-service
+      dockerfile: Dockerfile
+    volumes:
+      - ./event-service/.env:/app/.env
+    depends_on:
+      - azurite
+      - keycloak
+      - rabbitmq
+    ports:
+      - "3001:3001"
+    networks:
+      - karama-kebab-network
 
-  # availability-service:
-  #   build:
-  #     context: ./availability-service
-  #     dockerfile: Dockerfile
-  #   volumes:
-  #     - ./availability-service/.env:/app/.env
-  #   depends_on:
-  #     - azurite
-  #     # - keycloak
-  #   ports:
-  #     - "3002:3002"
-  #   networks:
-  #     - karama-kebab-network
+  availability-service:
+    build:
+      context: ./availability-service
+      dockerfile: Dockerfile
+    volumes:
+      - ./availability-service/.env:/app/.env
+    depends_on:
+      - azurite
+      - keycloak
+    ports:
+      - "3002:3002"
+    networks:
+      - karama-kebab-network
 
   api-gateway:
     build:
       context: ./api-gateway
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.local
     container_name: api-gateway
     ports:
       - "3007:3007"
     networks:
       - karama-kebab-network
 
-#  shift-service:
-#    build:
-#      context: ./shift-service
-#      dockerfile: Dockerfile.local
-#    environment:
-#      - AZURE_STORAGE_CONNECTION_STRING="AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;DefaultEndpointsProtocol=http;BlobEndpoint=http://azurite:10000/devstoreaccount1;QueueEndpoint=http://azurite:10001/devstoreaccount1;TableEndpoint=http://azurite:10002/devstoreaccount1;"
-#    depends_on:
-#      - azurite
-#      - keycloak
-#    ports:
-#      - "3003:3003"
-#    networks:
-#      - karama-kebab-network
+  shift-service:
+    build:
+      context: ./shift-service
+      dockerfile: Dockerfile.local
+    environment:
+      - AZURE_STORAGE_CONNECTION_STRING="AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;DefaultEndpointsProtocol=http;BlobEndpoint=http://azurite:10000/devstoreaccount1;QueueEndpoint=http://azurite:10001/devstoreaccount1;TableEndpoint=http://azurite:10002/devstoreaccount1;"
+    depends_on:
+      - azurite
+      - keycloak
+    ports:
+      - "3003:3003"
+    networks:
+      - karama-kebab-network
 
-  # duty-service:
-  #   build:
-  #     context: ./duty-service
-  #     dockerfile: Dockerfile
-  #   volumes:
-  #     - ./duty-service/.env:/app/.env
-  #   depends_on:
-  #     - azurite
-  #     # - keycloak
-  #   ports:
-  #     - "3004:3004"
-  #   networks:
-  #     - karama-kebab-network
-
-  # employee-service-web:
-  #   build:
-  #     context: ./employee-service-web
-  #     dockerfile: Dockerfile.local
-  #   container_name: employee-service
-  #   environment:
-  #     ASPNETCORE_ENVIRONMENT: Development
-  #     ConnectionStrings__PostgreSQLEntityFramework: "Host=postgres;Port=5432;Database=employeedb;Username=postgres;Password=password;"
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #   ports:
-  #     - "3005:3005"
-  #   networks:
-  #     - karama-kebab-network
-
-  # postgres:
-  #   image: postgres:13
-  #   container_name: postgres
-  #   restart: always
-  #   environment:
-  #     POSTGRES_USER: postgres
-  #     POSTGRES_PASSWORD: password
-  #     POSTGRES_DB: employeedb
-  #   volumes:
-  #     - postgres-data:/var/lib/postgresql/data
-  #   ports:
-  #     - "5432:5432"
-  #   networks:
-  #     - karama-kebab-network
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "pg_isready -U postgres"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 5
-
-
-############################################################################################################################
+  duty-service:
+    build:
+      context: ./duty-service
+      dockerfile: Dockerfile
+    volumes:
+      - ./duty-service/.env:/app/.env
+    depends_on:
+      - azurite
+      - keycloak
+    ports:
+      - "3004:3004"
+    networks:
+      - karama-kebab-network
 
   # employee-service-web:
   #   build:
@@ -160,7 +121,7 @@ services:
   #     - "3005:3005"
   #   environment:
   #     ASPNETCORE_ENVIRONMENT: Development
-  #     ConnectionStrings__EmployeeServiceDB: Host=localhost;Port=5432;Database=employeedb;Username=postgres;Password=password
+  #     PostgreSQLEntityFramework: "Server=karama-kebab-network;Port=5432;Database=employeedb;Username=postgres;Password=password;"
   #   depends_on:
   #     - postgres
   #   networks:
@@ -168,10 +129,27 @@ services:
   #   command: >
   #     sh -c "
   #     dotnet tool restore && 
-  #     dotnet ef migrations add docker_init &&
-  #     dotnet ef database update &&
-  #     dotnet run
+  #     dotnet run --urls=http://0.0.0.0:3005
   #     "
+  
+  truck-service:
+    build:
+      context: ./truck-service
+      dockerfile: Dockerfile
+    container_name: trucks-flask
+    environment:
+      - FLASK_ENV=development
+      - DBHOST=postgres-truck
+      - DBNAME=truck
+      - DBUSER=postgres
+      - DBPASS=postgres
+      - SSLMODE=disable 
+    depends_on:
+      - postgres-truck
+    ports:
+      - "3006:3006"
+    networks:
+      - karama-kebab-network
 
   # postgres:
   #   image: postgres:13
@@ -181,9 +159,10 @@ services:
   #     POSTGRES_PASSWORD: password
   #     POSTGRES_DB: employeedb
   #   ports:
-  #     - "5432:5432"
+  #     - "5433:5432"
   #   volumes:
-  #     - postgres-data:/var/lib/postgresql/data
+  #     - postgres-data:/var/lib/postgresql/data  # Persistent database storage
+  #     - ./EmployeeServiceDB.session.sql:/docker-entrypoint-initdb.d/init.sql  # Initialization script
   #   healthcheck:
   #     test: ["CMD-SHELL", "pg_isready -U postgres"]
   #     interval: 10s
@@ -191,68 +170,24 @@ services:
   #   networks:
   #     - karama-kebab-network
 
-
-  employee-service-web:
-    build:
-      context: ./employee-service-web
-      dockerfile: Dockerfile.local
-    container_name: employee-service-web
-    ports:
-      - "3005:3005"
-    environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      PostgreSQLEntityFramework: "Server=karama-kebab-network;Port=5432;Database=employeedb;Username=postgres;Password=password;"
-    depends_on:
-      - postgres
-    networks:
-      - karama-kebab-network
-    command: >
-      sh -c "
-      dotnet tool restore && 
-      dotnet run --urls=http://0.0.0.0:3005
-      "
-
-  postgres:
+  postgres-truck:
     image: postgres:13
-    container_name: employee-postgres-db
+    container_name: postgresdb
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: employeedb
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: truck
     ports:
-      - "5433:5432"
+      - "5434:5432"
     volumes:
-      - postgres-data:/var/lib/postgresql/data  # Persistent database storage
-      - ./EmployeeServiceDB.session.sql:/docker-entrypoint-initdb.d/init.sql  # Initialization script
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      retries: 5
+      - postgres-truck-data:/var/lib/postgresql/data
     networks:
       - karama-kebab-network
-
-  # migrations:
-  #   container_name: service-migrations
-  #   build:
-  #     context: ./employee-service-web
-  #     dockerfile: Dockerfile.local
-  #     target: migrations
-  #   depends_on:
-  #     - postgres
-  #   networks:
-  #     - karama-kebab-network
-  #   command: >
-  #     bash -c "
-  #     dotnet tool install --version 6.0.9 --global dotnet-ef && 
-  #     dotnet ef migrations add docker_init &&
-  #     dotnet ef database update
-  #     "
-
-
 
 volumes:
   azurite-data:
   postgres-data:
+  postgres-truck-data:
 
 networks:
   karama-kebab-network:

@@ -49,3 +49,7 @@ func (s *EventService) Update(ctx context.Context, partitionKey, rowKey string, 
 func (s *EventService) Delete(ctx context.Context, partitionKey, rowKey string) error {
 	return s.repo.Delete(ctx, partitionKey, rowKey)
 }
+
+func (s *EventService) GetEventByShiftID(ctx context.Context, shiftID string) (*models.Event, error) {
+	return s.repo.GetEventByShiftID(ctx, shiftID)
+}
