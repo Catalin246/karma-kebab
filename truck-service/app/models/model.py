@@ -18,19 +18,16 @@ class Connect:
 
     def __init__(self):
         #load_dotenv(find_dotenv())
-        """self.dbhost = os.environ['DBHOST']
+        self.dbhost = os.environ['DBHOST']
         self.dbname = os.environ['DBNAME']
         self.dbuser = urllib.parse.quote(os.environ['DBUSER'])
         self.dbpass = os.environ['DBPASS']
-        self.sslmode = os.environ['SSLMODE']"""
-        self.dbhost = os.getenv('DBHOST', 'postgres_db')  # Defaults to 'postgres_db' if not found
-        self.dbname = os.getenv('DBNAME', 'postgres')    # Defaults to 'postgres' if not found
-        self.dbuser = urllib.parse.quote(os.getenv('DBUSER', 'postgres'))  # Defaults to 'postgres' if not found
-        self.dbpass = os.getenv('DBPASS', 'postgres')    # Defaults to 'postgres' if not found
-        self.sslmode = os.getenv('SSLMODE', 'disable')  
-
-
-
+        self.sslmode = os.environ['SSLMODE']
+        # self.dbhost = os.getenv('DBHOST', 'postgres_db')  # Defaults to 'postgres_db' if not found
+        # self.dbname = os.getenv('DBNAME', 'postgres')    # Defaults to 'postgres' if not found
+        # self.dbuser = urllib.parse.quote(os.getenv('DBUSER', 'postgres'))  # Defaults to 'postgres' if not found
+        # self.dbpass = os.getenv('DBPASS', 'postgres')    # Defaults to 'postgres' if not found
+        # self.sslmode = os.getenv('SSLMODE', 'disable')  
         #self.table_name = "trucks"
 
     def get_connection(self):
