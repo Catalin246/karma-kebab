@@ -1,0 +1,44 @@
+{
+  "profiles": {
+    "http": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "PostgreSQLEntityFramework": "Server=karama-kebab-network;Port=5432;Database=employeedb;Username=postgres;Password=password;"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:3005"
+    },
+    "https": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "PostgreSQLEntityFramework": "Server=karama-kebab-network;Port=5432;Database=employeedb;Username=postgres;Password=password;"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "https://localhost:3005;http://localhost:3007"
+    },
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "PostgreSQLEntityFramework": "Server=karama-kebab-network;Port=5432;Database=employeedb;Username=postgres;Password=password;"
+      }
+    },
+  },
+  "$schema": "http://json.schemastore.org/launchsettings.json",
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:47495",
+      "sslPort": 44340
+    }
+  }
+}
