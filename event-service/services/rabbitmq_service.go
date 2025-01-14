@@ -6,70 +6,76 @@ import (
 	"log"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/data/aztables"
 	"github.com/Catalin246/karma-kebab/models"
-	"github.com/Catalin246/karma-kebab/repositories"
 	"github.com/google/uuid"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-// RabbitMQService handles RabbitMQ messaging operations and implements RabbitMQServiceInterface
+// RabbitMQService handles RabbitMQ messaging operations
 type RabbitMQService struct {
-	Channel         *amqp.Channel
-	EventRepository repositories.EventRepositoryInterface
+	channel *amqp.Channel
 }
 
 // NewRabbitMQService initializes a new RabbitMQService
-func NewRabbitMQService(ch *amqp.Channel, client *aztables.ServiceClient) *RabbitMQService {
-	return &RabbitMQService{
-		Channel:         ch,
-		EventRepository: repositories.NewEventRepository(client),
-	}
+func NewRabbitMQService(ch *amqp.Channel) *RabbitMQService {
+	return &RabbitMQService{channel: ch}
 }
 
-// PublishMessage publishes a message to the specified queue
+// PublishMessage publishes a generic message to the RabbitMQ queue
 func (r *RabbitMQService) PublishMessage(queueName, message string) error {
-	// Declare the queue
-	q, err := r.Channel.QueueDeclare(
-		queueName, // name
-		false,     // durable
-		false,     // delete when unused
-		false,     // exclusive
-		false,     // no-wait
-		nil,       // arguments
-	)
-	if err != nil {
-		return err
-	}
-
-	// Set a timeout for publishing the message
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	err = r.Channel.PublishWithContext(ctx,
-		"",     // exchange
-		q.Name, // routing key
-		false,  // mandatory
-		false,  // immediate
+	return r.channel.Publish(
+		"",        // exchange
+		queueName, // routing key (queue name)
+		false,     // mandatory
+		false,     // immediate
 		amqp.Publishing{
-			ContentType: "text/plain",
-			Body:        []byte(message),
-		})
-	if err != nil {
-		return err
-	}
-
-	log.Printf("[x] Sent %s\n", message)
-	return nil
+			ContentType:  "text/plain",
+			Body:         []byte(message),
+			DeliveryMode: amqp.Persistent,
+			Timestamp:    time.Now(),
+		},
+	)
 }
 
-// ConsumeMessage consumes messages from the specified queue and processes them with the given handler function
+// PublishEventCreated publishes an event created message
+func (r *RabbitMQService) PublishEventCreated(ctx context.Context, event models.Event) error {
+	message := map[string]interface{}{
+		"roleIDs":   event.RoleIDs,
+		"eventID":   event.RowKey,
+		"startTime": event.StartTime,
+		"endTime":   event.EndTime,
+	}
+
+	messageBytes, err := json.Marshal(message)
+	if err != nil {
+		return err
+	}
+
+	return r.PublishMessage("event.created", string(messageBytes))
+}
+
+// PublishEventDeleted publishes an event deleted message
+func (r *RabbitMQService) PublishEventDeleted(ctx context.Context, eventID string, partitionKey string) error {
+	message := map[string]string{
+		"eventID":      eventID,
+		"partitionKey": partitionKey,
+	}
+
+	messageBytes, err := json.Marshal(message)
+	if err != nil {
+		return err
+	}
+
+	return r.PublishMessage("event.deleted", string(messageBytes))
+}
+
+// ConsumeMessage consumes messages from a specified queue - to add to in future
 func (r *RabbitMQService) ConsumeMessage(queueName string) error {
-	// Declare the queue to ensure it exists before consuming
-	q, err := r.Channel.QueueDeclare(
-		queueName, // name
-		false,     // durable
-		false,     // delete when unused
+	// Declare the queue (make sure it exists)
+	q, err := r.channel.QueueDeclare(
+		queueName, // Queue name
+		true,      // durable
+		false,     // auto-delete
 		false,     // exclusive
 		false,     // no-wait
 		nil,       // arguments
@@ -78,11 +84,11 @@ func (r *RabbitMQService) ConsumeMessage(queueName string) error {
 		return err
 	}
 
-	// Create a channel to receive messages
-	msgs, err := r.Channel.Consume(
+	// Set up the consumer
+	msgs, err := r.channel.Consume(
 		q.Name, // queue
 		"",     // consumer tag
-		true,   // auto-ack
+		true,   // auto-acknowledge
 		false,  // exclusive
 		false,  // no-local
 		false,  // no-wait

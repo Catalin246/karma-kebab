@@ -1,34 +1,48 @@
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using System;
-using System.Net.Http;
 using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Models;
-using Newtonsoft.Json;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 
 namespace Services
 {
     public class RabbitMqServiceConfig
     {
         public required string Url { get; set; }
+        public required string RabbitMqHost { get; set; }
     }
-    public class RabbitMqService : IRabbitMqService
-    {
-        private readonly HttpClient _httpClient;
-        private readonly ILogger<RabbitMqService> _logger;
-        private readonly string _eventCreatedQueueName = "eventCreated";
-        private readonly string _shiftServiceUrl;
-        private readonly string _clockInQueueName = "clockIn";
-        private readonly ConnectionFactory _factory;
-        private readonly IServiceProvider _serviceProvider;
 
-        public RabbitMqService(HttpClient httpClient, ILogger<RabbitMqService> logger, IOptions<RabbitMqServiceConfig> options, IServiceProvider serviceProvider)
+    public interface IRabbitMqService
+    {
+        Task PublishClockInEvent(ClockInDto clockInDto);
+        Task PublishShiftCreatedEvent(ShiftCreatedDto shiftDto);
+        Task StartSubscribers();
+    }
+
+    public class RabbitMqService : IRabbitMqService, IDisposable
+    {
+        private readonly ILogger<RabbitMqService> _logger;
+        private readonly IServiceProvider _serviceProvider;
+        private readonly ConnectionFactory _factory;
+        private IConnection _connection;
+        private IModel _channel;
+        
+        private const string ExchangeName = "shift.events";
+        
+        // Routing keys for publishing
+        private const string ClockInRoutingKey = "shift.clockin";
+        private const string ShiftCreatedRoutingKey = "shift.created";
+        
+        // Routing keys for subscribing
+        private const string EventCreatedRoutingKey = "event.created";
+        private const string EventDeletedRoutingKey = "event.deleted";
+
+        public RabbitMqService(
+            ILogger<RabbitMqService> logger,
+            IOptions<RabbitMqServiceConfig> options,
+            IServiceProvider serviceProvider)
         {
-            _httpClient = httpClient;
             _logger = logger;
             _factory = new ConnectionFactory { HostName = "rabbitmq" };
             if (options == null) throw new ArgumentNullException(nameof(options));
@@ -45,21 +59,37 @@ namespace Services
 
             _logger.LogInformation(" [*] Waiting for messages.");
 
-            var consumer = new AsyncEventingBasicConsumer(channel);
+            var consumer = new AsyncEventingBasicConsumer(_channel);
+
             consumer.ReceivedAsync += async (model, ea) =>
             {
                 try
                 {
+                    // Validate incoming message
+                    if (ea?.Body == null)
+                    {
+                        _logger.LogError("Received null event arguments");
+                        return;
+                    }
+
                     var body = ea.Body.ToArray();
                     var message = Encoding.UTF8.GetString(body);
-                    _logger.LogInformation($" [x] Received {message}");
-                    _logger.LogInformation($" [*] Configured ShiftService Url: {_shiftServiceUrl}");
+                    _logger.LogInformation($"Received event created message: {message}");
 
-                    // Deserialize the JSON message into the EventMessage object
-                    EventMessage eventMessage = JsonConvert.DeserializeObject<EventMessage>(message);
+                    // Explicitly specify the type for deserialization
+                    var eventMessage = JsonConvert.DeserializeObject<EventCreatedMessage>(message);
                     if (eventMessage == null)
                     {
-                        _logger.LogError(" [!] Deserialized event message is null.");
+                        _logger.LogError("Failed to deserialize event message");
+                        _channel.BasicNack(ea.DeliveryTag, false, false);
+                        return;
+                    }
+
+                    // Validate required properties
+                    if (eventMessage.RoleIds == null || !eventMessage.RoleIds.Any())
+                    {
+                        _logger.LogError("Event message contains no role IDs");
+                        _channel.BasicNack(ea.DeliveryTag, false, false);
                         return;
                     }
 
@@ -83,7 +113,13 @@ namespace Services
                     // Create a scope and resolve IShiftService within it
                     using (var scope = _serviceProvider.CreateScope())
                     {
-                        var shiftService = scope.ServiceProvider.GetRequiredService<IShiftService>();
+                        _logger.LogError("Invalid event deletion message: No shift IDs provided");
+                        _channel.BasicNack(ea.DeliveryTag, false, false);
+                        return;
+                    }
+
+                    using var scope = _serviceProvider.CreateScope();
+                    var shiftService = scope.ServiceProvider.GetRequiredService<IShiftService>();
 
                         foreach (int roleID in roleIDs)
                         {
@@ -105,19 +141,20 @@ namespace Services
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($" [!] Error: {ex.Message}");
+                    _logger.LogError(ex, "Error processing event deleted message");
+                    _channel.BasicNack(ea.DeliveryTag, false, true);
                 }
             };
 
-            await channel.BasicConsumeAsync(queue: _eventCreatedQueueName, autoAck: true, consumer: consumer);
-
-            // Prevent the method from exiting immediately
-            await Task.Delay(-1);
+            _channel.BasicConsume(
+                queue: "shift-service.event.deleted",
+                autoAck: false,
+                consumer: consumer);
         }
-
-        public async Task ListeningEventDeleted() // Consumer - consume from eventDeleted queue
+        public void Dispose()
         {
-            // TODO: Implement the logic to listen for EventDeleted messages
+            _channel?.Dispose();
+            _connection?.Dispose();
         }
     }
 }

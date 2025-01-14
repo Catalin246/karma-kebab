@@ -49,6 +49,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+var rabbitMqService = app.Services.GetRequiredService<IRabbitMqService>();
+await rabbitMqService.StartSubscribers();
+
 // Register the custom GatewayHeaderMiddleware
 app.UseMiddleware<GatewayHeaderMiddleware>();
 
