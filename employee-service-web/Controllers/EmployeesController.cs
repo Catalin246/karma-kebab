@@ -92,7 +92,7 @@ namespace Controllers
         [HttpPost]
         public async Task<IActionResult> AddEmployee([FromBody] EmployeeDTO employeeDto)
         {
-            _logger.LogInformation("Adding new employee");
+            _logger.LogInformation("Adding new employee: {EmployeeDto}", employeeDto);
 
             if (employeeDto == null)
             {
