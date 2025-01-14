@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Azure;
 using System.Text.Json;
 using Services;
+using Microsoft.AspNetCore.Authorization;
 
 [ApiController]
 [Route("[controller]")]
@@ -75,6 +76,7 @@ public class ShiftsController : ControllerBase
         }
     }
 
+    [Authorize(Policy = "AdminOnly")]
     [HttpPost]
     public async Task<ActionResult<ApiResponse>> CreateShift([FromBody] CreateShiftDto createshiftDto)
     {
@@ -179,7 +181,6 @@ public class ShiftsController : ControllerBase
             });
         }
     }
-
 
     [HttpPost("{shiftId:guid}/clockin")]
     public async Task<ActionResult<ApiResponse>> ClockIn(Guid shiftId)
