@@ -11,10 +11,17 @@ public class ShiftsController : ControllerBase
     private readonly ILogger<ShiftsController> _logger;
     private readonly IRabbitMqService _rabbitMqService;
 
-    public ShiftsController(IShiftService shiftService, ILogger<ShiftsController> logger)
+    // public ShiftsController( IShiftService shiftService, ILogger<ShiftsController> logger, IRabbitMqService rabbitMqService) 
+    // {
+    //     _shiftService = shiftService;
+    //     _logger = logger; 
+    //     _rabbitMqService = rabbitMqService;
+    // }
+    
+    public ShiftsController( IShiftService shiftService, ILogger<ShiftsController> logger) 
     {
         _shiftService = shiftService;
-        _logger = logger;
+        _logger = logger; 
     }
 
     [HttpGet]
