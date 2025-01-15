@@ -69,7 +69,7 @@ func main() {
 	defer ch.Close()
 
 	// Initialize RabbitMQService
-	rabbitMQService := services.NewRabbitMQService(ch, client)
+	rabbitMQService := services.NewRabbitMQService(ch)
 
 	// Start consuming messages from the "shiftCreated"
 	err = rabbitMQService.ConsumeMessage("shiftCreated")

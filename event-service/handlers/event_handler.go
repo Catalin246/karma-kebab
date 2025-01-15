@@ -93,27 +93,15 @@ func (h *EventHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 
 	event.RowKey = uuid.New()
 
+	// Create event in the service
 	if err := h.service.Create(context.Background(), event); err != nil {
 		http.Error(w, "Failed to create event: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// Create the JSON message you want to send
-	message := map[string]interface{}{
-		"roleIDs":   event.RoleIDs,
-		"eventID":   event.RowKey,
-		"startTime": event.StartTime,
-		"endTime":   event.EndTime,
-	}
-
-	messageBytes, err := json.Marshal(message)
-	if err != nil {
-		log.Println("Failed to marshal message:", err)
-		return
-	}
-
-	if err := h.rabbitMQService.PublishMessage("eventCreated", string(messageBytes)); err != nil {
-		log.Println("Failed to publish message:", err)
+	// Publish event created message
+	if err := h.rabbitMQService.PublishEventCreated(context.Background(), event); err != nil {
+		log.Println("Failed to publish event created message:", err)
 	}
 
 	w.WriteHeader(http.StatusCreated)
@@ -155,8 +143,9 @@ func (h *EventHandler) DeleteEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.rabbitMQService.PublishMessage("eventDeleted", "Event Deleted!"); err != nil {
-		log.Println("Failed to publish message:", err)
+	// Publish event deleted message
+	if err := h.rabbitMQService.PublishEventDeleted(context.Background(), rowKey, partitionKey); err != nil {
+		log.Println("Failed to publish event deleted message:", err)
 	}
 
 	w.WriteHeader(http.StatusOK)

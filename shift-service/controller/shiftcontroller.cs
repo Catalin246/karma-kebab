@@ -213,7 +213,7 @@ public class ShiftsController : ControllerBase
             };
 
             // Publish clock-in message to RabbitMQ - to clockin queue
-            _rabbitMqService.PublishClockIn(clockInMessage);
+            _rabbitMqService.PublishClockInEvent(clockInMessage);
 
             return Ok(new ApiResponse
             {
