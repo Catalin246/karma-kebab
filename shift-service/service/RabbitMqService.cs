@@ -4,7 +4,6 @@ using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-
 namespace Services
 {
     public class RabbitMqServiceConfig
@@ -13,20 +12,13 @@ namespace Services
         public required string RabbitMqHost { get; set; }
     }
 
-    public interface IRabbitMqService
-    {
-        Task PublishClockInEvent(ClockInDto clockInDto);
-        Task PublishShiftCreatedEvent(ShiftCreatedDto shiftDto);
-        Task StartSubscribers();
-    }
-
     public class RabbitMqService : IRabbitMqService, IDisposable
     {
         private readonly ILogger<RabbitMqService> _logger;
         private readonly IServiceProvider _serviceProvider;
-        private readonly ConnectionFactory _factory;
+        // private readonly ConnectionFactory _factory;
         private IConnection _connection;
-        private IModel _channel;
+        private IChannel _channel;
         
         private const string ExchangeName = "shift.events";
         
@@ -46,21 +38,18 @@ namespace Services
             _logger = logger;
             _serviceProvider = serviceProvider;
             
-            _factory = new ConnectionFactory { 
-                HostName = options.Value.RabbitMqHost,
-                DispatchConsumersAsync = true 
-            };
-            
+            ConnectionFactory _factory = new ConnectionFactory();
+            _factory.AutomaticRecoveryEnabled = true;            
             InitializeRabbitMq();
         }
 
         private void InitializeRabbitMq()
         {
-            _connection = _factory.CreateConnection();
-            _channel = _connection.CreateModel();
+            _connection = _factory.CreateConnectionAsync();
+            _channel = _connection.CreateChannelAsync();
 
             // Declare the topic exchange
-            _channel.ExchangeDeclare(
+            _channel.ExchangeDeclareAsync(
                 exchange: ExchangeName,
                 type: ExchangeType.Topic,
                 durable: true
@@ -73,46 +62,37 @@ namespace Services
         private void DeclareQueues()
         {
             // Queue for event.created events
-            var eventCreatedQueue = _channel.QueueDeclare(
-                queue: "shift-service.event.created",
-                durable: true,
-                exclusive: false,
-                autoDelete: false,
-                arguments: null);
+            var eventCreatedQueue = _channel.QueueDeclareAsync("shift-service.event.created", false, false, false, null);
 
             // Queue for event.deleted events
-            var eventDeletedQueue = _channel.QueueDeclare(
-                queue: "shift-service.event.deleted",
-                durable: true,
-                exclusive: false,
-                autoDelete: false,
-                arguments: null);
+            var eventDeletedQueue = _channel.QueueDeclareAsync("shift-service.event.deleted", false, false, false, null);
 
             // Bind queues to exchange with routing keys
-            _channel.QueueBind(
-                queue: eventCreatedQueue.QueueName,
-                exchange: ExchangeName,
-                routingKey: EventCreatedRoutingKey);
+            _channel.QueueBindAsync(
+                queueName: eventCreatedQueue.queueName,
+                exchangeName: ExchangeName,
+                routingKey: EventCreatedRoutingKey, null);
 
-            _channel.QueueBind(
-                queue: eventDeletedQueue.QueueName,
-                exchange: ExchangeName,
-                routingKey: EventDeletedRoutingKey);
+            _channel.QueueBindAsync(
+                queueName: eventDeletedQueue.queueName,
+                exchangeName: ExchangeName,
+                routingKey: EventDeletedRoutingKey, null);
         }
 
         public async Task PublishClockInEvent(ClockInDto clockInDto)
         {
-            try
+           try
             {
                 var message = JsonConvert.SerializeObject(clockInDto);
-                var body = Encoding.UTF8.GetBytes(message);
-
-                _channel.BasicPublish(
-                    exchange: ExchangeName,
-                    routingKey: ClockInRoutingKey,
-                    basicProperties: null,
-                    body: body);
-
+                byte[] body = Encoding.UTF8.GetBytes(message);
+                
+                await _channel.BasicPublishAsync<IBasicProperties>(
+                    ExchangeName, 
+                    ClockInRoutingKey, 
+                    false, 
+                    null, 
+                    body);
+                
                 _logger.LogInformation($"Published Clock In/Out event for Shift {clockInDto.ShiftID}");
             }
             catch (Exception ex)
@@ -121,29 +101,22 @@ namespace Services
                 throw;
             }
         }
+        public async Task PublishShiftCreatedEvent(ShiftCreatedDto shiftDto)
+        {
+            try
+            {
+                var message = JsonConvert.SerializeObject(shiftDto);
+                byte[] body = Encoding.UTF8.GetBytes(message);
 
-        // dont think we need this:
-        //public async Task PublishShiftCreatedEvent(ShiftCreatedDto shiftDto)
-        // {
-        //     try
-        //     {
-        //         var message = JsonConvert.SerializeObject(shiftDto);
-        //         var body = Encoding.UTF8.GetBytes(message);
-
-        //         _channel.BasicPublish(
-        //             exchange: ExchangeName,
-        //             routingKey: ShiftCreatedRoutingKey,
-        //             basicProperties: null,
-        //             body: body);
-
-        //         _logger.LogInformation($"Published Shift Created event for Shift {shiftDto.ShiftId}");
-        //     }
-        //     catch (Exception ex)
-        //     {
-        //         _logger.LogError(ex, "Error publishing shift created event");
-        //         throw;
-        //     }
-        // }
+                _channel.BasicPublishAsync(ExchangeName, ShiftCreatedRoutingKey, false, null, body);
+                _logger.LogInformation($"Published Shift Created event for Shift {shiftDto.ShiftId}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error publishing shift created event");
+                throw;
+            }
+        }
 
         public async Task StartSubscribers()
         {
@@ -180,7 +153,7 @@ namespace Services
                     if (eventMessage == null)
                     {
                         _logger.LogError("Failed to deserialize event message");
-                        _channel.BasicNack(ea.DeliveryTag, false, false);
+                        _channel.BasicNackAsync(ea.DeliveryTag, false, false);
                         return;
                     }
 
@@ -188,7 +161,7 @@ namespace Services
                     if (eventMessage.RoleIds == null || !eventMessage.RoleIds.Any())
                     {
                         _logger.LogError("Event message contains no role IDs");
-                        _channel.BasicNack(ea.DeliveryTag, false, false);
+                        _channel.BasicNackAsync(ea.DeliveryTag, false, false);
                         return;
                     }
 
@@ -217,21 +190,21 @@ namespace Services
                         }
                     }
 
-                    _channel.BasicAck(ea.DeliveryTag, false);
+                    _channel.BasicAckAsync(ea.DeliveryTag, false);
                 }
                 catch (JsonException jsonEx)
                 {
                     _logger.LogError(jsonEx, "Error deserializing event message");
-                    _channel.BasicNack(ea.DeliveryTag, false, false);
+                    _channel.BasicNackAsync(ea.DeliveryTag, false, false);
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error processing event created message");
-                    _channel.BasicNack(ea.DeliveryTag, false, true);
+                    _channel.BasicNackAsync(ea.DeliveryTag, false, true);
                 }
             };
 
-            _channel.BasicConsume(
+            _channel.BasicConsumeAsync(
                 queue: "shift-service.event.created",
                 autoAck: false,
                 consumer: consumer);
@@ -276,7 +249,7 @@ namespace Services
                     if (eventMessage == null || eventMessage.ShiftIds == null || !eventMessage.ShiftIds.Any())
                     {
                         _logger.LogError("Invalid event deletion message: No shift IDs provided");
-                        _channel.BasicNack(ea.DeliveryTag, false, false);
+                        _channel.BasicNackAsync(ea.DeliveryTag, false, false);
                         return;
                     }
 
@@ -302,27 +275,27 @@ namespace Services
                     if (!failedDeletions.Any())
                     {
                         _logger.LogInformation($"Successfully deleted all {eventMessage.ShiftIds.Count} shifts");
-                        _channel.BasicAck(ea.DeliveryTag, false);
+                        _channel.BasicAckAsync(ea.DeliveryTag, false);
                     }
                     else
                     {
                         _logger.LogError($"Failed to delete {failedDeletions.Count} shifts out of {eventMessage.ShiftIds.Count}");
-                        _channel.BasicNack(ea.DeliveryTag, false, true);
+                        _channel.BasicNackAsync(ea.DeliveryTag, false, true);
                     }
                 }
                 catch (JsonException jsonEx)
                 {
                     _logger.LogError(jsonEx, "Error deserializing event deletion message");
-                    _channel.BasicNack(ea.DeliveryTag, false, false);
+                    _channel.BasicNackAsync(ea.DeliveryTag, false, false);
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error processing event deleted message");
-                    _channel.BasicNack(ea.DeliveryTag, false, true);
+                    _channel.BasicNackAsync(ea.DeliveryTag, false, true);
                 }
             };
 
-            _channel.BasicConsume(
+            _channel.BasicConsumeAsync(
                 queue: "shift-service.event.deleted",
                 autoAck: false,
                 consumer: consumer);
