@@ -66,6 +66,10 @@
               "target": "Package",
               "version": "[9.1.0, )"
             },
+            "Moises.RabbitMQ.Client.Core.DependencyInjection": {
+              "target": "Package",
+              "version": "[7.0.0-alpha, )"
+            },
             "Moq": {
               "target": "Package",
               "version": "[4.20.72, )"

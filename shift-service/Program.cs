@@ -12,6 +12,7 @@ using Services;
 using Messaging.Configuration;
 using Messaging.Publishers;
 using Messaging.Subscribers;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,9 +20,31 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<AzureStorageConfig>(
     builder.Configuration.GetSection("AzureStorage"));
 
+builder.Services.AddSingleton<IConnection>(sp =>
+{
+    var config = sp.GetRequiredService<IOptions<RabbitMQConfig>>().Value;
+    var factory = new ConnectionFactory
+    {
+        UserName = config.UserName,
+        Password = config.Password,
+        VirtualHost = config.VirtualHost,
+        HostName = config.HostName
+    };
+    return factory.CreateConnectionAsync().GetAwaiter().GetResult();
+});
+
+// Add this after IConnection registration
+builder.Services.AddSingleton<IChannel>(sp =>
+{
+    var connection = sp.GetRequiredService<IConnection>();
+    return connection.CreateChannelAsync().GetAwaiter().GetResult();
+});
+
+
 // Add RabbitMQ configuration once
 builder.Services.Configure<RabbitMQConfig>(
     builder.Configuration.GetSection("RabbitMQ"));
+
 // Register services
 builder.Services.AddSingleton<IEventPublisher, RabbitMQEventPublisher>();
 builder.Services.AddSingleton<IEventSubscriber, RabbitMQEventSubscriber>();
