@@ -1,0 +1,183 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-db-pvc # Updated name for PostgreSQL
+  namespace: india-dev
+spec:
+  accessModes:
+    - ReadWriteOnce # Common access mode for PostgreSQL
+  resources:
+    requests:
+      storage: 1Gi # Adjust storage size based on PostgreSQL requirements
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init-script
+  namespace: india-dev
+data:
+  init.sql: |
+    -- Create the "trucks" table if it doesn't exist
+    CREATE TABLE IF NOT EXISTS "trucks" (
+        "plate_number" VARCHAR(255) PRIMARY KEY,
+        "name" VARCHAR(255) NOT NULL,
+        "description" TEXT,
+        "note" TEXT
+    );
+
+    -- Insert initial data into the 'trucks' table
+    INSERT INTO "trucks" (
+        "plate_number",
+        "name",
+        "description",
+        "note"
+    ) VALUES (
+        'KBB-333', 
+        'King Kebab',
+        'The best kebab truck in town',
+        'Change front left light'
+    );
+
+    INSERT INTO "trucks" (
+        "plate_number",
+        "name",
+        "description",
+        "note"
+    ) VALUES (
+        'ENI-567', 
+        'Queen Kebab',
+        'Can carry 120kg vegan kebab meat',
+        'All good'
+    );
+
+
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: truck-postgres-db
+  namespace: india-dev
+  labels:
+    app: truck-postgres-db
+    app.kubernetes.io/part-of: karma-kebab-app
+    app.openshift.io/runtime: PostgreSQL
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: truck-postgres-db
+  template:
+    metadata:
+      labels:
+        app: truck-postgres-db
+    spec:
+      containers:
+        - name: truck-postgres-db
+          image: quay.io/dewicabret/postgres-mirror:latest
+          ports:
+            - containerPort: 5432
+          env:
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              value: password
+            - name: POSTGRES_DB
+              value: truck
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+            - name: postgres-init-script
+              mountPath: /docker-entrypoint-initdb.d
+      volumes:
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: postgres-db-pvc
+        - name: postgres-init-script
+          configMap:
+            name: postgres-init-script
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  namespace: india-dev
+  labels:
+    app: truck-postgres-db
+spec:
+  selector:
+    app: truck-postgres-db
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+  type: ClusterIP
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: truck-service-web
+  labels: 
+    app: truck-service-web
+    app.kubernetes.io/part-of: karma-kebab-app 
+    app.openshift.io/runtime: python
+spec:
+  replicas: 1
+  selector: 
+     matchLabels: 
+      app: truck-service-web
+  template:
+    metadata: 
+      labels: 
+        app: truck-service-web
+    spec:
+      containers:
+        - name: truck-service-web-container
+          image: enibalint/truck-service-web
+          ports: 
+            - containerPort: 8080
+          env: 
+            - name: truck-db
+              value: Host=postgres-service;Port=5432;Database=truck;Username=postgres;Password=password
+  
+---
+
+apiVersion: v1
+kind: Service
+metadata: 
+  name: truck-service-web-svc
+spec: 
+  selector: 
+    app: truck-service-web
+  ports: 
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: ClusterIP
+
+---
+
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata: 
+  name: truck-service-web-route
+  namespace: india-dev
+spec: 
+  to: 
+    kind: Service
+    name: truck-service-web-svc
+  port: 
+    targetPort: 8080
+  tls: 
+    termination: edge
+  wildcardPolicy: None
+    
