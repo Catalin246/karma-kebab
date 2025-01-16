@@ -5,8 +5,9 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using RabbitMQ.Client;
 using Microsoft.Extensions.Logging;
-using shift_service.messaging.DTOs;
-using shift_service.messaging.configuration;
+using Messaging.Configuration;
+
+namespace Messaging.Publishers {
 
 public class RabbitMQEventPublisher : IEventPublisher, IDisposable
 {
@@ -26,41 +27,38 @@ public class RabbitMQEventPublisher : IEventPublisher, IDisposable
             VirtualHost = config.VirtualHost
         };
 
-        _connection = factory.CreateConnection();
-        _channel = _connection.CreateChannel();  // CreateChannel is correct for 7.0.0
+        _connection = (IConnection)factory.CreateConnectionAsync();
+        _channel = (IChannel)_connection.CreateChannelAsync();  
         
         // Declare exchanges
-        _channel.ExchangeDeclare(CLOCK_IN_EXCHANGE, ExchangeType.Fanout, durable: true);
-        _channel.ExchangeDeclare(SHIFT_CREATED_EXCHANGE, ExchangeType.Fanout, durable: true);
+        _channel.ExchangeDeclareAsync(CLOCK_IN_EXCHANGE, ExchangeType.Fanout, durable: true);
+        _channel.ExchangeDeclareAsync(SHIFT_CREATED_EXCHANGE, ExchangeType.Fanout, durable: true);
     }
 
     public async Task PublishClockInEvent(ClockInDto clockInDto)
     {
         var message = JsonSerializer.Serialize(clockInDto);
-        var body = Encoding.UTF8.GetBytes(message);
+        byte[] body = System.Text.Encoding.UTF8.GetBytes(message);  
+        var props = new BasicProperties();
+        props.ContentType = "text/plain";
+        props.DeliveryMode = (DeliveryModes)2;
         
-        _channel.BasicPublish(
-            exchange: CLOCK_IN_EXCHANGE,
-            routingKey: "",
-            basicProperties: null,
-            body: body);
+        await _channel.BasicPublishAsync( CLOCK_IN_EXCHANGE, "", true, props, body);      
     }
 
     public async Task PublishShiftCreatedEvent(ShiftCreatedDto shiftDto)
     {
         var message = JsonSerializer.Serialize(shiftDto);
-        var body = Encoding.UTF8.GetBytes(message);
+        byte[] body = System.Text.Encoding.UTF8.GetBytes(message);
+        var props = new BasicProperties();
+        props.ContentType = "text/plain";
+        props.DeliveryMode = (DeliveryModes)2;
         
-        _channel.BasicPublish(
-            exchange: SHIFT_CREATED_EXCHANGE,
-            routingKey: "",
-            basicProperties: null,
-            body: body);
+        await _channel.BasicPublishAsync( SHIFT_CREATED_EXCHANGE, "", true, props, body);
     }
-
     public void Dispose()
     {
         _channel?.Dispose();
         _connection?.Dispose();
     }
-}
+}}

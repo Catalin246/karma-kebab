@@ -1,7 +1,9 @@
 using System;
 using System.Threading.Tasks;
 using Azure;
+using Models;
 
+namespace Services{
 public class ShiftService : IShiftService
 {
     private readonly IShiftDbContext _dbContext;
@@ -203,4 +205,4 @@ public class ShiftService : IShiftService
         return existingEntity;
     }
 
-}
+}}

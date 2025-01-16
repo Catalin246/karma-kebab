@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Azure;
 using System.Text.Json;
-using shift_service.service;
+using Services;
+using Models;
+using Messaging.Publishers;
 
 [ApiController]
 [Route("[controller]")]
@@ -9,11 +11,13 @@ public class ShiftsController : ControllerBase
 {
     private readonly IShiftService _shiftService;
     private readonly ILogger<ShiftsController> _logger;
+    private readonly IEventPublisher _eventpublisher;
     
-    public ShiftsController( IShiftService shiftService, ILogger<ShiftsController> logger) 
+    public ShiftsController( IShiftService shiftService, ILogger<ShiftsController> logger, IEventPublisher eventPublisher) 
     {
         _shiftService = shiftService;
         _logger = logger; 
+        _eventpublisher = eventPublisher;
     }
 
     [HttpGet]
@@ -215,7 +219,7 @@ public class ShiftsController : ControllerBase
             try
             {
                 // Publish clock-in event asynchronously
-                await _eventPublisher.PublishClockInEvent(clockInEvent);
+                await _eventpublisher.PublishClockInEvent(clockInEvent);
                 _logger.LogInformation("Successfully published clock-in event for shift: {ShiftId}", shiftId);
 
                 return Ok(new ApiResponse

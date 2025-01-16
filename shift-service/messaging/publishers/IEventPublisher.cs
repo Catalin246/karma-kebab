@@ -1,8 +1,9 @@
 using System;
 using System.Threading.Tasks;
-using shift_service.messaging.DTOs;
+
+namespace Messaging.Publishers {
 public interface IEventPublisher
 {
     Task PublishClockInEvent(ClockInDto clockInDto);
     Task PublishShiftCreatedEvent(ShiftCreatedDto shiftDto);
-}
+}}

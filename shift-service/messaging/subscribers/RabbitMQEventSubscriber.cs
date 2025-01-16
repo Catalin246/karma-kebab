@@ -1,5 +1,8 @@
 using System;
+using RabbitMQ.Client.Events;
 using RabbitMQ.Client;
+using Messaging.Configuration;
+namespace Messaging.Subscribers {
 public class RabbitMQEventSubscriber : IEventSubscriber, IDisposable
 {
     private readonly IConnection _connection;
@@ -11,19 +14,22 @@ public class RabbitMQEventSubscriber : IEventSubscriber, IDisposable
     public RabbitMQEventSubscriber(RabbitMQConfig config, ILogger<RabbitMQEventSubscriber> logger)
     {
         _logger = logger;
-        var factory = new ConnectionFactory
-        {
-            HostName = config.HostName,
-            Port = config.Port,
-            UserName = config.UserName,
-            Password = config.Password,
-            VirtualHost = config.VirtualHost
-        };
+        ConnectionFactory factory = new ConnectionFactory();
+        factory.UserName = config.UserName;
+        factory.Password = config.Password;
+        factory.VirtualHost = config.VirtualHost;
+        factory.HostName = config.HostName;
 
-        _connection = factory.CreateConnection();
-        _channel = _connection.CreateModel();
+        _connection = (IConnection)factory.CreateConnectionAsync();
+        _channel = (IChannel)_connection.CreateChannelAsync(); 
     }
-
+    
+    private RabbitMQEventSubscriber(IConnection connection, IChannel channel, ILogger<RabbitMQEventSubscriber> logger)
+        {
+            _connection = connection;
+            _channel = channel;
+            _logger = logger;
+        }
     public async Task StartSubscribers()
     {
         await StartEventCreatedSubscriber();
@@ -32,8 +38,8 @@ public class RabbitMQEventSubscriber : IEventSubscriber, IDisposable
 
     public Task StartEventCreatedSubscriber()
     {
-        _channel.QueueDeclare(SHIFT_CREATED_QUEUE, durable: true, exclusive: false, autoDelete: false);
-        _channel.QueueBind(SHIFT_CREATED_QUEUE, "shift.created", "");
+        _channel.QueueDeclareAsync(SHIFT_CREATED_QUEUE, durable: true, exclusive: false, autoDelete: false);
+        _channel.QueueBindAsync(SHIFT_CREATED_QUEUE, "shift.created", "");
 
         var consumer = new EventingBasicConsumer(_channel);
         consumer.Received += (model, ea) =>
@@ -55,7 +61,7 @@ public class RabbitMQEventSubscriber : IEventSubscriber, IDisposable
             }
         };
 
-        _channel.BasicConsume(queue: SHIFT_CREATED_QUEUE,
+        _channel.BasicConsumeAsync(queue: SHIFT_CREATED_QUEUE,
                             autoAck: false,
                             consumer: consumer);
 
@@ -64,8 +70,8 @@ public class RabbitMQEventSubscriber : IEventSubscriber, IDisposable
 
     public Task StartEventDeletedSubscriber()
     {
-        _channel.QueueDeclare(SHIFT_DELETED_QUEUE, durable: true, exclusive: false, autoDelete: false);
-        _channel.QueueBind(SHIFT_DELETED_QUEUE, "shift.deleted", "");
+        _channel.QueueDeclareAsync(SHIFT_DELETED_QUEUE, durable: true, exclusive: false, autoDelete: false);
+        _channel.QueueBindAsync(SHIFT_DELETED_QUEUE, "shift.deleted", "");
 
         var consumer = new EventingBasicConsumer(_channel);
         consumer.Received += (model, ea) =>
@@ -87,7 +93,7 @@ public class RabbitMQEventSubscriber : IEventSubscriber, IDisposable
             }
         };
 
-        _channel.BasicConsume(queue: SHIFT_DELETED_QUEUE,
+        _channel.BasicConsumeAsync(queue: SHIFT_DELETED_QUEUE,
                             autoAck: false,
                             consumer: consumer);
 
@@ -99,4 +105,4 @@ public class RabbitMQEventSubscriber : IEventSubscriber, IDisposable
         _channel?.Dispose();
         _connection?.Dispose();
     }
-}
+}}
