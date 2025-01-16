@@ -4,18 +4,25 @@ using Xunit;
 using Moq;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc;
+using Services;
+using Controllers;
+using Messaging.Publishers;
+using Models;
 // Controller Layer: HTTP request handling, response formatting, input validation
 public class ShiftsControllerTests
 {
     private readonly Mock<IShiftService> _mockShiftService;
     private readonly Mock<ILogger<ShiftsController>> _mockLogger;
     private readonly ShiftsController _controller;
+        private readonly Mock<IEventPublisher> _mockEventPublisher;
+
 
     public ShiftsControllerTests()
     {
         _mockShiftService = new Mock<IShiftService>();
         _mockLogger = new Mock<ILogger<ShiftsController>>();
-        _controller = new ShiftsController(_mockShiftService.Object, _mockLogger.Object);
+        _mockEventPublisher = new Mock<IEventPublisher>(); 
+        _controller = new ShiftsController(_mockShiftService.Object, _mockLogger.Object, _mockEventPublisher.Object);
     }
 
     [Fact]

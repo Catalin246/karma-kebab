@@ -2,6 +2,8 @@ using System;
 using RabbitMQ.Client.Events;
 using RabbitMQ.Client;
 using Messaging.Configuration;
+using System.Text;
+using System.Text.Json;
 namespace Messaging.Subscribers {
 public class RabbitMQEventSubscriber : IEventSubscriber, IDisposable
 {
@@ -36,13 +38,13 @@ public class RabbitMQEventSubscriber : IEventSubscriber, IDisposable
         await StartEventDeletedSubscriber();
     }
 
-    public Task StartEventCreatedSubscriber()
+    public async Task StartEventCreatedSubscriber()
     {
-        _channel.QueueDeclareAsync(SHIFT_CREATED_QUEUE, durable: true, exclusive: false, autoDelete: false);
-        _channel.QueueBindAsync(SHIFT_CREATED_QUEUE, "shift.created", "");
+        await _channel.QueueDeclareAsync(SHIFT_CREATED_QUEUE, durable: true, exclusive: false, autoDelete: false);
+        await _channel.QueueBindAsync(SHIFT_CREATED_QUEUE, "shift.created", "");
 
-        var consumer = new EventingBasicConsumer(_channel);
-        consumer.Received += (model, ea) =>
+        var consumer = new AsyncEventingBasicConsumer(_channel);
+        consumer.ReceivedAsync += async (ch, ea) =>
         {
             var body = ea.Body.ToArray();
             var message = Encoding.UTF8.GetString(body);
@@ -52,29 +54,27 @@ public class RabbitMQEventSubscriber : IEventSubscriber, IDisposable
                 var shiftCreatedDto = JsonSerializer.Deserialize<ShiftCreatedDto>(message);
                 // Handle the message
                 _logger.LogInformation($"Received shift created event for shift: {shiftCreatedDto.ShiftId}");
-                _channel.BasicAck(ea.DeliveryTag, false);
+                await _channel.BasicAckAsync(ea.DeliveryTag, false);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing shift created message");
-                _channel.BasicNack(ea.DeliveryTag, false, true);
+                await _channel.BasicNackAsync(ea.DeliveryTag, false, true);
             }
+             await _channel.BasicAckAsync(ea.DeliveryTag, false);
         };
 
-        _channel.BasicConsumeAsync(queue: SHIFT_CREATED_QUEUE,
-                            autoAck: false,
-                            consumer: consumer);
+            string consumerTag = await _channel.BasicConsumeAsync(SHIFT_CREATED_QUEUE, false, consumer);
 
-        return Task.CompletedTask;
     }
 
-    public Task StartEventDeletedSubscriber()
+    public async Task StartEventDeletedSubscriber()
     {
-        _channel.QueueDeclareAsync(SHIFT_DELETED_QUEUE, durable: true, exclusive: false, autoDelete: false);
-        _channel.QueueBindAsync(SHIFT_DELETED_QUEUE, "shift.deleted", "");
+        await _channel.QueueDeclareAsync(SHIFT_DELETED_QUEUE, durable: true, exclusive: false, autoDelete: false);
+        await _channel.QueueBindAsync(SHIFT_DELETED_QUEUE, "shift.deleted", "");
 
-        var consumer = new EventingBasicConsumer(_channel);
-        consumer.Received += (model, ea) =>
+        var consumer = new AsyncEventingBasicConsumer(_channel);
+        consumer.ReceivedAsync += async (ch, ea) =>
         {
             var body = ea.Body.ToArray();
             var message = Encoding.UTF8.GetString(body);
@@ -84,20 +84,17 @@ public class RabbitMQEventSubscriber : IEventSubscriber, IDisposable
                 var shiftId = JsonSerializer.Deserialize<Guid>(message);
                 // Handle the message
                 _logger.LogInformation($"Received shift deleted event for shift: {shiftId}");
-                _channel.BasicAck(ea.DeliveryTag, false);
+                await _channel.BasicAckAsync(ea.DeliveryTag, false);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing shift deleted message");
-                _channel.BasicNack(ea.DeliveryTag, false, true);
+                await _channel.BasicNackAsync(ea.DeliveryTag, false, true);
             }
+            await _channel.BasicAckAsync(ea.DeliveryTag, false);
         };
 
-        _channel.BasicConsumeAsync(queue: SHIFT_DELETED_QUEUE,
-                            autoAck: false,
-                            consumer: consumer);
-
-        return Task.CompletedTask;
+        string consumerTag = await _channel.BasicConsumeAsync(SHIFT_DELETED_QUEUE, false, consumer);
     }
 
     public void Dispose()

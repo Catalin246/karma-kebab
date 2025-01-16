@@ -8,7 +8,10 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
 using System.Text.Json;
-using shift_service.service;
+using Services;
+using Messaging.Configuration;
+using Messaging.Publishers;
+using Messaging.Subscribers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,7 +19,7 @@ builder.Services.Configure<AzureStorageConfig>(
     builder.Configuration.GetSection("AzureStorage"));
 
 // Add RabbitMQ configuration
-builder.Services.Configure<RabbitMqServiceConfig>(
+builder.Services.Configure<RabbitMQConfig>(
     builder.Configuration.GetSection("ShiftService"));
 
 // Register services
