@@ -1,0 +1,110 @@
+name: Full CI/CD Pipeline with Testing
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  # python unit tests
+  python-test:
+    runs-on: ubuntu-latest
+    name: Python Unit Tests
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          cd truck-service
+          pip install -r requirements.txt
+
+      - name: Run Python Unit Tests
+        run: |
+          cd truck-service/tests
+          pytest --maxfail=1 --disable-warnings -q
+
+    #c-sharp unit tests
+    csharp-test:
+    runs-on: ubuntu-latest
+    name: C# Unit Tests
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: '6.0'
+
+      - name: Restore dependencies
+        run: |
+          cd employee-service
+          dotnet restore
+
+      - name: Run C# Unit Tests
+        run: |
+          cd employee-service/tests
+          dotnet test
+      
+      - name: Restore dependencies
+        run: |
+          cd shift-service
+          dotnet restore
+
+      - name: Run C# Unit Tests
+        run: |
+          cd shift-service/tests
+          dotnet test
+
+  #go unit tests
+  go-test:
+    runs-on: ubuntu-latest
+    name: Go Unit Tests
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.19'
+
+      - name: Install dependencies
+        run: |
+          cd availability-service
+          go mod tidy
+
+      - name: Run Go Unit Tests
+        run: |
+          cd availability-service/tests
+          go test -v ./...
+
+      - name: Install dependencies
+        run: |
+          cd duty-service
+          go mod tidy
+
+      - name: Run Go Unit Tests
+        run: |
+          cd duty-service/tests
+          go test -v ./...
+
+      - name: Install dependencies
+        run: |
+          cd event-service
+          go mod tidy
+
+      - name: Run Go Unit Tests
+        run: |
+          cd event-service/tests
+          go test -v ./...
+
