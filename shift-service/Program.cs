@@ -15,26 +15,25 @@ using Messaging.Subscribers;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Register AzureStorage configuration
 builder.Services.Configure<AzureStorageConfig>(
     builder.Configuration.GetSection("AzureStorage"));
 
-// Add RabbitMQ configuration
+// Add RabbitMQ configuration once
 builder.Services.Configure<RabbitMQConfig>(
-    builder.Configuration.GetSection("ShiftService"));
-
+    builder.Configuration.GetSection("RabbitMQ"));
 // Register services
 builder.Services.AddSingleton<IEventPublisher, RabbitMQEventPublisher>();
 builder.Services.AddSingleton<IEventSubscriber, RabbitMQEventSubscriber>();
+builder.Services.AddHostedService<RabbitMQHostedService>();
+
 
 builder.Services.AddScoped<IShiftDbContext, ShiftDbContext>();
 builder.Services.AddScoped<IShiftService, ShiftService>();
 builder.Services.AddLogging(); 
 builder.Services.AddControllers();
 
-builder.Services.Configure<RabbitMQConfig>(
-    builder.Configuration.GetSection("RabbitMQ"));
-
-// Swagger/OpenAPI
+// Swagger/OpenAPI configuration
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -49,20 +48,21 @@ builder.Services.AddSwaggerGen(c =>
 // Build the application
 var app = builder.Build();
 
+// Enable Swagger only in Development environment
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-var eventSubscriber = app.Services.GetRequiredService<IEventSubscriber>();
-await eventSubscriber.StartSubscribers();
-
 // Register the custom GatewayHeaderMiddleware
 app.UseMiddleware<GatewayHeaderMiddleware>();
 
+// Enable authorization
 app.UseAuthorization();
 
+// Map controllers
 app.MapControllers();
 
+// Run the application
 app.Run();

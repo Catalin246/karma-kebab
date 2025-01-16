@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using RabbitMQ.Client;
 using Microsoft.Extensions.Logging;
 using Messaging.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace Messaging.Publishers {
 
@@ -13,18 +14,20 @@ public class RabbitMQEventPublisher : IEventPublisher, IDisposable
 {
     private readonly IConnection _connection;
     private readonly IChannel _channel;  
+    private readonly RabbitMQConfig _config;  
+
     private const string CLOCK_IN_EXCHANGE = "shift.clockin";
     private const string SHIFT_CREATED_EXCHANGE = "shift.created";
 
-    public RabbitMQEventPublisher(RabbitMQConfig config)
+    public RabbitMQEventPublisher(IOptions<RabbitMQConfig> options)
     {
+        _config = options.Value;
         var factory = new ConnectionFactory
         {
-            HostName = config.HostName,
-            Port = config.Port,
-            UserName = config.UserName,
-            Password = config.Password,
-            VirtualHost = config.VirtualHost
+            HostName = _config.HostName,
+            UserName = _config.UserName,
+            Password = _config.Password,
+            VirtualHost = _config.VirtualHost
         };
 
         _connection = (IConnection)factory.CreateConnectionAsync();

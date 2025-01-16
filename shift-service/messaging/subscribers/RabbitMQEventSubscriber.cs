@@ -4,34 +4,31 @@ using RabbitMQ.Client;
 using Messaging.Configuration;
 using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.Options;
 namespace Messaging.Subscribers {
 public class RabbitMQEventSubscriber : IEventSubscriber, IDisposable
 {
     private readonly IConnection _connection;
     private readonly IChannel _channel;
+     private readonly RabbitMQConfig _config;
     private readonly ILogger<RabbitMQEventSubscriber> _logger;
     private const string SHIFT_CREATED_QUEUE = "shift.created.queue";
     private const string SHIFT_DELETED_QUEUE = "shift.deleted.queue";
 
-    public RabbitMQEventSubscriber(RabbitMQConfig config, ILogger<RabbitMQEventSubscriber> logger)
+    public RabbitMQEventSubscriber(IOptions<RabbitMQConfig> options, ILogger<RabbitMQEventSubscriber> logger)
     {
+        _config = options.Value;
         _logger = logger;
         ConnectionFactory factory = new ConnectionFactory();
-        factory.UserName = config.UserName;
-        factory.Password = config.Password;
-        factory.VirtualHost = config.VirtualHost;
-        factory.HostName = config.HostName;
+        factory.UserName = _config.UserName;
+        factory.Password = _config.Password;
+        factory.VirtualHost = _config.VirtualHost;
+        factory.HostName = _config.HostName;
 
-        _connection = (IConnection)factory.CreateConnectionAsync();
-        _channel = (IChannel)_connection.CreateChannelAsync(); 
+        // Use async methods
+        _connection = factory.CreateConnectionAsync().GetAwaiter().GetResult();
+        _channel = _connection.CreateChannelAsync().GetAwaiter().GetResult();
     }
-    
-    private RabbitMQEventSubscriber(IConnection connection, IChannel channel, ILogger<RabbitMQEventSubscriber> logger)
-        {
-            _connection = connection;
-            _channel = channel;
-            _logger = logger;
-        }
     public async Task StartSubscribers()
     {
         await StartEventCreatedSubscriber();
@@ -52,7 +49,6 @@ public class RabbitMQEventSubscriber : IEventSubscriber, IDisposable
             try
             {
                 var shiftCreatedDto = JsonSerializer.Deserialize<ShiftCreatedDto>(message);
-                // Handle the message
                 _logger.LogInformation($"Received shift created event for shift: {shiftCreatedDto.ShiftId}");
                 await _channel.BasicAckAsync(ea.DeliveryTag, false);
             }
@@ -61,11 +57,9 @@ public class RabbitMQEventSubscriber : IEventSubscriber, IDisposable
                 _logger.LogError(ex, "Error processing shift created message");
                 await _channel.BasicNackAsync(ea.DeliveryTag, false, true);
             }
-             await _channel.BasicAckAsync(ea.DeliveryTag, false);
         };
 
-            string consumerTag = await _channel.BasicConsumeAsync(SHIFT_CREATED_QUEUE, false, consumer);
-
+        string consumerTag = await _channel.BasicConsumeAsync(SHIFT_CREATED_QUEUE, false, consumer);
     }
 
     public async Task StartEventDeletedSubscriber()
@@ -82,7 +76,6 @@ public class RabbitMQEventSubscriber : IEventSubscriber, IDisposable
             try
             {
                 var shiftId = JsonSerializer.Deserialize<Guid>(message);
-                // Handle the message
                 _logger.LogInformation($"Received shift deleted event for shift: {shiftId}");
                 await _channel.BasicAckAsync(ea.DeliveryTag, false);
             }
@@ -91,7 +84,6 @@ public class RabbitMQEventSubscriber : IEventSubscriber, IDisposable
                 _logger.LogError(ex, "Error processing shift deleted message");
                 await _channel.BasicNackAsync(ea.DeliveryTag, false, true);
             }
-            await _channel.BasicAckAsync(ea.DeliveryTag, false);
         };
 
         string consumerTag = await _channel.BasicConsumeAsync(SHIFT_DELETED_QUEUE, false, consumer);
