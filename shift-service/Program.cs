@@ -25,10 +25,11 @@ builder.Services.AddSingleton<IConnection>(sp =>
     var config = sp.GetRequiredService<IOptions<RabbitMQConfig>>().Value;
     var factory = new ConnectionFactory
     {
-        UserName = config.UserName,
-        Password = config.Password,
-        VirtualHost = config.VirtualHost,
-        HostName = config.HostName
+        UserName = "guest",
+        Password = "guest",
+        VirtualHost = "/",
+        HostName = "rabbitmq"
+
     };
     return factory.CreateConnectionAsync().GetAwaiter().GetResult();
 });
