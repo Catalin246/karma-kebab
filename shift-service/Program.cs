@@ -50,7 +50,7 @@ builder.Services.Configure<RabbitMQConfig>(
 builder.Services.AddSingleton<IEventPublisher, RabbitMQEventPublisher>();
 builder.Services.AddSingleton<IEventSubscriber, RabbitMQEventSubscriber>();
 builder.Services.AddHostedService<RabbitMQHostedService>();
-builder.Services.Configure<RabbitMQConfig>(config =>
+builder.Services.Configure<RabbitMQConfig>(config => //env variables in docker compose file. should ultimatly be the openshift
 {
     config.HostName = Environment.GetEnvironmentVariable("RABBITMQ_HOSTNAME") ?? "default-hostname";
     config.UserName = Environment.GetEnvironmentVariable("RABBITMQ_DEFAULT_USER") ?? "guest";
