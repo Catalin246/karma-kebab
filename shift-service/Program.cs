@@ -27,8 +27,7 @@ builder.Services.AddSingleton<IConnection>(sp =>
     {
         UserName = "guest",
         Password = "guest",
-        VirtualHost = "/",
-        HostName = "rabbitmq"
+        HostName = "844126015a8a"
 
     };
     return factory.CreateConnectionAsync().GetAwaiter().GetResult();

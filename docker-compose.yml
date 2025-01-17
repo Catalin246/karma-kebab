@@ -35,6 +35,7 @@ services:
       - karama-kebab-network
 
   rabbitmq:
+    image: rabbitmq:3.13-management
     build:
       context: ./rabbitmq
       dockerfile: Dockerfile
@@ -95,6 +96,7 @@ services:
     depends_on:
       - azurite
       - keycloak
+      - rabbitmq
     ports:
       - "3003:3003"
     networks:

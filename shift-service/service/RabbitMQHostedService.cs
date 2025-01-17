@@ -11,6 +11,13 @@ public class RabbitMQHostedService : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
+        // Ensure initialization if the subscriber supports it
+        if (_eventSubscriber is RabbitMQEventSubscriber rabbitSubscriber)
+        {
+            await rabbitSubscriber.InitializeAsync();
+        }
+
+        // Start subscribers
         await _eventSubscriber.StartSubscribers();
     }
 
@@ -20,6 +27,7 @@ public class RabbitMQHostedService : IHostedService
         {
             disposable.Dispose();
         }
+
         return Task.CompletedTask;
     }
 }
