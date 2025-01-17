@@ -46,8 +46,6 @@ services:
       - "15672:15672" # RabbitMQ management console
     networks:
       - karama-kebab-network
-    selector:
-      app: rabbitmq
 
   event-service:
     build:
