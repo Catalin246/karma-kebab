@@ -7,14 +7,16 @@ using RabbitMQ.Client;
 using Microsoft.Extensions.Logging;
 using Messaging.Configuration;
 using Microsoft.Extensions.Options;
+using Microsoft.VisualBasic;
 
 namespace Messaging.Publishers {
 
 public class RabbitMQEventPublisher : IEventPublisher, IDisposable
 {
-    private readonly IConnection _connection;
-    private readonly IChannel _channel;  
+    private IConnection _connection;
+    private IChannel _channel;  
     private readonly RabbitMQConfig _config;  
+    private readonly RabbitMQ.Client.ConnectionFactory _factory;
 
     private const string CLOCK_IN_EXCHANGE = "shift.clockin";
     private const string SHIFT_CREATED_EXCHANGE = "shift.created";
@@ -22,24 +24,27 @@ public class RabbitMQEventPublisher : IEventPublisher, IDisposable
     public RabbitMQEventPublisher(IOptions<RabbitMQConfig> options)
     {
         _config = options.Value;
-        var factory = new ConnectionFactory
+        _factory = new ConnectionFactory
         {
             HostName = _config.HostName,
             UserName = _config.UserName,
             Password = _config.Password,
             VirtualHost = _config.VirtualHost
-        };
-
-        _connection = (IConnection)factory.CreateConnectionAsync();
-        _channel = (IChannel)_connection.CreateChannelAsync();  
+        }; 
         
-        // Declare exchanges
-        _channel.ExchangeDeclareAsync(CLOCK_IN_EXCHANGE, ExchangeType.Fanout, durable: true);
-        _channel.ExchangeDeclareAsync(SHIFT_CREATED_EXCHANGE, ExchangeType.Fanout, durable: true);
+    }
+    public async Task InitializeAsync()
+    {
+        await _channel.ExchangeDeclareAsync(CLOCK_IN_EXCHANGE, ExchangeType.Fanout, durable: true);
+        await _channel.ExchangeDeclareAsync(SHIFT_CREATED_EXCHANGE, ExchangeType.Fanout, durable: true);
+        _connection = await _factory.CreateConnectionAsync();
+        _channel = await _connection.CreateChannelAsync();
     }
 
     public async Task PublishClockInEvent(ClockInDto clockInDto)
     {
+        if (_channel == null)
+                throw new InvalidOperationException("Channel not initialized. Call InitializeAsync first.");
         var message = JsonSerializer.Serialize(clockInDto);
         byte[] body = System.Text.Encoding.UTF8.GetBytes(message);  
         var props = new BasicProperties();
