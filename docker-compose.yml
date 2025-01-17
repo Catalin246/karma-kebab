@@ -33,7 +33,7 @@ services:
       - karama-kebab-network
 
   rabbitmq:
-    image: rabbitmq:3.13-management
+    image: rabbitmq:7-management
     build:
       context: ./rabbitmq
       dockerfile: Dockerfile
@@ -46,8 +46,6 @@ services:
       - "15672:15672" # RabbitMQ management console
     networks:
       - karama-kebab-network
-    selector:
-      app: rabbitmq
 
   event-service:
     build:

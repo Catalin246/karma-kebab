@@ -20,7 +20,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<AzureStorageConfig>(
     builder.Configuration.GetSection("AzureStorage"));
     
-
+builder.Services.Configure<RabbitMQConfig>(config => //env variables in docker compose file. should ultimatly be the openshift
+{
+    config.HostName = Environment.GetEnvironmentVariable("RABBITMQ_HOSTNAME") ?? "7dede91afc34";
+    config.UserName = Environment.GetEnvironmentVariable("RABBITMQ_DEFAULT_USER") ?? "guest";
+    config.Password = Environment.GetEnvironmentVariable("RABBITMQ_DEFAULT_PASS") ?? "guest";
+});
 builder.Services.AddSingleton<IConnection>(sp =>
 {
     var config = sp.GetRequiredService<IOptions<RabbitMQConfig>>().Value;
@@ -42,20 +47,10 @@ builder.Services.AddSingleton<IChannel>(sp =>
 });
 
 
-// Add RabbitMQ configuration once
-builder.Services.Configure<RabbitMQConfig>(
-    builder.Configuration.GetSection("RabbitMQ"));
-
 // Register services
 builder.Services.AddSingleton<IEventPublisher, RabbitMQEventPublisher>();
 builder.Services.AddSingleton<IEventSubscriber, RabbitMQEventSubscriber>();
 builder.Services.AddHostedService<RabbitMQHostedService>();
-builder.Services.Configure<RabbitMQConfig>(config => //env variables in docker compose file. should ultimatly be the openshift
-{
-    config.HostName = Environment.GetEnvironmentVariable("RABBITMQ_HOSTNAME") ?? "default-hostname";
-    config.UserName = Environment.GetEnvironmentVariable("RABBITMQ_DEFAULT_USER") ?? "guest";
-    config.Password = Environment.GetEnvironmentVariable("RABBITMQ_DEFAULT_PASS") ?? "guest";
-});
 
 
 builder.Services.AddScoped<IShiftDbContext, ShiftDbContext>();
