@@ -13,30 +13,49 @@ using Messaging.Configuration;
 using Messaging.Publishers;
 using Messaging.Subscribers;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging; // Added for logging
+using RabbitMQ.Client.Exceptions;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Register AzureStorage configuration
 builder.Services.Configure<AzureStorageConfig>(
     builder.Configuration.GetSection("AzureStorage"));
-    
-builder.Services.Configure<RabbitMQConfig>(config => //env variables in docker compose file. should ultimatly be the openshift
-{
-    config.HostName = Environment.GetEnvironmentVariable("RABBITMQ_HOSTNAME") ?? "rabbitmq";
-    config.UserName = Environment.GetEnvironmentVariable("RABBITMQ_DEFAULT_USER") ?? "guest";
-    config.Password = Environment.GetEnvironmentVariable("RABBITMQ_DEFAULT_PASS") ?? "guest";
-});
+
 builder.Services.AddSingleton<IConnection>(sp =>
 {
     var config = sp.GetRequiredService<IOptions<RabbitMQConfig>>().Value;
-    var factory = new ConnectionFactory
-    {
-        UserName = config.UserName,
-        Password = config.Password,
-        HostName = config.HostName
+    var factory = new ConnectionFactory();
+    factory.UserName = config.UserName;
+    factory.Password = config.Password;
+    factory.VirtualHost = config.VirtualHost;
+    factory.HostName = config.HostName;
+    // Get logger to log RabbitMQ connection issues
+    var logger = sp.GetRequiredService<ILogger<IConnection>>();
 
-    };
-    return factory.CreateConnectionAsync().GetAwaiter().GetResult();
+    try
+    {
+        logger.LogInformation("Attempting to connect to RabbitMQ at {HostName}...", factory.HostName);
+
+        // Run the async code in a separate task, then return the connection
+        var connection = Task.Run(async () =>
+        {
+            return await factory.CreateConnectionAsync();
+        }).Result; // Wait for the result synchronously
+
+        logger.LogInformation("Successfully connected to RabbitMQ.");
+        return connection;
+    }
+    catch (BrokerUnreachableException ex)
+    {
+        logger.LogError(ex, "Failed to connect to RabbitMQ. Broker is unreachable.");
+        throw; // Rethrow the exception to prevent further execution
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Unexpected error occurred while connecting to RabbitMQ.");
+        throw; // Rethrow the exception
+    }
 });
 
 // Add this after IConnection registration
@@ -46,12 +65,10 @@ builder.Services.AddSingleton<IChannel>(sp =>
     return connection.CreateChannelAsync().GetAwaiter().GetResult();
 });
 
-
 // Register services
 builder.Services.AddSingleton<IEventPublisher, RabbitMQEventPublisher>();
 builder.Services.AddSingleton<IEventSubscriber, RabbitMQEventSubscriber>();
 builder.Services.AddHostedService<RabbitMQHostedService>();
-
 
 builder.Services.AddScoped<IShiftDbContext, ShiftDbContext>();
 builder.Services.AddScoped<IShiftService, ShiftService>();
@@ -72,6 +89,8 @@ builder.Services.AddSwaggerGen(c =>
 
 // Build the application
 var app = builder.Build();
+
+
 
 // Enable Swagger only in Development environment
 if (app.Environment.IsDevelopment())
