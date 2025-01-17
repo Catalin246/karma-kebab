@@ -22,7 +22,7 @@ builder.Services.Configure<AzureStorageConfig>(
     
 builder.Services.Configure<RabbitMQConfig>(config => //env variables in docker compose file. should ultimatly be the openshift
 {
-    config.HostName = Environment.GetEnvironmentVariable("RABBITMQ_HOSTNAME") ?? "7dede91afc34";
+    config.HostName = Environment.GetEnvironmentVariable("RABBITMQ_HOSTNAME") ?? "rabbitmq";
     config.UserName = Environment.GetEnvironmentVariable("RABBITMQ_DEFAULT_USER") ?? "guest";
     config.Password = Environment.GetEnvironmentVariable("RABBITMQ_DEFAULT_PASS") ?? "guest";
 });
