@@ -6,6 +6,10 @@ data:
   prometheus.yml: |
     global:
       scrape_interval: 15s
+      evaluation_interval: 15s
+
+    rule_files:
+      - /etc/prometheus/alert_rules.yml
 
     scrape_configs:
       - job_name: 'duty-service'
@@ -18,23 +22,15 @@ data:
         metrics_path: '/events/metrics'
           
 
-  alert.rules: |
+  alert_rules.yml: |
     groups:
-      - name: example_alert
-        rules:
-          - alert: HighCPUUsage
-            expr: rate(cpu_usage_seconds_total[1m]) > 0.85
-            for: 5m
-            labels:
-              severity: critical
-            annotations:
-              summary: "High CPU usage detected."
-              description: "The CPU usage has exceeded 85% for the last 5 minutes."
-          - alert: ServiceDown
-            expr: up{job="duty-service"} == 0
-            for: 5m
-            labels:
-              severity: critical
-            annotations:
-              summary: "Service is down."
-              description: "The duty service is unreachable or not reporting."
+    - name: cpu_alerts
+      rules:
+      - alert: HighCPUUsage
+        expr: process_cpu_seconds_total > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: High CPU usage detected
+          description: CPU usage is above 80% for 5 minutes on {{ $labels.instance }}
