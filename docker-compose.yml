@@ -38,6 +38,7 @@ services:
       context: ./rabbitmq
       dockerfile: Dockerfile
     environment:
+      RABBITMQ_HOSTNAME: 46ffecc88cd3
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
     ports:
@@ -45,6 +46,8 @@ services:
       - "15672:15672" # RabbitMQ management console
     networks:
       - karama-kebab-network
+    selector:
+      app: rabbitmq
 
   event-service:
     build:

@@ -19,15 +19,16 @@ var builder = WebApplication.CreateBuilder(args);
 // Register AzureStorage configuration
 builder.Services.Configure<AzureStorageConfig>(
     builder.Configuration.GetSection("AzureStorage"));
+    
 
 builder.Services.AddSingleton<IConnection>(sp =>
 {
     var config = sp.GetRequiredService<IOptions<RabbitMQConfig>>().Value;
     var factory = new ConnectionFactory
     {
-        UserName = "guest",
-        Password = "guest",
-        HostName = "844126015a8a"
+        UserName = config.UserName,
+        Password = config.Password,
+        HostName = config.HostName
 
     };
     return factory.CreateConnectionAsync().GetAwaiter().GetResult();
@@ -49,6 +50,12 @@ builder.Services.Configure<RabbitMQConfig>(
 builder.Services.AddSingleton<IEventPublisher, RabbitMQEventPublisher>();
 builder.Services.AddSingleton<IEventSubscriber, RabbitMQEventSubscriber>();
 builder.Services.AddHostedService<RabbitMQHostedService>();
+builder.Services.Configure<RabbitMQConfig>(config =>
+{
+    config.HostName = Environment.GetEnvironmentVariable("RABBITMQ_HOSTNAME") ?? "default-hostname";
+    config.UserName = Environment.GetEnvironmentVariable("RABBITMQ_DEFAULT_USER") ?? "guest";
+    config.Password = Environment.GetEnvironmentVariable("RABBITMQ_DEFAULT_PASS") ?? "guest";
+});
 
 
 builder.Services.AddScoped<IShiftDbContext, ShiftDbContext>();
