@@ -4,7 +4,10 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.5.002.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "employee-service", "employee-service\employee-service.csproj", "{6629A1E9-9129-4E12-9967-74ED93870AD7}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "shift-service", "shift-service\shift-service.csproj", "{C4BDD1D7-EF59-40C0-9755-2FFD802F22B7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "employee-service-web", "employee-service-web\employee-service-web.csproj", "{6C02BFF0-A31E-4929-A6E8-18BC02DD252C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -20,12 +23,15 @@ Global
 		{C4BDD1D7-EF59-40C0-9755-2FFD802F22B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C4BDD1D7-EF59-40C0-9755-2FFD802F22B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C4BDD1D7-EF59-40C0-9755-2FFD802F22B7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6C02BFF0-A31E-4929-A6E8-18BC02DD252C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C02BFF0-A31E-4929-A6E8-18BC02DD252C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C02BFF0-A31E-4929-A6E8-18BC02DD252C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C02BFF0-A31E-4929-A6E8-18BC02DD252C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {73060040-7299-4A0B-85F8-E70A956A0087}
 		SolutionGuid = {C395FF0B-49F8-45DA-9D3A-998ADD330979}
 	EndGlobalSection
 EndGlobal

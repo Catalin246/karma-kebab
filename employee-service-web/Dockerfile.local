@@ -1,0 +1,91 @@
+# Set .NET runtime and SDK versions as arguments
+ARG DOTNET_RUNTIME=mcr.microsoft.com/dotnet/aspnet:8.0
+ARG DOTNET_SDK=mcr.microsoft.com/dotnet/sdk:8.0
+
+# Use the official .NET runtime image for running the app
+FROM ${DOTNET_RUNTIME} AS base
+ENV ASPNETCORE_URLS=http://+:3005
+WORKDIR /app
+EXPOSE 3005
+
+# Base for building the application
+FROM ${DOTNET_SDK} AS buildbase
+WORKDIR /source
+
+# Copy csproj files and restore any dependencies
+COPY ["employee-service-web.csproj", "./"]
+RUN dotnet restore
+
+# Copy the entire source code into the container
+COPY . ./ 
+RUN dotnet build -c Debug -o /app/build
+
+# Build the migrations service (but don't install dotnet-ef here)
+FROM buildbase as migrations
+WORKDIR /source
+RUN dotnet build -c Release
+
+# Install both bash and sh
+RUN apt-get update && apt-get install -y bash
+
+# Run migrations only during container execution
+CMD ["dotnet", "run", "--urls", "http://0.0.0.0:3005"]
+
+# # Final image for running the app
+# FROM base AS final
+# COPY --from=buildbase /app/build /app
+# ENTRYPOINT ["dotnet", "employee-service-web.dll", "--urls", "http://0.0.0.0:3005"]
+
+
+
+
+####################################################################################################################################################
+
+# # Use the official .NET SDK image for building the app (development mode)
+# FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+
+# # Set the working directory inside the container
+# WORKDIR /app
+
+# # Copy the csproj file and restore any dependencies (via dotnet restore)
+# COPY ["employee-service-web.csproj", "./"]
+# RUN dotnet restore
+
+# # Copy the entire project and build it
+# COPY . ./
+# RUN dotnet build -c Debug -o /app/build
+
+# # Expose the port the app will run on
+# EXPOSE 3005
+
+# # Set the entrypoint to run the application in development mode
+# CMD ["dotnet", "run", "--urls", "http://0.0.0.0:3005"]
+
+
+######################################################################################################################################################
+
+# # Use the official .NET SDK image for building the app (development mode)
+# FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+
+# # Set the working directory inside the container
+# WORKDIR /app
+
+# # Copy the csproj file and restore any dependencies (via dotnet restore)
+# COPY ["employee-service-web.csproj", "./"]
+# RUN dotnet restore
+
+# # Copy the entire project and build it
+# COPY . ./ 
+# RUN dotnet build -c Debug -o /app/build
+
+# # Install dotnet-ef tool
+# RUN dotnet tool install --global dotnet-ef
+
+# # Set environment variable for PATH to include the .dotnet/tools directory (needed to run dotnet-ef)
+# ENV PATH="${PATH}:/root/.dotnet/tools"
+
+# # Expose the port the app will run on
+# EXPOSE 3005
+
+# # Set the entrypoint to run the application in development mode
+# CMD ["dotnet", "run", "--urls", "http://0.0.0.0:3005"]

@@ -1,0 +1,229 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-db-pvc # Updated name for PostgreSQL
+  namespace: india-dev
+spec:
+  accessModes:
+    - ReadWriteOnce # Common access mode for PostgreSQL
+  resources:
+    requests:
+      storage: 1Gi # Adjust storage size based on PostgreSQL requirements
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init-script
+  namespace: india-dev
+data:
+  init.sql: |
+    CREATE TABLE "__EFMigrationsHistory" (
+        "MigrationId" VARCHAR(150) NOT NULL PRIMARY KEY,
+        "ProductVersion" VARCHAR(32) NOT NULL
+    );
+
+    -- Ensure the pgcrypto extension is available for UUID generation
+    CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
+    -- Create the "Employees" table if it doesn't exist
+    CREATE TABLE IF NOT EXISTS "Employees" (
+        "EmployeeId" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        "DateOfBirth" DATE,
+        "FirstName" VARCHAR(100),
+        "LastName" VARCHAR(100),
+        "Address" TEXT,
+        "Payrate" NUMERIC,
+        "Roles" INT[],
+        "Email" VARCHAR(100),
+        "Skills" TEXT[]
+    );
+
+    -- Alter the 'Skills' column to ensure it is of type 'text[]'
+    ALTER TABLE "Employees"
+    ALTER COLUMN "Skills" TYPE text[];
+
+    -- Insert initial data into the 'Employees' table
+    INSERT INTO "Employees" (
+        "EmployeeId",
+        "DateOfBirth",
+        "FirstName",
+        "LastName",
+        "Address",
+        "Payrate",
+        "Roles",
+        "Email",
+        "Skills"
+    ) VALUES (
+        gen_random_uuid(), 
+        '1997-11-28',
+        'Jane',
+        'Blair',
+        '123 Not Main St, Springfield, USA',
+        25.50,
+        ARRAY[2,3],
+        'john.doe@example.com',
+        ARRAY['Cooking', 'Driving']
+    );
+
+    INSERT INTO "Employees" (
+        "EmployeeId",
+        "DateOfBirth",
+        "FirstName",
+        "LastName",
+        "Address",
+        "Payrate",
+        "Roles",
+        "Email",
+        "Skills"
+    ) VALUES (
+        gen_random_uuid(), 
+        '1995-03-15',
+        'Emily',
+        'Clark',
+        '456 Elm St, Metropolis, USA',
+        25.50,
+        ARRAY[2],
+        'emily.clark@example.com',
+        ARRAY['Cleaning', 'Waiter']
+    );
+
+    -- Add more entries if needed
+    -- Example:
+    -- INSERT INTO "Employees" (
+    --     "EmployeeId", "DateOfBirth", "FirstName", "LastName", "Address", 
+    --     "Payrate", "Role", "Email", "Skills"
+    -- ) VALUES (
+    --     gen_random_uuid(), '1992-07-01', 'Alice', 'Johnson', 
+    --     '789 Oak St, Gotham, USA', 30.00, 3, 'alice.johnson@example.com', ARRAY['Management']
+    -- );
+
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: employee-postgres-db
+  namespace: india-dev
+  labels:
+    app: employee-postgres-db
+    app.kubernetes.io/part-of: karma-kebab-app
+    app.openshift.io/runtime: PostgreSQL
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: employee-postgres-db
+  template:
+    metadata:
+      labels:
+        app: employee-postgres-db
+    spec:
+      containers:
+        - name: employee-postgres-db
+          image: quay.io/dewicabret/postgres-mirror:latest
+          ports:
+            - containerPort: 5432
+          env:
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              value: password
+            - name: POSTGRES_DB
+              value: employeedb
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+            - name: postgres-init-script
+              mountPath: /docker-entrypoint-initdb.d
+      volumes:
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: postgres-db-pvc
+        - name: postgres-init-script
+          configMap:
+            name: postgres-init-script
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  namespace: india-dev
+  labels:
+    app: employee-postgres-db
+spec:
+  selector:
+    app: employee-postgres-db
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+  type: ClusterIP
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: employee-service-web
+  labels: 
+    app: employee-service-web
+    app.kubernetes.io/part-of: karma-kebab-app 
+    app.openshift.io/runtime: dotnet
+spec:
+  replicas: 1
+  selector: 
+     matchLabels: 
+      app: employee-service-web
+  template:
+    metadata: 
+      labels: 
+        app: employee-service-web
+    spec:
+      containers:
+        - name: employee-service-web-container
+          image: aizazahsan23/employee-service-web 
+          ports: 
+            - containerPort: 8080
+          env: 
+            - name: PostgreSQLEntityFramework
+              value: Host=postgres-service;Port=5432;Database=employeedb;Username=postgres;Password=password
+  
+---
+
+apiVersion: v1
+kind: Service
+metadata: 
+  name: employee-service-web-svc
+spec: 
+  selector: 
+    app: employee-service-web
+  ports: 
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: ClusterIP
+
+---
+
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata: 
+  name: employee-service-web-route
+  namespace: india-dev
+spec: 
+  to: 
+    kind: Service
+    name: employee-service-web-svc
+  port: 
+    targetPort: 8080
+  tls: 
+    termination: edge
+  wildcardPolicy: None
+    
