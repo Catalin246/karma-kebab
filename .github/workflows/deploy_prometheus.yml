@@ -1,0 +1,143 @@
+name: Deploy Prometheus to OpenShift
+
+env:
+  OPENSHIFT_SERVER: ${{ secrets.OPENSHIFT_SERVER }}
+  OPENSHIFT_TOKEN: ${{ secrets.OPENSHIFT_TOKEN }}
+  OPENSHIFT_NAMESPACE: "india-qa"
+  APP_NAME: "prometheus-karma-kebab"
+  PROMETHEUS_PORT: "9090"  
+  DOCKER_IMAGE_NAME: "prom/prometheus:latest"  
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - feat/prometheus-deploy
+      - feat/grafana-deploy
+
+jobs:
+  deploy-prometheus:
+    name: Deploy Prometheus to OpenShift
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: Check for required secrets
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const secrets = {
+              OPENSHIFT_SERVER: `${{ secrets.OPENSHIFT_SERVER }}`,
+              OPENSHIFT_TOKEN: `${{ secrets.OPENSHIFT_TOKEN }}`
+            };
+
+            const missingSecrets = Object.entries(secrets).filter(([key, value]) => !value);
+            if (missingSecrets.length > 0) {
+              core.setFailed(`The following secrets are missing: ${missingSecrets.map(([key]) => key).join(', ')}`);
+            }
+
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Log the environment variables
+        run: |
+          echo "OPENSHIFT_SERVER=${{ secrets.OPENSHIFT_SERVER }}"
+          echo "OPENSHIFT_NAMESPACE=${{ env.OPENSHIFT_NAMESPACE }}"
+          echo "APP_NAME=${{ env.APP_NAME }}"
+          echo "DOCKER_IMAGE_NAME=${{ env.DOCKER_IMAGE_NAME }}" 
+
+      - name: Check if Prometheus image exists in Docker Hub
+        run: |
+          echo "Checking if the Prometheus image exists in Docker Hub..."
+          if docker pull ${{ env.DOCKER_IMAGE_NAME }}; then
+            echo "Image already exists, skipping pull."
+          else
+            echo "Image does not exist in Docker Hub."
+            echo "Pulling Prometheus image from Docker Hub..."
+            docker pull ${{ env.DOCKER_IMAGE_NAME }}  # Pull the Prometheus image from Docker Hub
+            echo "Prometheus image pulled successfully."
+          fi
+
+      - name: Install OpenShift CLI
+        uses: redhat-actions/openshift-tools-installer@v1
+        with:
+          oc: 4.10
+
+      - name: Log in to OpenShift
+        uses: redhat-actions/oc-login@v1
+        with:
+          openshift_server_url: ${{ env.OPENSHIFT_SERVER }}
+          openshift_token: ${{ env.OPENSHIFT_TOKEN }}
+          insecure_skip_tls_verify: true
+          namespace: ${{ env.OPENSHIFT_NAMESPACE }}
+
+      - name: Apply Prometheus ConfigMap
+        run: |
+          echo "Applying Prometheus ConfigMap..."
+          oc apply -f prometheus-config.yml -n ${{ env.OPENSHIFT_NAMESPACE }}
+
+      - name: Deploy Prometheus to OpenShift
+        run: |
+          echo "Creating and applying OpenShift resources..."
+          cat <<EOF | oc apply -n ${{ env.OPENSHIFT_NAMESPACE }} -f -
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: ${{ env.APP_NAME }}
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: ${{ env.APP_NAME }}
+            template:
+              metadata:
+                labels:
+                  app: ${{ env.APP_NAME }}
+              spec:
+                containers:
+                - name: ${{ env.APP_NAME }}
+                  image: ${{ env.DOCKER_IMAGE_NAME }}
+                  ports:
+                  - containerPort: ${{ env.PROMETHEUS_PORT }}
+                  volumeMounts:
+                  - name: prometheus-data
+                    mountPath: /prometheus
+                  - name: prometheus-config
+                    mountPath: /etc/prometheus
+                volumes:
+                - name: prometheus-data
+                  emptyDir: {}
+                - name: prometheus-config
+                  configMap:
+                    name: prometheus-config
+          ---
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: ${{ env.APP_NAME }}
+          spec:
+            ports:
+            - name: http
+              port: ${{ env.PROMETHEUS_PORT }}
+              targetPort: ${{ env.PROMETHEUS_PORT }}
+            selector:
+              app: ${{ env.APP_NAME }}
+          ---
+          apiVersion: route.openshift.io/v1
+          kind: Route
+          metadata:
+            name: ${{ env.APP_NAME }}
+          spec:
+            to:
+              kind: Service
+              name: ${{ env.APP_NAME }}
+            port:
+              targetPort: http
+          EOF
+          echo "OpenShift resources created and applied."
+
+      - name: Print Prometheus Route
+        run: |
+          echo "Checking if the Prometheus route is available..."
+          oc get route ${{ env.APP_NAME }} -o jsonpath='{.spec.host}'
+          echo "Prometheus is deployed and accessible at the above URL."
