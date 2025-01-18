@@ -4,7 +4,7 @@ using RabbitMQ.Client;
 namespace Messaging.Subscribers {
 public interface IEventSubscriber
 {
-    Task StartSubscribers();
-    Task StartEventCreatedSubscriber();
-    Task StartEventDeletedSubscriber();
+    public void StartSubscribers();
+    public void StartEventCreatedSubscriber();
+    public void StartEventDeletedSubscriber();
 }}

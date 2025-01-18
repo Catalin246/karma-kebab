@@ -34,11 +34,11 @@ services:
 
   rabbitmq:
     image: rabbitmq:3.13-management
+    hostname: rabbitmq
     build:
       context: ./rabbitmq
       dockerfile: Dockerfile
     environment:
-      RABBITMQ_HOSTNAME: 46ffecc88cd3
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
     ports:

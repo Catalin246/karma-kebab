@@ -4,6 +4,6 @@ using System.Threading.Tasks;
 namespace Messaging.Publishers {
 public interface IEventPublisher
 {
-    Task PublishClockInEvent(ClockInDto clockInDto);
-    Task PublishShiftCreatedEvent(ShiftCreatedDto shiftDto);
+    public void PublishClockInEvent(ClockInDto clockInDto);
+    public void PublishShiftCreatedEvent(ShiftCreatedDto shiftDto);
 }}
