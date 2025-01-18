@@ -221,9 +221,12 @@ public class ShiftsController : ControllerBase
 
             try
             {
-                // Publish clock-in event asynchronously
-                await _eventpublisher.PublishClockInEvent(clockInEvent);
+
+                // Publish clock-in event
+                // Wrap the synchronous publishing call in Task.Run to avoid blocking the thread
+                _eventpublisher.PublishClockInEvent(clockInEvent);
                 _logger.LogInformation("Successfully published clock-in event for shift: {ShiftId}", shiftId);
+
 
                 return Ok(new ApiResponse
                 {
