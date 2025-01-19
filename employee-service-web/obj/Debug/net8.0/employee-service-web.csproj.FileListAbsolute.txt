@@ -2,7 +2,6 @@ C:\Users\Aizaz Ahsan\Inholland Year 4 minor\KarmaKebabProject\karma-kebab\employ
 C:\Users\Aizaz Ahsan\Inholland Year 4 minor\KarmaKebabProject\karma-kebab\employee-service-web\bin\Debug\net8.0\appsettings.json
 C:\Users\Aizaz Ahsan\Inholland Year 4 minor\KarmaKebabProject\karma-kebab\employee-service-web\bin\Debug\net8.0\employee-service-web.staticwebassets.endpoints.json
 C:\Users\Aizaz Ahsan\Inholland Year 4 minor\KarmaKebabProject\karma-kebab\employee-service-web\bin\Debug\net8.0\xunit.abstractions.dll
-C:\Users\Aizaz Ahsan\Inholland Year 4 minor\KarmaKebabProject\karma-kebab\employee-service-web\bin\Debug\net8.0\xunit.runner.visualstudio.testadapter.dll
 C:\Users\Aizaz Ahsan\Inholland Year 4 minor\KarmaKebabProject\karma-kebab\employee-service-web\bin\Debug\net8.0\employee-service-web.exe
 C:\Users\Aizaz Ahsan\Inholland Year 4 minor\KarmaKebabProject\karma-kebab\employee-service-web\bin\Debug\net8.0\employee-service-web.deps.json
 C:\Users\Aizaz Ahsan\Inholland Year 4 minor\KarmaKebabProject\karma-kebab\employee-service-web\bin\Debug\net8.0\employee-service-web.runtimeconfig.json
@@ -145,7 +144,6 @@ C:\Users\Aizaz Ahsan\Inholland Year 4 minor\KarmaKebabProject\karma-kebab\employ
 C:\Users\Aizaz Ahsan\Inholland Year 4 minor\KarmaKebabProject\karma-kebab\employee-service-web\bin\Debug\net8.0\xunit.core.dll
 C:\Users\Aizaz Ahsan\Inholland Year 4 minor\KarmaKebabProject\karma-kebab\employee-service-web\bin\Debug\net8.0\xunit.execution.dotnet.dll
 C:\Users\Aizaz Ahsan\Inholland Year 4 minor\KarmaKebabProject\karma-kebab\employee-service-web\bin\Debug\net8.0\testhost.dll
-C:\Users\Aizaz Ahsan\Inholland Year 4 minor\KarmaKebabProject\karma-kebab\employee-service-web\bin\Debug\net8.0\testhost.exe
 C:\Users\Aizaz Ahsan\Inholland Year 4 minor\KarmaKebabProject\karma-kebab\employee-service-web\bin\Debug\net8.0\Microsoft.VisualStudio.CodeCoverage.Shim.dll
 C:\Users\Aizaz Ahsan\Inholland Year 4 minor\KarmaKebabProject\karma-kebab\employee-service-web\bin\Debug\net8.0\Microsoft.TestPlatform.CoreUtilities.dll
 C:\Users\Aizaz Ahsan\Inholland Year 4 minor\KarmaKebabProject\karma-kebab\employee-service-web\bin\Debug\net8.0\Microsoft.TestPlatform.PlatformAbstractions.dll

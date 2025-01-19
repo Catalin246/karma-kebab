@@ -1,4 +1,5 @@
 // DTO for Shift
+namespace Models {
 public class ShiftDto
 {
     public Guid ShiftId { get; set; }
@@ -33,18 +34,5 @@ public class UpdateShiftDto
     public DateTime? ClockInTime { get; set; }
     public DateTime? ClockOutTime { get; set; }
     public int RoleId { get; set; } 
-}
+}}
 
-// DTO for clocking in or clocking out 
-public class ClockInDto
-{
-    public Guid ShiftID {get;set;}
-    public DateTime TimeStamp { get; set; }
-    public int RoleId {get;set;}
-}
-
-public class ShiftCreatedDto
-{
-    public Guid ShiftId {get;set;}
-    public int RoleId {get;set;}
-}

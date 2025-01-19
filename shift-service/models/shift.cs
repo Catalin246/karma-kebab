@@ -1,3 +1,4 @@
+namespace Models {
 public class Shift
 {
     public Guid ShiftId { get; set; }
@@ -33,4 +34,4 @@ public enum ShiftStatus
     Confirmed,
     Unconfirmed,
     Cancelled
-}
+}}

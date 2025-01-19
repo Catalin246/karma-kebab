@@ -1,0 +1,109 @@
+name: Deploy Grafana to OpenShift
+
+env:
+  OPENSHIFT_SERVER: ${{ secrets.OPENSHIFT_SERVER }}
+  OPENSHIFT_TOKEN: ${{ secrets.OPENSHIFT_TOKEN }}
+  OPENSHIFT_NAMESPACE: "india-qa"
+  APP_NAME: "grafana"
+  GRAFANA_PORT: "3000"  
+  DOCKER_IMAGE_NAME: "grafana/grafana:latest"
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - feat/grafana-deploy
+
+jobs:
+  deploy-grafana:
+    name: Deploy Grafana to OpenShift
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: Check for required secrets
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const secrets = {
+              OPENSHIFT_SERVER: `${{ secrets.OPENSHIFT_SERVER }}`,
+              OPENSHIFT_TOKEN: `${{ secrets.OPENSHIFT_TOKEN }}`
+            };
+
+            const missingSecrets = Object.entries(secrets).filter(([key, value]) => !value);
+            if (missingSecrets.length > 0) {
+              core.setFailed(`The following secrets are missing: ${missingSecrets.map(([key]) => key).join(', ')}`);
+            }
+
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install OpenShift CLI
+        uses: redhat-actions/openshift-tools-installer@v1
+        with:
+          oc: 4.10
+
+      - name: Log in to OpenShift
+        uses: redhat-actions/oc-login@v1
+        with:
+          openshift_server_url: ${{ env.OPENSHIFT_SERVER }}
+          openshift_token: ${{ env.OPENSHIFT_TOKEN }}
+          namespace: ${{ env.OPENSHIFT_NAMESPACE }}
+
+      - name: Deploy Grafana to OpenShift
+        run: |
+          cat <<EOF | oc apply -n ${{ env.OPENSHIFT_NAMESPACE }} -f -
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: ${{ env.APP_NAME }}
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: ${{ env.APP_NAME }}
+            template:
+              metadata:
+                labels:
+                  app: ${{ env.APP_NAME }}
+              spec:
+                containers:
+                - name: ${{ env.APP_NAME }}
+                  image: ${{ env.DOCKER_IMAGE_NAME }}
+                  ports:
+                  - containerPort: ${{ env.GRAFANA_PORT }}
+                  env:
+                  - name: GF_AUTH_ANONYMOUS_ENABLED
+                    value: "true"
+                  - name: GF_AUTH_ANONYMOUS_ORG_ROLE
+                    value: "Admin"
+                  - name: GF_AUTH_BASIC_ENABLED
+                    value: "false"
+          ---
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: ${{ env.APP_NAME }}
+          spec:
+            ports:
+            - port: ${{ env.GRAFANA_PORT }}
+              targetPort: ${{ env.GRAFANA_PORT }}
+            selector:
+              app: ${{ env.APP_NAME }}
+          ---
+          apiVersion: route.openshift.io/v1
+          kind: Route
+          metadata:
+            name: ${{ env.APP_NAME }}
+          spec:
+            to:
+              kind: Service
+              name: ${{ env.APP_NAME }}
+            port:
+              targetPort: ${{ env.GRAFANA_PORT }}
+          EOF
+
+      - name: Print Grafana Route
+        run: |
+          echo "Checking if the Grafana route is available..."
+          oc get route ${{ env.APP_NAME }} -o jsonpath='{.spec.host}'

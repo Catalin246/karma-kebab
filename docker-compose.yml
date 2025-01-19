@@ -33,10 +33,12 @@ services:
       - karama-kebab-network
 
   rabbitmq:
+    image: rabbitmq:3.13-management
     build:
       context: ./rabbitmq
       dockerfile: Dockerfile
     environment:
+      RABBITMQ_HOSTNAME: 46ffecc88cd3
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
     ports:
@@ -93,6 +95,7 @@ services:
     depends_on:
       - azurite
       - keycloak
+      - rabbitmq
     ports:
       - "3003:3003"
     networks:

@@ -9,25 +9,61 @@ using RabbitMQ.Client.Events;
 using System.Text;
 using System.Text.Json;
 using Services;
+using Messaging.Configuration;
+using Messaging.Publishers;
+using Messaging.Subscribers;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Register AzureStorage configuration
 builder.Services.Configure<AzureStorageConfig>(
     builder.Configuration.GetSection("AzureStorage"));
+    
 
-builder.Services.Configure<RabbitMqServiceConfig>(
-    builder.Configuration.GetSection("ShiftService"));
+builder.Services.AddSingleton<IConnection>(sp =>
+{
+    var config = sp.GetRequiredService<IOptions<RabbitMQConfig>>().Value;
+    var factory = new ConnectionFactory
+    {
+        UserName = config.UserName,
+        Password = config.Password,
+        HostName = config.HostName
+
+    };
+    return factory.CreateConnectionAsync().GetAwaiter().GetResult();
+});
+
+// Add this after IConnection registration
+builder.Services.AddSingleton<IChannel>(sp =>
+{
+    var connection = sp.GetRequiredService<IConnection>();
+    return connection.CreateChannelAsync().GetAwaiter().GetResult();
+});
+
+
+// Add RabbitMQ configuration once
+builder.Services.Configure<RabbitMQConfig>(
+    builder.Configuration.GetSection("RabbitMQ"));
+
+// Register services
+builder.Services.AddSingleton<IEventPublisher, RabbitMQEventPublisher>();
+builder.Services.AddSingleton<IEventSubscriber, RabbitMQEventSubscriber>();
+builder.Services.AddHostedService<RabbitMQHostedService>();
+builder.Services.Configure<RabbitMQConfig>(config =>
+{
+    config.HostName = Environment.GetEnvironmentVariable("RABBITMQ_HOSTNAME") ?? "default-hostname";
+    config.UserName = Environment.GetEnvironmentVariable("RABBITMQ_DEFAULT_USER") ?? "guest";
+    config.Password = Environment.GetEnvironmentVariable("RABBITMQ_DEFAULT_PASS") ?? "guest";
+});
+
 
 builder.Services.AddScoped<IShiftDbContext, ShiftDbContext>();
 builder.Services.AddScoped<IShiftService, ShiftService>();
 builder.Services.AddLogging(); 
 builder.Services.AddControllers();
 
-// Add RabbitMQ Service
-builder.Services.AddHttpClient<IRabbitMqService, RabbitMqService>();
-builder.Services.AddHostedService<RabbitMqHostedService>();
-
-// Swagger/OpenAPI
+// Swagger/OpenAPI configuration
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -42,20 +78,21 @@ builder.Services.AddSwaggerGen(c =>
 // Build the application
 var app = builder.Build();
 
+// Enable Swagger only in Development environment
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-var rabbitMqService = app.Services.GetRequiredService<IRabbitMqService>();
-await rabbitMqService.StartSubscribers();
-
 // Register the custom GatewayHeaderMiddleware
 app.UseMiddleware<GatewayHeaderMiddleware>();
 
+// Enable authorization
 app.UseAuthorization();
 
+// Map controllers
 app.MapControllers();
 
+// Run the application
 app.Run();
