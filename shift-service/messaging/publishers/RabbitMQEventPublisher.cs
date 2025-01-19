@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Messaging.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualBasic;
+using Models;
 
 namespace Messaging.Publishers {
 
@@ -20,6 +21,8 @@ public class RabbitMQEventPublisher : IEventPublisher, IDisposable
 
     private const string CLOCK_IN_EXCHANGE = "shift.clockin";
     private const string SHIFT_CREATED_EXCHANGE = "shift.created";
+    private const string SHIFT_DELETED_EXCHANGE = "shift.deleted";
+
 
     public RabbitMQEventPublisher(IOptions<RabbitMQConfig> options)
     {
@@ -44,7 +47,7 @@ public class RabbitMQEventPublisher : IEventPublisher, IDisposable
     public async Task PublishClockInEvent(ClockInDto clockInDto)
     {
         if (_channel == null)
-                throw new InvalidOperationException("Channel not initialized. Call InitializeAsync first.");
+                throw new InvalidOperationException("Channel not initialized.");
         var message = JsonSerializer.Serialize(clockInDto);
         byte[] body = System.Text.Encoding.UTF8.GetBytes(message);  
         var props = new BasicProperties();
@@ -54,8 +57,10 @@ public class RabbitMQEventPublisher : IEventPublisher, IDisposable
         await _channel.BasicPublishAsync( CLOCK_IN_EXCHANGE, "", true, props, body);      
     }
 
-    public async Task PublishShiftCreatedEvent(ShiftCreatedDto shiftDto)
+    public async Task PublishShiftCreatedEvent(ShiftDto shiftDto)
     {
+        if (_channel == null)
+            throw new InvalidOperationException("Channel not initialized.");
         var message = JsonSerializer.Serialize(shiftDto);
         byte[] body = System.Text.Encoding.UTF8.GetBytes(message);
         var props = new BasicProperties();
@@ -64,6 +69,21 @@ public class RabbitMQEventPublisher : IEventPublisher, IDisposable
         
         await _channel.BasicPublishAsync( SHIFT_CREATED_EXCHANGE, "", true, props, body);
     }
+    public async Task PublishShiftDeletedEvent(Guid shiftID)
+{
+    if (_channel == null)
+        throw new InvalidOperationException("Channel not initialized.");
+    var message = new { ShiftID = shiftID };
+    var serializedMessage = JsonSerializer.Serialize(message);
+    byte[] body = System.Text.Encoding.UTF8.GetBytes(serializedMessage);
+    var props = new BasicProperties();
+        props.ContentType = "text/plain";
+        props.DeliveryMode = (DeliveryModes)2;
+        
+        await _channel.BasicPublishAsync( SHIFT_DELETED_EXCHANGE, "", true, props, body);
+
+}
+
     public void Dispose()
     {
         _channel?.Dispose();

@@ -49,7 +49,7 @@ builder.Services.Configure<RabbitMQConfig>(
 // Register services
 builder.Services.AddSingleton<IEventPublisher, RabbitMQEventPublisher>();
 builder.Services.AddSingleton<IEventSubscriber, RabbitMQEventSubscriber>();
-builder.Services.AddHostedService<RabbitMQHostedService>();
+// builder.Services.AddHostedService<RabbitMQHostedService>();
 builder.Services.Configure<RabbitMQConfig>(config =>
 {
     config.HostName = Environment.GetEnvironmentVariable("RABBITMQ_HOSTNAME") ?? "default-hostname";

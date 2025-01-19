@@ -99,6 +99,10 @@ public class ShiftsController : ControllerBase
 
             _logger.LogInformation("Controller - object being passed is: {CreateShiftDto}", JsonSerializer.Serialize(createshiftDto, new JsonSerializerOptions { WriteIndented = true }));
             var createdShift = await _shiftService.CreateShift(createshiftDto);
+            //rabbitmq shift created
+            await _eventpublisher.PublishShiftCreatedEvent(createdShift);
+            _logger.LogInformation("Successfully published clock-in event for shift: {ShiftId}", createdShift.ShiftId);
+
             return CreatedAtAction(
                 nameof(GetShiftById),
                 new { shiftId = createdShift.ShiftId },
@@ -271,6 +275,9 @@ public class ShiftsController : ControllerBase
                 _logger.LogInformation("controller class error");
                 return NotFound();
             }
+            //rabbitmq
+            await _eventpublisher.PublishShiftDeletedEvent(shiftId);
+            _logger.LogInformation("Successfully published deleted event for shift: {ShiftId}", shiftId);
             return NoContent();
         }
         catch (Exception ex)
