@@ -3,52 +3,44 @@
   "WorkspaceRootPath": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service-web\\Program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:employee-service-web\\Program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{6C02BFF0-A31E-4929-A6E8-18BC02DD252C}|employee-service-web\\employee-service-web.csproj|c:\\users\\aizaz ahsan\\inholland year 4 minor\\karmakebabproject\\karma-kebab\\employee-service-web\\employee-service-web.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{6C02BFF0-A31E-4929-A6E8-18BC02DD252C}|employee-service-web\\employee-service-web.csproj|solutionrelative:employee-service-web\\employee-service-web.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service-web\\Interfaces\\IEmployeeService.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:employee-service-web\\Interfaces\\IEmployeeService.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{6C02BFF0-A31E-4929-A6E8-18BC02DD252C}|employee-service-web\\employee-service-web.csproj|c:\\users\\aizaz ahsan\\inholland year 4 minor\\karmakebabproject\\karma-kebab\\employee-service-web\\tests\\unittests\\employeeservicetests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6C02BFF0-A31E-4929-A6E8-18BC02DD252C}|employee-service-web\\employee-service-web.csproj|solutionrelative:employee-service-web\\tests\\unittests\\employeeservicetests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service-web\\Services\\EmployeeService.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:employee-service-web\\Services\\EmployeeService.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{6C02BFF0-A31E-4929-A6E8-18BC02DD252C}|employee-service-web\\employee-service-web.csproj|c:\\users\\aizaz ahsan\\inholland year 4 minor\\karmakebabproject\\karma-kebab\\employee-service-web\\tests\\unittests\\employeefunctionstests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6C02BFF0-A31E-4929-A6E8-18BC02DD252C}|employee-service-web\\employee-service-web.csproj|solutionrelative:employee-service-web\\tests\\unittests\\employeefunctionstests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service-web\\Database\\ApplicationDatabase.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:employee-service-web\\Database\\ApplicationDatabase.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{6C02BFF0-A31E-4929-A6E8-18BC02DD252C}|employee-service-web\\employee-service-web.csproj|c:\\users\\aizaz ahsan\\inholland year 4 minor\\karmakebabproject\\karma-kebab\\employee-service-web\\tests\\unittests\\employeecontrollertests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6C02BFF0-A31E-4929-A6E8-18BC02DD252C}|employee-service-web\\employee-service-web.csproj|solutionrelative:employee-service-web\\tests\\unittests\\employeecontrollertests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\shift-service\\middlewares\\GatewayHeaderMiddleware.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:shift-service\\middlewares\\GatewayHeaderMiddleware.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{6C02BFF0-A31E-4929-A6E8-18BC02DD252C}|employee-service-web\\employee-service-web.csproj|c:\\users\\aizaz ahsan\\inholland year 4 minor\\karmakebabproject\\karma-kebab\\employee-service-web\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6C02BFF0-A31E-4929-A6E8-18BC02DD252C}|employee-service-web\\employee-service-web.csproj|solutionrelative:employee-service-web\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service-web\\Middlewares\\GatewayHeaderMiddleware.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:employee-service-web\\Middlewares\\GatewayHeaderMiddleware.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{6C02BFF0-A31E-4929-A6E8-18BC02DD252C}|employee-service-web\\employee-service-web.csproj|c:\\users\\aizaz ahsan\\inholland year 4 minor\\karmakebabproject\\karma-kebab\\employee-service-web\\database\\applicationdatabasefactory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6C02BFF0-A31E-4929-A6E8-18BC02DD252C}|employee-service-web\\employee-service-web.csproj|solutionrelative:employee-service-web\\database\\applicationdatabasefactory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service-web\\Repositories\\EmployeeRepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:employee-service-web\\Repositories\\EmployeeRepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{6C02BFF0-A31E-4929-A6E8-18BC02DD252C}|employee-service-web\\employee-service-web.csproj|c:\\users\\aizaz ahsan\\inholland year 4 minor\\karmakebabproject\\karma-kebab\\employee-service-web\\database\\applicationdatabase.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6C02BFF0-A31E-4929-A6E8-18BC02DD252C}|employee-service-web\\employee-service-web.csproj|solutionrelative:employee-service-web\\database\\applicationdatabase.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service-web\\employee-service-web.http||{5703B403-55E7-4C63-8C88-A8F52C7A45C5}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:employee-service-web\\employee-service-web.http||{5703B403-55E7-4C63-8C88-A8F52C7A45C5}"
+      "AbsoluteMoniker": "D:0:0:{6C02BFF0-A31E-4929-A6E8-18BC02DD252C}|employee-service-web\\employee-service-web.csproj|c:\\users\\aizaz ahsan\\inholland year 4 minor\\karmakebabproject\\karma-kebab\\employee-service-web\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{6C02BFF0-A31E-4929-A6E8-18BC02DD252C}|employee-service-web\\employee-service-web.csproj|solutionrelative:employee-service-web\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service\\employee-service.csproj||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:employee-service\\employee-service.csproj||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|"
+      "AbsoluteMoniker": "D:0:0:{C4BDD1D7-EF59-40C0-9755-2FFD802F22B7}|shift-service\\shift-service.csproj|c:\\users\\aizaz ahsan\\inholland year 4 minor\\karmakebabproject\\karma-kebab\\shift-service\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{C4BDD1D7-EF59-40C0-9755-2FFD802F22B7}|shift-service\\shift-service.csproj|solutionrelative:shift-service\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service-web\\Services\\ApplicationDatabaseService.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:employee-service-web\\Services\\ApplicationDatabaseService.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service-web\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:employee-service-web\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service-web\\Dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:employee-service-web\\Dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}"
+      "AbsoluteMoniker": "D:0:0:{C4BDD1D7-EF59-40C0-9755-2FFD802F22B7}|shift-service\\shift-service.csproj|c:\\users\\aizaz ahsan\\inholland year 4 minor\\karmakebabproject\\karma-kebab\\shift-service\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C4BDD1D7-EF59-40C0-9755-2FFD802F22B7}|shift-service\\shift-service.csproj|solutionrelative:shift-service\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -58,7 +50,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 6,
+          "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Bookmark",
@@ -69,154 +61,138 @@
               "Name": "ST:0:0:{e1b7d1f8-9b3c-49b1-8f4f-bfc63a88835d}"
             },
             {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "employee-service-web",
+              "DocumentMoniker": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service-web\\employee-service-web.csproj",
+              "RelativeDocumentMoniker": "employee-service-web\\employee-service-web.csproj",
+              "ToolTip": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service-web\\employee-service-web.csproj",
+              "RelativeToolTip": "employee-service-web\\employee-service-web.csproj",
+              "ViewState": "AgIAABMAAAAAAAAAAABBwCcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-01-17T18:33:15.297Z",
+              "EditorCaption": ""
+            },
+            {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "IEmployeeService.cs",
-              "DocumentMoniker": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service-web\\Interfaces\\IEmployeeService.cs",
-              "RelativeDocumentMoniker": "employee-service-web\\Interfaces\\IEmployeeService.cs",
-              "ToolTip": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service-web\\Interfaces\\IEmployeeService.cs",
-              "RelativeToolTip": "employee-service-web\\Interfaces\\IEmployeeService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAVAAAAAAAAAA==",
+              "Title": "EmployeeServiceTests.cs",
+              "DocumentMoniker": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service-web\\tests\\unitTests\\EmployeeServiceTests.cs",
+              "RelativeDocumentMoniker": "employee-service-web\\tests\\unitTests\\EmployeeServiceTests.cs",
+              "ToolTip": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service-web\\tests\\unitTests\\EmployeeServiceTests.cs",
+              "RelativeToolTip": "employee-service-web\\tests\\unitTests\\EmployeeServiceTests.cs",
+              "ViewState": "AgIAAB8CAAAAAAAAAAAAAC0CAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-01-08T14:57:49.568Z",
+              "WhenOpened": "2025-01-17T17:44:50.476Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "GatewayHeaderMiddleware.cs",
-              "DocumentMoniker": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\shift-service\\middlewares\\GatewayHeaderMiddleware.cs",
-              "RelativeDocumentMoniker": "shift-service\\middlewares\\GatewayHeaderMiddleware.cs",
-              "ToolTip": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\shift-service\\middlewares\\GatewayHeaderMiddleware.cs",
-              "RelativeToolTip": "shift-service\\middlewares\\GatewayHeaderMiddleware.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "DocumentIndex": 2,
+              "Title": "EmployeeFunctionsTests.cs",
+              "DocumentMoniker": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service-web\\tests\\unitTests\\EmployeeFunctionsTests.cs",
+              "RelativeDocumentMoniker": "employee-service-web\\tests\\unitTests\\EmployeeFunctionsTests.cs",
+              "ToolTip": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service-web\\tests\\unitTests\\EmployeeFunctionsTests.cs",
+              "RelativeToolTip": "employee-service-web\\tests\\unitTests\\EmployeeFunctionsTests.cs",
+              "ViewState": "AgIAADsAAAAAAAAAAAAqwFQAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-01-08T14:55:05.492Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "EmployeeRepository.cs",
-              "DocumentMoniker": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service-web\\Repositories\\EmployeeRepository.cs",
-              "RelativeDocumentMoniker": "employee-service-web\\Repositories\\EmployeeRepository.cs",
-              "ToolTip": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service-web\\Repositories\\EmployeeRepository.cs",
-              "RelativeToolTip": "employee-service-web\\Repositories\\EmployeeRepository.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-01-08T14:36:40.586Z",
+              "WhenOpened": "2025-01-17T17:44:29.619Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 3,
+              "Title": "EmployeeControllerTests.cs",
+              "DocumentMoniker": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service-web\\tests\\unitTests\\EmployeeControllerTests.cs",
+              "RelativeDocumentMoniker": "employee-service-web\\tests\\unitTests\\EmployeeControllerTests.cs",
+              "ToolTip": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service-web\\tests\\unitTests\\EmployeeControllerTests.cs",
+              "RelativeToolTip": "employee-service-web\\tests\\unitTests\\EmployeeControllerTests.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABcAAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-01-17T17:42:36.318Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "ApplicationDatabaseFactory.cs",
+              "DocumentMoniker": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service-web\\Database\\ApplicationDatabaseFactory.cs",
+              "RelativeDocumentMoniker": "employee-service-web\\Database\\ApplicationDatabaseFactory.cs",
+              "ToolTip": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service-web\\Database\\ApplicationDatabaseFactory.cs",
+              "RelativeToolTip": "employee-service-web\\Database\\ApplicationDatabaseFactory.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAArAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-01-08T15:33:42.063Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\shift-service\\Program.cs",
+              "RelativeDocumentMoniker": "shift-service\\Program.cs",
+              "ToolTip": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\shift-service\\Program.cs",
+              "RelativeToolTip": "shift-service\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAIBJwDYAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-01-08T15:16:20.634Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\shift-service\\appsettings.json",
+              "RelativeDocumentMoniker": "shift-service\\appsettings.json",
+              "ToolTip": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\shift-service\\appsettings.json",
+              "RelativeToolTip": "shift-service\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-01-08T15:16:13.424Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
               "Title": "ApplicationDatabase.cs",
               "DocumentMoniker": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service-web\\Database\\ApplicationDatabase.cs",
               "RelativeDocumentMoniker": "employee-service-web\\Database\\ApplicationDatabase.cs",
               "ToolTip": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service-web\\Database\\ApplicationDatabase.cs",
               "RelativeToolTip": "employee-service-web\\Database\\ApplicationDatabase.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-01-08T14:25:59.595Z",
+              "WhenOpened": "2025-01-08T15:18:19.799Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 4,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service-web\\Program.cs",
               "RelativeDocumentMoniker": "employee-service-web\\Program.cs",
               "ToolTip": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service-web\\Program.cs",
               "RelativeToolTip": "employee-service-web\\Program.cs",
-              "ViewState": "AgIAADMAAAAAAAAAAAAAAEsAAAABAAAAAAAAAA==",
+              "ViewState": "AgIAAAwAAAAAAAAAAIBJwBAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-01-08T14:05:22.739Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "ApplicationDatabaseService.cs",
-              "DocumentMoniker": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service-web\\Services\\ApplicationDatabaseService.cs",
-              "RelativeDocumentMoniker": "employee-service-web\\Services\\ApplicationDatabaseService.cs",
-              "ToolTip": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service-web\\Services\\ApplicationDatabaseService.cs",
-              "RelativeToolTip": "employee-service-web\\Services\\ApplicationDatabaseService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-01-08T14:00:40.848Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "EmployeeService.cs",
-              "DocumentMoniker": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service-web\\Services\\EmployeeService.cs",
-              "RelativeDocumentMoniker": "employee-service-web\\Services\\EmployeeService.cs",
-              "ToolTip": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service-web\\Services\\EmployeeService.cs",
-              "RelativeToolTip": "employee-service-web\\Services\\EmployeeService.cs",
-              "ViewState": "AgIAALEAAAAAAAAAAAAAAAsAAAAxAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-01-08T14:42:04.435Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "employee-service.csproj",
-              "DocumentMoniker": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service\\employee-service.csproj",
-              "RelativeDocumentMoniker": "employee-service\\employee-service.csproj",
-              "ToolTip": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service\\employee-service.csproj",
-              "RelativeToolTip": "employee-service\\employee-service.csproj",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-01-08T14:36:35.905Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "GatewayHeaderMiddleware.cs",
-              "DocumentMoniker": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service-web\\Middlewares\\GatewayHeaderMiddleware.cs",
-              "RelativeDocumentMoniker": "employee-service-web\\Middlewares\\GatewayHeaderMiddleware.cs",
-              "ToolTip": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service-web\\Middlewares\\GatewayHeaderMiddleware.cs",
-              "RelativeToolTip": "employee-service-web\\Middlewares\\GatewayHeaderMiddleware.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAACQAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-01-08T13:59:11.855Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 7,
-              "Title": "employee-service-web.http",
-              "DocumentMoniker": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service-web\\employee-service-web.http",
-              "RelativeDocumentMoniker": "employee-service-web\\employee-service-web.http",
-              "ToolTip": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service-web\\employee-service-web.http",
-              "RelativeToolTip": "employee-service-web\\employee-service-web.http",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003502|",
-              "WhenOpened": "2025-01-08T14:36:58.427Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 10,
               "Title": "appsettings.json",
               "DocumentMoniker": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service-web\\appsettings.json",
               "RelativeDocumentMoniker": "employee-service-web\\appsettings.json",
               "ToolTip": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service-web\\appsettings.json",
               "RelativeToolTip": "employee-service-web\\appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAfAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-01-08T14:05:12.869Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 11,
-              "Title": "Dockerfile",
-              "DocumentMoniker": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service-web\\Dockerfile",
-              "RelativeDocumentMoniker": "employee-service-web\\Dockerfile",
-              "ToolTip": "C:\\Users\\Aizaz Ahsan\\Inholland Year 4 minor\\KarmaKebabProject\\karma-kebab\\employee-service-web\\Dockerfile",
-              "RelativeToolTip": "employee-service-web\\Dockerfile",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2025-01-08T13:54:36.085Z"
+              "WhenOpened": "2025-01-08T14:05:12.869Z",
+              "EditorCaption": ""
             }
           ]
         }

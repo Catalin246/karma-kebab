@@ -226,4 +226,3 @@ spec:
   tls: 
     termination: edge
   wildcardPolicy: None
-    

@@ -63,6 +63,10 @@ jobs:
             echo "truck_service=true" >> $GITHUB_ENV
           fi
           
+          if echo "$CHANGED_FILES" | grep -q '^employee-service-web/'; then
+            echo "employee_service=true" >> $GITHUB_ENV
+          fi
+          
 
       # Deploy the API Gateway
       - name: API Gateway - Set OpenShift Project
@@ -175,3 +179,19 @@ jobs:
         if: env.truck_service == 'true'
         run: |
           oc get pods --selector=app=truck-service --field-selector=status.phase=Running -o name | xargs -I {} oc delete {} --ignore-not-found=true
+
+      # Deploy the Employee Service
+      - name: Employee Service - Set OpenShift Project
+        if: env.employee_service == 'true'
+        run: |
+          oc project ${{ secrets.NAMESPACE }}
+
+      - name: Start OpenShift Build
+        if: env.employee_service == 'true'
+        run: |
+          oc start-build employee-service-web --wait  # Trigger the build and wait for completion
+
+      - name: Restart the application by deleting the old running pod
+        if: env.employee_service == 'true'
+        run: |
+          oc get pods --selector=app=employee-service-web --field-selector=status.phase=Running -o name | xargs -I {} oc delete {} --ignore-not-found=true
