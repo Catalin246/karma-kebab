@@ -7,13 +7,30 @@ using Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Register DbContext with PostgreSQL connection string from appsettings.json
-builder.Services.AddDbContextFactory<ApplicationDatabase>(options =>
+// Explicitly load appsettings.json (ignoring environment-specific configurations)
+builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+
+// Determine if the environment is local (Development) or production
+var environment = builder.Environment.EnvironmentName;
+
+if (environment == "Development")
 {
+    // Use connection string from appsettings.json for local development
+    var connectionString = builder.Configuration.GetConnectionString("PostgreSQLEntityFramework");
+    builder.Services.AddDbContextFactory<ApplicationDatabase>(options =>
+    {
+        options.UseNpgsql(connectionString);
+    });
+}
+else
+{
+    // Use connection string from environment variable for production/live environment
     var connectionString = Environment.GetEnvironmentVariable("PostgreSQLEntityFramework");
-    System.Console.WriteLine(connectionString);
-    options.UseNpgsql(connectionString);
-});
+    builder.Services.AddDbContextFactory<ApplicationDatabase>(options =>
+    {
+        options.UseNpgsql(connectionString);
+    });
+}
 
 // Register services, repositories, etc.
 builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
@@ -38,5 +55,3 @@ app.UseMiddleware<GatewayHeaderMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
-
-

@@ -115,26 +115,6 @@ services:
     networks:
       - karama-kebab-network
 
-  # employee-service-web:
-  #   build:
-  #     context: ./employee-service-web
-  #     dockerfile: Dockerfile.local
-  #   container_name: employee-service-web
-  #   ports:
-  #     - "3005:3005"
-  #   environment:
-  #     ASPNETCORE_ENVIRONMENT: Development
-  #     PostgreSQLEntityFramework: "Server=karama-kebab-network;Port=5432;Database=employeedb;Username=postgres;Password=password;"
-  #   depends_on:
-  #     - postgres
-  #   networks:
-  #     - karama-kebab-network
-  #   command: >
-  #     sh -c "
-  #     dotnet tool restore && 
-  #     dotnet run --urls=http://0.0.0.0:3005
-  #     "
-  
   truck-service:
     build:
       context: ./truck-service
@@ -153,25 +133,6 @@ services:
       - "3006:3006"
     networks:
       - karama-kebab-network
-
-  # postgres:
-  #   image: postgres:13
-  #   container_name: employee-postgres-db
-  #   environment:
-  #     POSTGRES_USER: postgres
-  #     POSTGRES_PASSWORD: password
-  #     POSTGRES_DB: employeedb
-  #   ports:
-  #     - "5433:5432"
-  #   volumes:
-  #     - postgres-data:/var/lib/postgresql/data  # Persistent database storage
-  #     - ./EmployeeServiceDB.session.sql:/docker-entrypoint-initdb.d/init.sql  # Initialization script
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "pg_isready -U postgres"]
-  #     interval: 10s
-  #     retries: 5
-  #   networks:
-  #     - karama-kebab-network
 
   postgres-truck:
     image: postgres:13
