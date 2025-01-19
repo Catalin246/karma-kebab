@@ -54,10 +54,11 @@ func (r *RabbitMQService) PublishEventCreated(ctx context.Context, event models.
 }
 
 // PublishEventDeleted publishes an event deleted message
-func (r *RabbitMQService) PublishEventDeleted(ctx context.Context, eventID string, partitionKey string) error {
+func (r *RabbitMQService) PublishEventDeleted(ctx context.Context, event *models.Event) error {
+	shiftIDsBytes, err := json.Marshal(event.ShiftIDs)
 	message := map[string]string{
-		"eventID":     eventID,
-		"partitionKey": partitionKey,
+		"eventID":     event.RowKey.String(),
+		"shiftIDs": 	string(shiftIDsBytes),
 	}
 
 	messageBytes, err := json.Marshal(message)

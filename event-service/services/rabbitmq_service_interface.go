@@ -10,5 +10,6 @@ import (
 type RabbitMQServiceInterface interface {
 	PublishMessage(queueName, message string) error
 	PublishEventCreated(ctx context.Context, event models.Event) error
-	PublishEventDeleted(ctx context.Context, eventID string, partitionKey string) error
+	// PublishEventDeleted(ctx context.Context, eventID string, partitionKey string) error
+	PublishEventDeleted(ctx context.Context, event *models.Event) error
 }

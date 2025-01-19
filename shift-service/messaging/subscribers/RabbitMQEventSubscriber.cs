@@ -2,175 +2,134 @@ using System;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using Messaging.Configuration;
+using Services;
 
 namespace Messaging.Subscribers
 {
     public class RabbitMQEventSubscriber : IEventSubscriber, IDisposable
     {
         private readonly IConnection _connection;
-        private readonly IChannel _channel;
+        private readonly IModel _channel;
         private readonly ILogger<RabbitMQEventSubscriber> _logger;
-        private const string SHIFT_CREATED_QUEUE = "shift.created.queue";
-        private const string SHIFT_DELETED_QUEUE = "shift.deleted.queue";
-        private const string CLOCKIN_QUEUE = "shift.clockin.queue";
-        private const string CLOCKIN_EXCHANGE = "shift.clockin";
-        private const string SHIFT_CREATED_EXCHANGE = "shift.created";
-        private const string SHIFT_DELETED_EXCHANGE = "shift.deleted";
+        private const string EVENT_CREATED_QUEUE = "event.created";
+        private const string EVENT_DELETED_QUEUE = "event.deleted";
+        private const string EVENT_CREATED_EXCHANGE = "event.created";
+        private const string EVENT_DELETED_EXCHANGE = "event.deleted";
 
-         public RabbitMQEventSubscriber(
-        IConnection connection,
-        IChannel channel,
-        ILogger<RabbitMQEventSubscriber> logger)
+        public RabbitMQEventSubscriber(
+            IConnection connection,
+            IModel channel,
+            ILogger<RabbitMQEventSubscriber> logger)
         {
             _connection = connection;
             _channel = channel;
             _logger = logger;
+
         }
 
         public async Task InitializeAsync()
         {
-            await _channel.ExchangeDeclareAsync(SHIFT_CREATED_EXCHANGE, ExchangeType.Direct);
-            await _channel.ExchangeDeclareAsync(SHIFT_DELETED_EXCHANGE, ExchangeType.Direct);
-             await _channel.ExchangeDeclareAsync(CLOCKIN_EXCHANGE, ExchangeType.Direct);
+            // Declare required exchanges
+            _channel.ExchangeDeclare(EVENT_CREATED_EXCHANGE, ExchangeType.Direct, durable: true);
+            _channel.ExchangeDeclare(EVENT_DELETED_EXCHANGE, ExchangeType.Direct, durable: true);
+
             _logger.LogInformation("RabbitMQ exchanges declared successfully.");
+            await Task.CompletedTask;
         }
 
         public async Task StartSubscribers()
         {
-            // Start listening to events as soon as this method is called
             await StartEventCreatedSubscriber();
             await StartEventDeletedSubscriber();
-            await StartEventClockInSubscriber();
         }
 
         public async Task StartEventCreatedSubscriber()
         {
-        // Declare the queue and bind it to the exchange
-            await _channel.QueueDeclareAsync(
-                SHIFT_CREATED_QUEUE, 
-                durable: true, 
-                exclusive: false, 
+            _channel.QueueDeclare(
+                EVENT_CREATED_QUEUE,
+                durable: true,
+                exclusive: false,
                 autoDelete: false);
-                
-            await _channel.QueueBindAsync(
-                SHIFT_CREATED_QUEUE, 
-                SHIFT_CREATED_EXCHANGE,
-                routingKey: "");  // routing key!
 
+            _channel.QueueBind(
+                EVENT_CREATED_QUEUE,
+                EVENT_CREATED_EXCHANGE,
+                routingKey: "");
 
             var consumer = new AsyncEventingBasicConsumer(_channel);
-            consumer.ReceivedAsync += async (ch, ea) =>
+            consumer.Received += async (ch, ea) =>
             {
                 var body = ea.Body.ToArray();
                 var message = Encoding.UTF8.GetString(body);
 
-                if (string.IsNullOrWhiteSpace(message)) //checks if empty
+                if (string.IsNullOrWhiteSpace(message))
                 {
-                    _logger.LogWarning("Received an empty message from the queue.");
-                    await _channel.BasicAckAsync(ea.DeliveryTag, false);
-                    return; 
+                    _logger.LogWarning("Received an empty message from the event.created queue.");
+                    _channel.BasicAck(ea.DeliveryTag, false);
+                    return;
                 }
+
                 try
                 {
-                    var shiftCreatedDto = JsonSerializer.Deserialize<ShiftCreatedDto>(message);
-                    if (shiftCreatedDto == null)
+                    var eventCreatedDto = JsonSerializer.Deserialize<EventCreatedDto>(message);
+                    if (eventCreatedDto == null)
                     {
-                        _logger.LogWarning("Message deserialization resulted in null. Skipping processing.");
-                        await _channel.BasicAckAsync(ea.DeliveryTag, false); 
+                        _logger.LogWarning("Deserialized message is null.");
+                        _channel.BasicAck(ea.DeliveryTag, false);
                         return;
                     }
 
-                    _logger.LogInformation($"Received shift created event for shift: {shiftCreatedDto.ShiftId}");
+                    _logger.LogInformation($"Received event created: {eventCreatedDto.EventId}");
 
-                    await _channel.BasicAckAsync(ea.DeliveryTag, false);
+                    _channel.BasicAck(ea.DeliveryTag, false);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error processing shift created message");
-                    await _channel.BasicNackAsync(ea.DeliveryTag, false, true); 
+                    _logger.LogError(ex, "Error processing event.created message.");
+                    _channel.BasicNack(ea.DeliveryTag, false, true);
                 }
             };
-            await _channel.BasicConsumeAsync(SHIFT_CREATED_QUEUE, false, consumer);
 
+            _channel.BasicConsume(EVENT_CREATED_QUEUE, false, consumer);
+            await Task.CompletedTask;
         }
 
-        public async Task StartEventDeletedSubscriber()
+    public async Task StartEventDeletedSubscriber()
+    {
+        // Declare the queue and bind it to the event.deleted exchange
+        _channel.QueueDeclare(
+            EVENT_DELETED_QUEUE,
+            durable: true,
+            exclusive: false,
+            autoDelete: false);
+
+        _channel.QueueBind(
+            EVENT_DELETED_QUEUE,
+            EVENT_DELETED_EXCHANGE,
+            routingKey: "");
+
+        var consumer = new AsyncEventingBasicConsumer(_channel);
+        consumer.Received += async (ch, ea) =>
         {
-            await _channel.QueueDeclareAsync(
-                SHIFT_DELETED_QUEUE, 
-                durable: true, 
-                exclusive: false, 
-                autoDelete: false);
-                
-            await _channel.QueueBindAsync(
-                SHIFT_DELETED_QUEUE, 
-                SHIFT_DELETED_EXCHANGE,
-                routingKey: "");
+            var body = ea.Body.ToArray();
+            var message = Encoding.UTF8.GetString(body);
 
-            var consumer = new AsyncEventingBasicConsumer(_channel);
-            consumer.ReceivedAsync += async (ch, ea) =>
+            if (string.IsNullOrWhiteSpace(message))
             {
-                var body = ea.Body.ToArray();
-                var message = Encoding.UTF8.GetString(body);
+                _logger.LogWarning("Received an empty message from the event.deleted queue.");
+                _channel.BasicAck(ea.DeliveryTag, false);
+                return;
+            }
+        };
 
-                try
-                {
-                    // Deserialize the message into a GUID (assuming it's the shift ID)
-                    var shiftId = JsonSerializer.Deserialize<Guid>(message);
-                    _logger.LogInformation($"Received shift deleted event for shift: {shiftId}");
-                    await _channel.BasicAckAsync(ea.DeliveryTag, false); // Acknowledge the message
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error processing shift deleted message");
-                    await _channel.BasicNackAsync(ea.DeliveryTag, false, true); // Negative Acknowledgement (requeue)
-                }
-            };
+        _channel.BasicConsume(EVENT_DELETED_QUEUE, false, consumer);
+        await Task.CompletedTask;
+    }
 
-            // Start consuming the message from the queue
-            await _channel.BasicConsumeAsync(SHIFT_DELETED_QUEUE, false, consumer);
-        }
-        public async Task StartEventClockInSubscriber()
-        {
-            await _channel.QueueDeclareAsync(
-                CLOCKIN_QUEUE, 
-                durable: true, 
-                exclusive: false, 
-                autoDelete: false);
-                
-            await _channel.QueueBindAsync(
-                CLOCKIN_QUEUE, 
-                CLOCKIN_EXCHANGE,
-                routingKey: "");
-
-            var consumer = new AsyncEventingBasicConsumer(_channel);
-            consumer.ReceivedAsync += async (ch, ea) =>
-            {
-                var body = ea.Body.ToArray();
-                var message = Encoding.UTF8.GetString(body);
-
-                try
-                {
-                    // Deserialize the message into a GUID (assuming it's the shift ID)
-                    var shiftId = JsonSerializer.Deserialize<Guid>(message);
-                    _logger.LogInformation($"Received shift clockin event for shift: {shiftId}");
-                    await _channel.BasicAckAsync(ea.DeliveryTag, false); // Acknowledge the message
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error processing shift deleted message");
-                    await _channel.BasicNackAsync(ea.DeliveryTag, false, true); // Negative Acknowledgement (requeue)
-                }
-            };
-
-            // Start consuming the message from the queue
-            await _channel.BasicConsumeAsync(CLOCKIN_QUEUE, false, consumer);
-        }
 
         public void Dispose()
         {
@@ -179,4 +138,19 @@ namespace Messaging.Subscribers
             _connection?.Dispose();
         }
     }
+
+    // Example DTOs for deserialization
+    public class EventCreatedDto
+    {
+        public Guid EventId { get; set; }
+        public string Name { get; set; }
+    }
+
+    public class EventDeletedDto
+    {
+        public Guid EventID { get; set; }
+        public List<Guid> ShiftIDs { get; set; }
+    }
+
+
 }

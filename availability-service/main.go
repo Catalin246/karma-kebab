@@ -3,13 +3,12 @@ package main
 import (
 	"availability-service/db"
 	"availability-service/routes"
-	"availability-service/service"
+	// "availability-service/service"
 	"log"
 	"net/http"
 	"os"
-
 	"github.com/joho/godotenv"
-	amqp "github.com/rabbitmq/amqp091-go"
+	// amqp "github.com/rabbitmq/amqp091-go"
 )
 
 func failOnError(err error, msg string) {
@@ -37,19 +36,19 @@ func main() {
 	}
 
 	// Initialize RabbitMQ 
-	conn, err := amqp.Dial("amqp://guest:guest@rabbitmq:5672/")
-	failOnError(err, "Failed to connect to RabbitMQ")
-	defer conn.Close()
+	// conn, err := amqp.Dial("amqp://guest:guest@rabbitmq:5672/")
+	// failOnError(err, "Failed to connect to RabbitMQ")
+	// defer conn.Close()
 
-	ch, err := conn.Channel()
-	failOnError(err, "Failed to open a channel")
-	defer ch.Close()
+	// ch, err := conn.Channel()
+	// failOnError(err, "Failed to open a channel")
+	// defer ch.Close()
 
 	// Initialize RabbitMQService 
-	rabbitMQService := service.NewRabbitMQService(ch)
+	// rabbitMQService := service.NewRabbitMQService(ch)
 
-	// Register routes with the service client and RabbitMQService
-	router := routes.RegisterRoutes(client, rabbitMQService)
+	//Register routes with the service client
+	router := routes.RegisterRoutes(client)
 
 	// Start the server
 	log.Println("Server is running on port 3002")

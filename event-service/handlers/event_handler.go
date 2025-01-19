@@ -133,6 +133,7 @@ func (h *EventHandler) DeleteEvent(w http.ResponseWriter, r *http.Request) {
 	partitionKey := vars["partitionKey"]
 	rowKey := vars["rowKey"]
 
+	// Delete the event
 	err := h.service.Delete(r.Context(), partitionKey, rowKey)
 	if err != nil {
 		if err.Error() == "event not found" {
@@ -143,14 +144,32 @@ func (h *EventHandler) DeleteEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Publish event deleted message
-	if err := h.rabbitMQService.PublishEventDeleted(context.Background(), rowKey, partitionKey); err != nil {
-		log.Println("Failed to publish event deleted message:", err)
+	// Retrieve event details to publish the deleted message
+	event, err := h.service.GetByID(r.Context(),partitionKey, rowKey)
+	if err != nil {
+		http.Error(w, `{"error": "failed to retrieve event"}`, http.StatusInternalServerError)
+		log.Println("Failed to retrieve event details:", err)
+		return
 	}
 
+	// Ensure the event is valid before attempting to publish
+	if event == nil {
+		http.Error(w, `{"error": "event not found"}`, http.StatusNotFound)
+		return
+	}
+
+	// Publish event deleted message
+	if err := h.rabbitMQService.PublishEventDeleted(r.Context(), event); err != nil {
+		log.Println("Failed to publish event deleted message:", err)
+		http.Error(w, `{"error": "failed to publish event deleted message"}`, http.StatusInternalServerError)
+		return
+	}
+
+	// Respond with success
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"message": "Event deleted successfully"})
 }
+
 
 func (h *EventHandler) GetEventByShiftID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)

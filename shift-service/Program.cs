@@ -1,98 +1,87 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.OpenApi.Models;
-using Middlewares;
 using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
-using System.Text;
-using System.Text.Json;
-using Services;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 using Messaging.Configuration;
 using Messaging.Publishers;
 using Messaging.Subscribers;
-using Microsoft.Extensions.Options;
+using Middlewares;
+using Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Register AzureStorage configuration
-builder.Services.Configure<AzureStorageConfig>(
-    builder.Configuration.GetSection("AzureStorage"));
-    
+// Read RabbitMQ configuration from environment variables
+var rabbitMqHost = Environment.GetEnvironmentVariable("RABBITMQ_HOST") ?? "localhost";
+var rabbitMqUser = Environment.GetEnvironmentVariable("RABBITMQ_DEFAULT_USER") ?? "guest";
+var rabbitMqPass = Environment.GetEnvironmentVariable("RABBITMQ_DEFAULT_PASS") ?? "guest";
 
-builder.Services.AddSingleton<IConnection>(sp =>
+// Bind RabbitMQ configuration to DI container
+builder.Services.AddSingleton<IConnection>(serviceProvider =>
 {
-    var config = sp.GetRequiredService<IOptions<RabbitMQConfig>>().Value;
     var factory = new ConnectionFactory
     {
-        UserName = config.UserName,
-        Password = config.Password,
-        HostName = config.HostName
-
+        HostName = rabbitMqHost,
+        UserName = rabbitMqUser,
+        Password = rabbitMqPass
     };
-    return factory.CreateConnectionAsync().GetAwaiter().GetResult();
+    return factory.CreateConnection();
 });
 
-// Add this after IConnection registration
-builder.Services.AddSingleton<IChannel>(sp =>
+builder.Services.AddSingleton<IModel>(serviceProvider =>
 {
-    var connection = sp.GetRequiredService<IConnection>();
-    return connection.CreateChannelAsync().GetAwaiter().GetResult();
+    var connection = serviceProvider.GetRequiredService<IConnection>();
+    return connection.CreateModel();
 });
 
-
-// Add RabbitMQ configuration once
-builder.Services.Configure<RabbitMQConfig>(
-    builder.Configuration.GetSection("RabbitMQ"));
-
-// Register services
+// Register RabbitMQ services
 builder.Services.AddSingleton<IEventPublisher, RabbitMQEventPublisher>();
 builder.Services.AddSingleton<IEventSubscriber, RabbitMQEventSubscriber>();
-// builder.Services.AddHostedService<RabbitMQHostedService>();
-builder.Services.Configure<RabbitMQConfig>(config =>
+
+// Register Shift services
+builder.Services.AddScoped<IShiftService, ShiftService>();
+builder.Services.AddScoped<IShiftDbContext, ShiftDbContext>();
+
+// Add a hosted service to initialize RabbitMQ
+builder.Services.AddHostedService<RabbitMQHostedService>();
+
+// Read Azure Storage connection string from environment variable
+var azureStorageConnectionString = Environment.GetEnvironmentVariable("AZURE_STORAGE_CONNECTION_STRING");
+builder.Services.Configure<AzureStorageConfig>(config =>
 {
-    config.HostName = Environment.GetEnvironmentVariable("RABBITMQ_HOSTNAME") ?? "default-hostname";
-    config.UserName = Environment.GetEnvironmentVariable("RABBITMQ_DEFAULT_USER") ?? "guest";
-    config.Password = Environment.GetEnvironmentVariable("RABBITMQ_DEFAULT_PASS") ?? "guest";
+    config.ConnectionString = azureStorageConnectionString;
 });
 
-
-builder.Services.AddScoped<IShiftDbContext, ShiftDbContext>();
-builder.Services.AddScoped<IShiftService, ShiftService>();
-builder.Services.AddLogging(); 
+// Add Authorization and Controllers
+builder.Services.AddAuthorization();
 builder.Services.AddControllers();
 
-// Swagger/OpenAPI configuration
+// Swagger configuration
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo 
-    { 
-        Title = "Shifts API", 
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Shifts API",
         Version = "v1",
         Description = "A microservice for managing employee shifts"
     });
 });
 
-// Build the application
 var app = builder.Build();
 
-// Enable Swagger only in Development environment
+// Enable Swagger in development
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-// Register the custom GatewayHeaderMiddleware
+// Middleware pipeline
 app.UseMiddleware<GatewayHeaderMiddleware>();
-
-// Enable authorization
 app.UseAuthorization();
-
-// Map controllers
 app.MapControllers();
 
-// Run the application
 app.Run();

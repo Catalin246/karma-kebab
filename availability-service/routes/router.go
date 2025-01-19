@@ -7,9 +7,6 @@ import (
 	"availability-service/repository"
 	"availability-service/service"
 	"availability-service/models"
-	"context"
-	"encoding/json"
-	"log"
 	"net/http"
 	"time"
 
@@ -28,12 +25,7 @@ type AvailabilityResponse struct {
     AvailableEmployeeIDs []string `json:"availableEmployeeIDs"`
 }
 
-func RegisterRoutes(serviceClient *aztables.ServiceClient, rabbitMQService *service.RabbitMQService) *mux.Router {
-    // Set up queues
-    if err := rabbitMQService.SetupQueues(); err != nil {
-        log.Fatalf("Failed to setup RabbitMQ queues: %v", err)
-    }
-
+func RegisterRoutes(serviceClient *aztables.ServiceClient) *mux.Router {
     // Create the repository and service instances
     availabilityRepository := repository.NewTableStorageAvailabilityRepository(serviceClient)
     availabilityService := service.NewAvailabilityService(availabilityRepository)
@@ -52,66 +44,6 @@ func RegisterRoutes(serviceClient *aztables.ServiceClient, rabbitMQService *serv
     r.HandleFunc("/availability", availabilityHandler.Create).Methods(http.MethodPost)
     r.HandleFunc("/availability/{partitionKey}/{rowKey}", availabilityHandler.Update).Methods(http.MethodPut)
     r.HandleFunc("/availability/{partitionKey}/{rowKey}", availabilityHandler.Delete).Methods(http.MethodDelete)
-
-    err := rabbitMQService.ConsumeMessages(service.ShiftAvailabilityRequestQueue, func(body []byte) error {
-        // Parse the incoming request
-        var request ShiftAvailabilityRequest
-        if err := json.Unmarshal(body, &request); err != nil {
-            return err
-        }
-
-        // Parse the date
-        shiftStart, err := time.Parse(time.RFC3339, request.Date)
-        if err != nil {
-            return err
-        }
-
-        // Assuming shift duration is a fixed time, e.g., 8 hours
-        shiftEnd := shiftStart.Add(8 * time.Hour)
-
-        // Create a context
-        ctx := context.Background()
-
-        // Get availability records for the specific date range and optional employee ID
-        availabilityRecords, err := availabilityService.GetAll(ctx, request.EmployeeID, &shiftStart, &shiftEnd)
-        if err != nil {
-            return err
-        }
-
-        // Extract available employee IDs
-        availableEmployeeIDs := extractAvailableEmployeeIDs(availabilityRecords, shiftStart, shiftEnd)
-
-        // If filtering by employee ID, ensure the response only includes that employee if available
-        if request.EmployeeID != "" {
-            filteredIDs := make([]string, 0)
-            for _, id := range availableEmployeeIDs {
-                if id == request.EmployeeID {
-                    filteredIDs = append(filteredIDs, id)
-                    break
-                }
-            }
-            availableEmployeeIDs = filteredIDs
-        }
-
-        // Prepare response
-        response := AvailabilityResponse{
-            AvailableEmployeeIDs: availableEmployeeIDs,
-        }
-
-        // Serialize the response
-        responseBody, err := json.Marshal(response)
-        if err != nil {
-            return err
-        }
-
-        // Publish the response back to the shift service
-        return rabbitMQService.PublishMessage(service.ShiftAvailabilityResponseQueue, responseBody)
-    })
-
-    if err != nil {
-        log.Fatalf("Failed to set up message consumption: %v", err)
-    }
-
     http.Handle("/", r)
     return r
 }

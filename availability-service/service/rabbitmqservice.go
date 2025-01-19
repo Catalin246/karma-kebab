@@ -1,4 +1,5 @@
 // services/rabbitmq_service.go
+// would be implemented along with employee microservice
 package service
 
 import (
@@ -8,8 +9,8 @@ import (
 )
 
 const (
-	ShiftAvailabilityRequestQueue  = "shift-availability-request"
-	ShiftAvailabilityResponseQueue = "shift-availability-response"
+	ShiftAvailabilityRequestQueue  = "shift-availability-sub"
+	ShiftAvailabilityResponseQueue = "shift-availability-pub"
 )
 
 type RabbitMQService struct {

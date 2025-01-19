@@ -8,4 +8,5 @@ public interface IEventPublisher
     Task PublishClockInEvent(ClockInDto clockInDto);
     Task PublishShiftCreatedEvent(ShiftDto shiftDto);
     Task PublishShiftDeletedEvent(Guid shiftID);
+    Task InitializeAsync();
 }}

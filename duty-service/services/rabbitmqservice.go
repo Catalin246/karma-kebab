@@ -28,12 +28,12 @@ func NewRabbitMQService(
 
 	// Declare queue
 	q, err := ch.QueueDeclare(
-		"clockIn", // queue name
-		true,      // durable
-		false,     // delete when unused
-		false,     // exclusive
-		false,     // no-wait
-		nil,       // arguments
+		"clockIn", // Updated queue name
+		true,            // durable
+		false,           // delete when unused
+		false,           // exclusive
+		false,           // no-wait
+		nil,             // arguments
 	)
 	if err != nil {
 		log.Fatalf("Failed to declare queue: %v", err)
