@@ -32,8 +32,8 @@ jobs:
           cd truck-service/tests
           pytest --maxfail=1 --disable-warnings -q
 
-    #c-sharp unit tests
-    csharp-test:
+  #c-sharp unit tests
+  csharp-test:
     runs-on: ubuntu-latest
     name: C# Unit Tests
     steps:
