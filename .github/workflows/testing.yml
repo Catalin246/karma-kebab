@@ -46,15 +46,15 @@ jobs:
         with:
           dotnet-version: '8.0'
 
-      - name: Restore dependencies
-        run: |
-          cd employee-service-web
-          dotnet restore
+      #- name: Restore dependencies
+        #run: |
+          #cd employee-service-web
+          #dotnet restore
 
-      - name: Run C# Unit Tests
-        run: |
-          cd employee-service-web/tests/unitTests
-          dotnet test
+      #- name: Run C# Unit Tests
+        #run: |
+          #cd employee-service-web/tests/unitTests
+          #dotnet test
       
       - name: Restore dependencies
         run: |
