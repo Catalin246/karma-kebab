@@ -83,5 +83,4 @@ if (app.Environment.IsDevelopment())
 app.UseMiddleware<GatewayHeaderMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
-
 app.Run();
