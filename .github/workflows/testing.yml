@@ -48,12 +48,12 @@ jobs:
 
       - name: Restore dependencies
         run: |
-          cd employee-service
+          cd employee-service-web
           dotnet restore
 
       - name: Run C# Unit Tests
         run: |
-          cd employee-service/tests
+          cd employee-service-web/tests
           dotnet test
       
       - name: Restore dependencies
@@ -77,7 +77,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: '1.19'
+          go-version: '1.20'
 
       - name: Install dependencies
         run: |
