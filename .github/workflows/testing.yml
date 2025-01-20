@@ -2,12 +2,12 @@ name: Full CI/CD Pipeline with Testing
 
 on:
   workflow_dispatch:
-    push:
-      branches:
-        - testing
-    pull_request:
-      branches:
-        - testing
+  push:
+    branches:
+      - testing
+  pull_request:
+    branches:
+      - testing
 
 jobs:
   # python unit tests
