@@ -3,6 +3,8 @@ using System.Threading.Tasks;
 using Xunit;
 using Moq;
 using Microsoft.Extensions.Logging;
+using Services;
+using Models;
 //Service layer test : Business logic, data transformations, core functionality
 public class ShiftServiceTests
 {

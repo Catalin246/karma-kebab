@@ -23,15 +23,13 @@ func NewTableStorageAvailabilityRepository(serviceClient *aztables.ServiceClient
 	}
 }
 
-// Create inserts an availability record into Table Storage after checking for conflicts
 func (r *TableStorageAvailabilityRepository) Create(ctx context.Context, availability models.Availability) error {
-    // First, check for existing overlapping availabilities
+    // checks for existing overlapping availabilities
     existingAvailabilities, err := r.GetOverlappingAvailabilities(ctx, availability)
     if err != nil {
         return fmt.Errorf("failed to check existing availabilities: %v", err)
     }
 
-    // If any overlapping availabilities exist, return an error
     if len(existingAvailabilities) > 0 {
         return fmt.Errorf("availability conflicts with existing entries")
     }
@@ -47,7 +45,7 @@ func (r *TableStorageAvailabilityRepository) Create(ctx context.Context, availab
         "EndDate":      availability.EndDate.Format(time.RFC3339),
     }
 
-    // Marshal the entity to JSON
+    // entity to JSON
     entityBytes, err := json.Marshal(entity)
     if err != nil {
         return fmt.Errorf("failed to marshal entity: %v", err)
@@ -61,9 +59,7 @@ func (r *TableStorageAvailabilityRepository) Create(ctx context.Context, availab
     return nil
 }
 
-// GetOverlappingAvailabilities finds availabilities that overlap with the given availability
 func (r *TableStorageAvailabilityRepository) GetOverlappingAvailabilities(ctx context.Context, availability models.Availability) ([]models.Availability, error) {
-    // Build a filter to find overlapping availabilities for the same employee
     filter := fmt.Sprintf("PartitionKey eq '%s' and ((StartDate le datetime'%s' and EndDate ge datetime'%s') or (StartDate le datetime'%s' and EndDate ge datetime'%s') or (StartDate ge datetime'%s' and StartDate le datetime'%s'))", 
         availability.EmployeeID,
         availability.StartDate.Format("2006-01-02T15:04:05Z"),
@@ -124,15 +120,12 @@ func (r *TableStorageAvailabilityRepository) GetOverlappingAvailabilities(ctx co
 func (r *TableStorageAvailabilityRepository) GetAll(ctx context.Context, employeeID string, startDate, endDate *time.Time) ([]models.Availability, error) {
     tableClient := r.serviceClient.NewClient(r.tableName)
 
-    // Start with an empty filter
     var filterParts []string
 
-    // Add employeeID filter if provided
     if employeeID != "" {
         filterParts = append(filterParts, fmt.Sprintf("PartitionKey eq '%s'", employeeID))
     }
 
-    // Add date filters if provided
     if startDate != nil && endDate != nil {
         datePart := fmt.Sprintf("(StartDate ge datetime'%s' and StartDate le datetime'%s') or (EndDate ge datetime'%s' and EndDate le datetime'%s') or (StartDate le datetime'%s' and EndDate ge datetime'%s')",
             startDate.Format("2006-01-02T15:04:05Z"),
@@ -148,13 +141,11 @@ func (r *TableStorageAvailabilityRepository) GetAll(ctx context.Context, employe
         filterParts = append(filterParts, fmt.Sprintf("EndDate le datetime'%s'", endDate.Format("2006-01-02T15:04:05Z")))
     }
 
-    // Combine all filter parts with AND
     var filter string
     if len(filterParts) > 0 {
         filter = strings.Join(filterParts, " and ")
     }
 
-    // Create list options with the filter
     var listOptions *aztables.ListEntitiesOptions
     if filter != "" {
         listOptions = &aztables.ListEntitiesOptions{
@@ -162,7 +153,6 @@ func (r *TableStorageAvailabilityRepository) GetAll(ctx context.Context, employe
         }
     }
 
-    // Query table storage with the filter
     pager := tableClient.NewListEntitiesPager(listOptions)
     var availabilities []models.Availability
 
@@ -214,7 +204,7 @@ func (r *TableStorageAvailabilityRepository) Update(ctx context.Context, employe
 		"EndDate":      availability.EndDate.Format(time.RFC3339),
 	}
 
-	// Marshal the entity to JSON
+	// entity to JSON
 	entityBytes, err := json.Marshal(entity)
 	if err != nil {
 		return fmt.Errorf("failed to marshal entity: %v", err)

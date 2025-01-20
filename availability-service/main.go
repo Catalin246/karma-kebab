@@ -19,7 +19,7 @@ func failOnError(err error, msg string) {
 }
 
 func main() {
-	// Try loading the .env file (optional for production)
+	// Try loading the .env file
 	if err := godotenv.Load(".env"); err != nil {
 		log.Println("Warning: .env file not found, falling back to environment variables")
 	}

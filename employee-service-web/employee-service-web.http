@@ -8,7 +8,7 @@ X-From-Gateway: true
 ###
 
 ### Get Employee by ID
-GET {{employee_service_web_HostAddress}}/employees/{id:guid}
+GET {{employee_service_web_HostAddress}}/employees/846d05b9-b2d1-4554-bcd1-fd56a242414e
 Accept: application/json
 Content-Type: application/json
 X-From-Gateway: true
@@ -16,7 +16,7 @@ X-From-Gateway: true
 ###
 
 ### Get Employee by Role
-GET {{employee_service_web_HostAddress}}/employees/role/{role:int}
+GET {{employee_service_web_HostAddress}}/employees/role/0
 Accept: application/json
 Content-Type: application/json
 X-From-Gateway: true
@@ -37,13 +37,13 @@ X-From-Gateway: true
   "Payrate": 20.5,
   "Roles": [1, 2],
   "Email": "john.doe@example.com",
-  "Skills": ["C#", "JavaScript"]
+  "Skills": [0, 2]
 }
 
 ###
 
 ### Update Employee
-PUT {{employee_service_web_HostAddress}}/employees/{id:guid}
+PUT {{employee_service_web_HostAddress}}/employees/9586d84e-9c2a-40be-b866-1d2c491bdd9e
 Accept: application/json
 Content-Type: application/json
 X-From-Gateway: true
@@ -56,13 +56,13 @@ X-From-Gateway: true
   "Payrate": 22.5,
   "Roles": [1, 3],
   "Email": "john.doe@example.com",
-  "Skills": ["C#", "JavaScript", "Azure"]
+  "Skills": [2, 3]
 }
 
 ###
 
 ### Delete Employee
-DELETE {{employee_service_web_HostAddress}}/employees/{id:guid}
+DELETE {{employee_service_web_HostAddress}}/employees/9586d84e-9c2a-40be-b866-1d2c491bdd9e
 Accept: application/json
 Content-Type: application/json
 X-From-Gateway: true

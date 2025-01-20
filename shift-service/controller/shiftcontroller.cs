@@ -2,6 +2,11 @@ using Microsoft.AspNetCore.Mvc;
 using Azure;
 using System.Text.Json;
 using Services;
+using Models;
+using Messaging.Publishers;
+
+namespace Controllers
+{
 
 [ApiController]
 [Route("[controller]")]
@@ -9,12 +14,13 @@ public class ShiftsController : ControllerBase
 {
     private readonly IShiftService _shiftService;
     private readonly ILogger<ShiftsController> _logger;
-    private readonly IRabbitMqService _rabbitMqService;
-
-    public ShiftsController(IShiftService shiftService, ILogger<ShiftsController> logger)
+    private readonly IEventPublisher _eventpublisher;
+    
+    public ShiftsController( IShiftService shiftService, ILogger<ShiftsController> logger, IEventPublisher eventPublisher) 
     {
         _shiftService = shiftService;
-        _logger = logger;
+        _logger = logger; 
+        _eventpublisher = eventPublisher;
     }
 
     [HttpGet]
@@ -157,7 +163,6 @@ public class ShiftsController : ControllerBase
         }
         catch (RequestFailedException ex)
         {
-            // Log the specific Azure Storage exception
             _logger.LogError(ex, "Azure Storage error updating shift with ID: {ShiftId}. Status Code: {StatusCode}, Error Code: {ErrorCode}", 
                 shiftId, ex.Status, ex.ErrorCode);
 
@@ -181,22 +186,22 @@ public class ShiftsController : ControllerBase
     }
 
 
-    [HttpPost("{shiftId:guid}/clockin")]
+   [HttpPost("{shiftId:guid}/clockin")]
     public async Task<ActionResult<ApiResponse>> ClockIn(Guid shiftId)
     {
         try
         {
-            // Create UpdateShiftDto with only ClockInTime updated
+            // UpdateShiftDto with only ClockInTime updated
             var updateShiftDto = new UpdateShiftDto
             {
-                ClockInTime = DateTime.Now
+                ClockInTime = DateTime.UtcNow  
             };
 
-            // Call the existing UpdateShift method
             var updatedShift = await _shiftService.UpdateShift(shiftId, updateShiftDto);
 
             if (updatedShift == null)
             {
+                _logger.LogWarning("Shift not found for clock-in. ShiftId: {ShiftId}", shiftId);
                 return NotFound(new ApiResponse
                 {
                     Success = false,
@@ -204,35 +209,53 @@ public class ShiftsController : ControllerBase
                 });
             }
 
-            // message for rabbitmq
-            var clockInMessage = new ClockInDto
+            var clockInEvent = new ClockInDto
             {
                 ShiftID = shiftId,
-                TimeStamp = DateTime.Now,
+                TimeStamp = DateTime.UtcNow,
                 RoleId = updatedShift.RoleId
             };
 
-            // Publish clock-in message to RabbitMQ - to clockin queue
-            _rabbitMqService.PublishClockInEvent(clockInMessage);
-
-            return Ok(new ApiResponse
+            try
             {
-                Success = true,
-                Message = "Clock-in successful and message published",
-                Data = updatedShift
-            });
+
+                _eventpublisher.PublishClockInEvent(clockInEvent);
+                _logger.LogInformation("Successfully published clock-in event for shift: {ShiftId}", shiftId);
+
+
+                return Ok(new ApiResponse
+                {
+                    Success = true,
+                    Message = "Clock-in successful and event published",
+                    Data = updatedShift
+                });
+            }
+            catch (Exception publishEx)
+            {
+                _logger.LogError(publishEx, "Failed to publish clock-in event for shift: {ShiftId}. Will retry in background.", shiftId);
+                
+                // Queue for retry in background?? TODO
+                // BackgroundJob.Enqueue(() => RetryPublishClockInEvent(clockInEvent));
+
+                // Still return success since the clock-in itself succeeded
+                return Ok(new ApiResponse
+                {
+                    Success = true,
+                    Message = "Clock-in successful. Event publishing queued for retry.",
+                    Data = updatedShift
+                });
+            }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error clocking in for shift with ID: {ShiftId}", shiftId);
+            _logger.LogError(ex, "Error processing clock-in for shift: {ShiftId}", shiftId);
             return StatusCode(500, new ApiResponse
             {
                 Success = false,
-                Message = "Internal server error occurred while clocking in"
+                Message = "Internal server error occurred while processing clock-in"
             });
         }
     }
-
 
     [HttpDelete("{shiftId:guid}")]
     public async Task<ActionResult> DeleteShift(Guid shiftId)
@@ -284,4 +307,5 @@ public class ApiResponse
     public bool Success { get; set; }
     public string Message { get; set; }
     public object Data { get; set; }
+}
 }

@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
-
+namespace Models {
 public class ShiftEntity : ITableEntity
 {
     public string PartitionKey { get; set; }  // employeeId
@@ -41,4 +41,4 @@ public class ShiftEntity : ITableEntity
     {
         return Enum.Parse<ShiftStatus>(Status, ignoreCase: true);
     }
-}
+}}

@@ -6,5 +6,4 @@ Event Management &amp; Planning Tool: A streamlined app for managing festival lo
 https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow
 
 ## run with docker
-
 `docker-compose up --build`

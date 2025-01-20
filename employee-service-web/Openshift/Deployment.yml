@@ -215,7 +215,7 @@ spec:
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata: 
-  name: employee-service-web-route
+  name: employee-service
   namespace: india-dev
 spec: 
   to: 
@@ -226,4 +226,3 @@ spec:
   tls: 
     termination: edge
   wildcardPolicy: None
-    

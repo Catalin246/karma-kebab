@@ -2,14 +2,14 @@
     "sqltools.connections": [
         {
             "previewLimit": 50,
-            "server": "postgres",
+            "server": "localhost",
             "driver": "PostgreSQL",
             "name": "EmployeeServiceDB",
             "database": "employeedb",
             "username": "postgres",
             "password": "password",
             "connectionTimeout": 10,
-            "connectString": "\"Server=postgres;Port=5432;Database=employeedb;Username=postgres;Password=password;\""
+            "connectString": "Server=localhost;Port=5432;Database=employeedb;Username=postgres;Password=password;"
         }
     ],
     "azureFunctions.deploySubpath": "employee_service\\EmployeeMicroservice.Functions/bin/Release/net8.0/publish",
