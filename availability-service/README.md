@@ -1,54 +1,103 @@
-# Availability Microservice
+# Karma Kebab Availability Microservice
 
-This microservice manages employee (un)availability for events in the Karma Kebab application.
-each record will be a record of when an employee is NOT available
+## How to Use
 
+### Requirements
+- Go 1.18 or higher
+- Azure Storage (for handling availability records)
+- RabbitMQ (for message queue integration)
+- Docker (for containerization)
+- OpenShift (for deployment)
 
-### for local testing
-   npm install -g azurite
-   azurite
+### Running Locally
 
-**Build the Docker Image**:
+To run the `Availability` microservice locally, follow these steps:
 
-   docker compose up
+docker compose up on whole project
+apigateway url/availability : localhost:3007/availability
 
-Partition key = employeeID
-rowkey = id
-methods: 
-  r.HandleFunc("/availability", availabilityHandler.GetAll).Methods(http.MethodGet)
-	r.HandleFunc("/availability", availabilityHandler.Create).Methods(http.MethodPost)
-	r.HandleFunc("/availability/{partitionKey}/{rowKey}", availabilityHandler.Update).Methods(http.MethodPut)
-	r.HandleFunc("/availability/{partitionKey}/{rowKey}", availabilityHandler.Delete).Methods(http.MethodDelete)
+### Endpoints
 
+#### `GET /availability`
+Retrieves all availability records.
 
+- **Response:**
+  - Status: `200 OK`
+  - Body: JSON array of availability records.
 
-   Querying the getall with specific dates: 
+#### `POST /availability`
+Creates a new availability record for an employee.
 
-1. Basic full date range query:
-```
-http://localhost:3002/availability?startDate=2024-01-01T00:00:00Z&endDate=2024-12-31T23:59:59Z
-```
+- **Request Body:**
+    ```json
+    {
+      "employeeId": "69ji0k34-k087-159j-fu3l-30718f822j436",
+      "startDate": "2025-01-20T09:00:00Z",
+      "endDate": "2025-01-20T17:00:00Z"
+    }
+    ```
 
-2. Query with only start date:
-```
-http://localhost:3002/availability?startDate=2024-03-15T00:00:00Z
-```
+- **Response:**
+  - Status: `201 Created`
+  - Body: The created availability record.
 
-3. Query with only end date:
-```
-http://localhost:3002/availability?endDate=2024-06-30T23:59:59Z
-```
+#### `PUT /availability/{partitionKey}/{rowKey}`
+Updates an existing availability record by partition and row key.
 
-4. Narrow date range (specific month):
-```
-http://localhost:3002/availability?startDate=2024-04-01T00:00:00Z&endDate=2024-04-30T23:59:59Z
-```
+- **Request Body:**
+    ```json
+    {
+      "employeeId": "69ji0k34-k087-159j-fu3l-30718f822j436",
+      "startDate": "2025-01-20T10:00:00Z",
+      "endDate": "2025-01-20T18:00:00Z"
+    }
+    ```
 
-5. Current year query:
-```
-http://localhost:3002/availability?startDate=2024-01-01T00:00:00Z&endDate=2024-12-31T23:59:59Z
-```
-- Ensure you're using RFC3339 format (YYYY-MM-DDTHH:MM:SSZ)
-- The 'Z' indicates UTC time zone
-- Use URL encoding if needed (though most tools handle this automatically)
-- Verify your server's timezone handling
+- **Response:**
+  - Status: `200 OK`
+  - Body: The updated availability record.
+  - Status: `404 Not Found` if the record does not exist.
+
+#### `DELETE /availability/{partitionKey}/{rowKey}`
+Deletes an availability record by partition and row key.
+
+- **Response:**
+  - Status: `204 No Content` if the record is deleted successfully.
+  - Status: `404 Not Found` if the record does not exist.
+
+#### `POST /availability/shift`
+Receives a message about shift availability and checks for available employees.
+
+- **Request Body:**
+    ```json
+    {
+      "date": "2025-01-20T09:00:00Z",
+      "employeeId": "69ji0k34-k087-159j-fu3l-30718f822j436"  // Optional employee ID filter
+    }
+    ```
+
+- **Response:**
+  - Status: `200 OK`
+  - Body: JSON object containing available employee IDs for the requested shift date.
+
+    ```json
+    {
+      "availableEmployeeIDs": ["u69ji0k34-k087-159j-fu3l-30718f822j436", "o39ji0k34-k087-159j-fu3l-30718f822j435"]
+    }
+    ```
+
+### Message Queue Integration
+
+The `Availability` microservice consumes and publishes messages via RabbitMQ. The service listens for messages regarding shift availability requests and publishes a response with available employees.
+
+- **Consumption Queue:** `ShiftAvailabilityRequestQueue`
+- **Response Queue:** `ShiftAvailabilityResponseQueue`
+
+When a shift availability request is received, the microservice should check for available employees for the requested date and time, then responds with a list of available employees.
+
+### Authentication
+keycloak
+
+### Storage
+
+The microservice uses Azure Table Storage to store availability records
