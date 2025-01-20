@@ -15,10 +15,10 @@ namespace Messaging.Subscribers
         private readonly IModel _channel;
         private readonly ILogger<RabbitMQEventSubscriber> _logger;
 
-        private const string SHIFT_CREATED_QUEUE = "shift.created.queue";
-        private const string SHIFT_DELETED_QUEUE = "shift.deleted.queue";
-        private const string SHIFT_CREATED_EXCHANGE = "shift.created";
-        private const string SHIFT_DELETED_EXCHANGE = "shift.deleted";
+        private const string EVENT_CREATED_QUEUE = "eventCreated";
+        private const string EVENT_DELETED_QUEUE = "eventDeleted";
+        private const string EVENT_CREATED_EXCHANGE = "event.created";
+        private const string EVENT_DELETED_EXCHANGE = "event.deleted";
 
         public RabbitMQEventSubscriber(IOptions<RabbitMQConfig> options, ILogger<RabbitMQEventSubscriber> logger)
         {
@@ -39,14 +39,14 @@ namespace Messaging.Subscribers
                 _channel = _connection.CreateModel();
 
                 // Declare exchanges and queues
-                _channel.ExchangeDeclare(SHIFT_CREATED_EXCHANGE, ExchangeType.Fanout, durable: true);
-                _channel.ExchangeDeclare(SHIFT_DELETED_EXCHANGE, ExchangeType.Fanout, durable: true);
+                _channel.ExchangeDeclare(EVENT_CREATED_EXCHANGE, ExchangeType.Fanout, durable: true);
+                _channel.ExchangeDeclare(EVENT_DELETED_EXCHANGE, ExchangeType.Fanout, durable: true);
 
-                _channel.QueueDeclare(SHIFT_CREATED_QUEUE, durable: true, exclusive: false, autoDelete: false);
-                _channel.QueueDeclare(SHIFT_DELETED_QUEUE, durable: true, exclusive: false, autoDelete: false);
+                _channel.QueueDeclare(EVENT_CREATED_QUEUE, durable: true, exclusive: false, autoDelete: false);
+                _channel.QueueDeclare(EVENT_DELETED_QUEUE, durable: true, exclusive: false, autoDelete: false);
 
-                _channel.QueueBind(SHIFT_CREATED_QUEUE, SHIFT_CREATED_EXCHANGE, string.Empty);
-                _channel.QueueBind(SHIFT_DELETED_QUEUE, SHIFT_DELETED_EXCHANGE, string.Empty);
+                _channel.QueueBind(EVENT_CREATED_QUEUE, EVENT_CREATED_EXCHANGE, string.Empty);
+                _channel.QueueBind(EVENT_DELETED_QUEUE, EVENT_DELETED_EXCHANGE, string.Empty);
 
                 _logger.LogInformation("RabbitMQ connection and channel established successfully.");
             }
@@ -74,8 +74,8 @@ namespace Messaging.Subscribers
 
                 try
                 {
-                    var shiftCreatedDto = JsonSerializer.Deserialize<ShiftCreatedDto>(message);
-                    _logger.LogInformation("Received shift created event for shift: {ShiftId}", shiftCreatedDto.ShiftId);
+                    var eventCreatedDto = JsonSerializer.Deserialize<EventCreatedDto>(message);
+                    _logger.LogInformation("Received event created event for event: {EventID}", eventCreatedDto.EventId);
                     _channel.BasicAck(ea.DeliveryTag, false); // Acknowledge message
                 }
                 catch (Exception ex)
@@ -85,7 +85,7 @@ namespace Messaging.Subscribers
                 }
             };
 
-            _channel.BasicConsume(SHIFT_CREATED_QUEUE, false, consumer);
+            _channel.BasicConsume(EVENT_CREATED_QUEUE, false, consumer);
         }
 
         public void StartEventDeletedSubscriber()
@@ -100,8 +100,8 @@ namespace Messaging.Subscribers
                 try
                 {
                     //TODO HERE: DELETE ALL TEH SHIFTS FOR THAT EVENT. MESSAGE HAS WHAT??
-                    _logger.LogInformation("Received shift deleted event for shift: {ShiftId}");
-                    _channel.BasicAck(ea.DeliveryTag, false); // Acknowledge message
+                    _logger.LogInformation("rabbitmq - Received event deleted in shift");
+                    _channel.BasicAck(ea.DeliveryTag, false); 
                 }
                 catch (Exception ex)
                 {
@@ -110,7 +110,7 @@ namespace Messaging.Subscribers
                 }
             };
 
-            _channel.BasicConsume(SHIFT_DELETED_QUEUE, false, consumer);
+            _channel.BasicConsume(EVENT_DELETED_QUEUE, false, consumer);
         }
 
         public void Dispose()
