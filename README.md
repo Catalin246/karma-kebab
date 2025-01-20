@@ -7,4 +7,6 @@ https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow
 
 ## run with docker
 
-`docker-compose up --build`
+`docker build -t flask-app .`
+
+`docker run -p 3006:3006 flask-app`
