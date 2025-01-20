@@ -1,0 +1,62 @@
+[
+    {
+        "plate_number": "abc-123",
+        "name": "king kebab",
+        "description": "can carry 120kg kebab",
+        "note": "perfect"
+    },
+    {
+        "plate_number": "xyz-456",
+        "name": "queen kebab",
+        "description": "vegan meat transportation",
+        "note": "requires regular maintenance"
+    },
+    {
+        "plate_number": "lmn-789",
+        "name": "king karma",
+        "description": "can carry 200kg kebab meat",
+        "note": "no issues"
+    },
+    {
+        "plate_number": "pqr-001",
+        "name": "queen karma",
+        "description": "ideal for large orders",
+        "note": "no issues"
+    },
+    {
+        "plate_number": "stu-234",
+        "name": "big kebab",
+        "description": "equipped with refrigeration",
+        "note": "no issues"
+    },
+    {
+        "plate_number": "vwx-567",
+        "name": "smol kebab",
+        "description": "can carry 150kg supplies",
+        "note": "repaint needed"
+    },
+    {
+        "plate_number": "ghi-890",
+        "name": "big boy",
+        "description": "for bigger events",
+        "note": "no issues"
+    },
+    {
+        "plate_number": "jkl-345",
+        "name": "big girl",
+        "description": "can carry 320kg kebab",
+        "note": "fix left lamp"
+    },
+    {
+        "plate_number": "opq-678",
+        "name": "kebab wrapper",
+        "description": "for small events",
+        "note": "no issues"
+    },
+    {
+        "plate_number": "rst-901",
+        "name": "letsgo",
+        "description": "can carry 6000 kapsalons",
+        "note": "yearly checkup needed"
+    }
+]
