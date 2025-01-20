@@ -8,31 +8,31 @@
     {
         "plate_number": "xyz-456",
         "name": "queen kebab",
-        "description": "designed for gyro meat transportation",
+        "description": "vegan meat transportation",
         "note": "requires regular maintenance"
     },
     {
         "plate_number": "lmn-789",
         "name": "king karma",
-        "description": "can carry 200kg taco ingredients",
+        "description": "can carry 200kg kebab meat",
         "note": "no issues"
     },
     {
         "plate_number": "pqr-001",
         "name": "queen karma",
-        "description": "ideal for delivering large pizza orders",
+        "description": "ideal for large orders",
         "note": "no issues"
     },
     {
         "plate_number": "stu-234",
         "name": "big kebab",
-        "description": "equipped with refrigeration for sushi transport",
+        "description": "equipped with refrigeration",
         "note": "no issues"
     },
     {
         "plate_number": "vwx-567",
         "name": "smol kebab",
-        "description": "can carry 150kg burger supplies",
+        "description": "can carry 150kg supplies",
         "note": "repaint needed"
     },
     {
@@ -56,7 +56,7 @@
     {
         "plate_number": "rst-901",
         "name": "letsgo",
-        "description": "can carry 120kg kebab",
+        "description": "can carry 6000 kapsalons",
         "note": "yearly checkup needed"
     }
 ]
