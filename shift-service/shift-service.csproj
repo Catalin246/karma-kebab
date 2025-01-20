@@ -15,11 +15,6 @@
     <PackageReference Include="Microsoft.Extensions.Azure" Version="1.8.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.AutoActivation" Version="9.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-<<<<<<< HEAD
-    <PackageReference Include="RabbitMQ.Client" Version="6.4.0" />
-=======
-    <PackageReference Include="Polly" Version="8.5.1" />
->>>>>>> main
     <PackageReference Include="Moq" Version="4.20.72" />
     <PackageReference Include="RabbitMQ.Client" Version="6.4.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
