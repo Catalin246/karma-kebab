@@ -1,7 +1,7 @@
 # RabbitMQ Dockerfile
 
 # Use the official RabbitMQ image with management console
-FROM rabbitmq:3-management
+FROM rabbitmq:3.13-management
 
 # Expose ports for RabbitMQ messaging and management console
 EXPOSE 5672 15672
