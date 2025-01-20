@@ -163,7 +163,6 @@ public class ShiftsController : ControllerBase
         }
         catch (RequestFailedException ex)
         {
-            // Log the specific Azure Storage exception
             _logger.LogError(ex, "Azure Storage error updating shift with ID: {ShiftId}. Status Code: {StatusCode}, Error Code: {ErrorCode}", 
                 shiftId, ex.Status, ex.ErrorCode);
 
@@ -192,13 +191,12 @@ public class ShiftsController : ControllerBase
     {
         try
         {
-            // Create UpdateShiftDto with only ClockInTime updated
+            // UpdateShiftDto with only ClockInTime updated
             var updateShiftDto = new UpdateShiftDto
             {
-                ClockInTime = DateTime.UtcNow  // Use UTC time for consistency
+                ClockInTime = DateTime.UtcNow  
             };
 
-            // Call the existing UpdateShift method
             var updatedShift = await _shiftService.UpdateShift(shiftId, updateShiftDto);
 
             if (updatedShift == null)
@@ -211,7 +209,6 @@ public class ShiftsController : ControllerBase
                 });
             }
 
-            // Prepare the clock-in event message
             var clockInEvent = new ClockInDto
             {
                 ShiftID = shiftId,
@@ -222,8 +219,6 @@ public class ShiftsController : ControllerBase
             try
             {
 
-                // Publish clock-in event
-                // Wrap the synchronous publishing call in Task.Run to avoid blocking the thread
                 _eventpublisher.PublishClockInEvent(clockInEvent);
                 _logger.LogInformation("Successfully published clock-in event for shift: {ShiftId}", shiftId);
 
@@ -237,7 +232,6 @@ public class ShiftsController : ControllerBase
             }
             catch (Exception publishEx)
             {
-                // Log the publishing error but don't fail the clock-in operation
                 _logger.LogError(publishEx, "Failed to publish clock-in event for shift: {ShiftId}. Will retry in background.", shiftId);
                 
                 // Queue for retry in background?? TODO

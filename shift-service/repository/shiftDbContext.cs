@@ -88,7 +88,6 @@ public class ShiftDbContext : IShiftDbContext
     {
         var shifts = new List<ShiftEntity>();
 
-        // Start building the filter string
         var filterList = new List<string>();
 
         if (employeeId.HasValue)
@@ -118,7 +117,7 @@ public class ShiftDbContext : IShiftDbContext
 
         if (eventId.HasValue)
         {
-            filterList.Add($"EventId eq '{eventId}'"); // Adjust depending on how eventId is stored
+            filterList.Add($"EventId eq '{eventId}'");
         }
 
         if (roleId.HasValue)
@@ -134,7 +133,6 @@ public class ShiftDbContext : IShiftDbContext
             ? _tableClient.QueryAsync<ShiftEntity>()
             : _tableClient.QueryAsync<ShiftEntity>(filter);
 
-        // Collect results
         await foreach (var shift in queryResults)
         {
             shifts.Add(shift);

@@ -12,7 +12,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// AvailabilityServiceInterface defines the methods that the service must implement
+// endpoints
 type IAvailability interface {
 	GetAll(ctx context.Context, employeeID string, startDate, endDate *time.Time) ([]models.Availability, error)
 	Create(ctx context.Context, availability models.Availability) (*models.Availability, error)
@@ -36,7 +36,6 @@ type UpdateAvailabilityRequest struct {
 	EndDate    string `json:"endDate"`
 }
 
-// NewAvailabilityHandler now accepts the interface instead of a pointer to the concrete service
 func NewAvailabilityHandler(service IAvailability) *AvailabilityHandler {
 	return &AvailabilityHandler{
 		service: service,
@@ -50,7 +49,6 @@ func (h *AvailabilityHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 
     var startDate, endDate *time.Time
 
-    // Validate employeeID as a valid UUID
     if employeeID != "" {
         if _, err := uuid.Parse(employeeID); err != nil {
             http.Error(w, "Invalid employeeId format. Must be a valid UUID.", http.StatusBadRequest)
@@ -58,7 +56,6 @@ func (h *AvailabilityHandler) GetAll(w http.ResponseWriter, r *http.Request) {
         }
     }
 
-    // Define multiple date formats to try
     dateFormats := []string{
         time.RFC3339,
         "2006-01-02T15:04:05Z07:00",
@@ -73,7 +70,6 @@ func (h *AvailabilityHandler) GetAll(w http.ResponseWriter, r *http.Request) {
         var parsedStartDate time.Time
         var err error
 
-        // Try parsing with different formats
         for _, format := range dateFormats {
             parsedStartDate, err = time.Parse(format, startDateStr)
             if err == nil {
@@ -96,7 +92,6 @@ func (h *AvailabilityHandler) GetAll(w http.ResponseWriter, r *http.Request) {
         var parsedEndDate time.Time
         var err error
 
-        // Try parsing with different formats
         for _, format := range dateFormats {
             parsedEndDate, err = time.Parse(format, endDateStr)
             if err == nil {
@@ -131,7 +126,6 @@ func (h *AvailabilityHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Capture the returned availability
 	createdAvailability, err := h.service.Create(r.Context(), availability)
 	if err != nil {
 		if strings.Contains(err.Error(), "availability conflicts") {
@@ -142,7 +136,6 @@ func (h *AvailabilityHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Respond with created availability
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(createdAvailability)
