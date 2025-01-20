@@ -38,3 +38,11 @@ func (m *MockEventService) Update(ctx context.Context, partitionKey string, rowK
 func (m *MockEventService) Delete(ctx context.Context, partitionKey, rowKey string) error {
 	return m.Called(ctx, partitionKey, rowKey).Error(0)
 }
+
+func (m *MockEventService) GetEventByShiftID(ctx context.Context, partitionKey string) (*models.Event, error) {
+	args := m.Called(ctx, partitionKey)
+	if args.Get(0) != nil {
+		return args.Get(0).(*models.Event), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
