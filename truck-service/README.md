@@ -7,12 +7,15 @@ Desktop: `.venv\Scripts\activate` Linux: `source .venv/bin/activate`
 
 run: python run.py
 
-now with docker:
-docker-compose up --build -d
+# running now with docker:
+`docker build -t flask-app .`
+
+`docker run -p 3006:3006 flask-app`
 
 
 
-for postman the link is: (get/post)
+# for postman the link is: 
+(get/post)
 http://localhost:3006/trucks
 
 example json to post:
