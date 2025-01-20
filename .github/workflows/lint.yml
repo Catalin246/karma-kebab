@@ -1,72 +1,31 @@
-name: Linting automated process
+# This workflow executes several linters on changed files based on languages used in your code base whenever
+# you push a code or open a pull request.
+#
+# You can adjust the behavior by modifying this file.
+# For more information, see:
+# https://github.com/github/super-linter
+
+name: Lint Code Base
 
 on:
   workflow_dispatch
   #push:
-    #branches:
-      #- main
+    #branches: [ "main" ]
   #pull_request:
-    #branches:
-      #- main
-
+    #branches: [ "main" ]
 jobs:
-  lint:
-    name: Run Linters
+  run-lint:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Check out Git repository
+      - name: Checkout code
         uses: actions/checkout@v4
-
-      #linting for python
-      - name: Set up Python
-        uses: actions/setup-python@v4
         with:
-          python-version: 3.8
+          # Full git history is needed to get a proper list of changed files within `super-linter`
+          fetch-depth: 0
 
-      - name: Install Python dependencies
-        run: |
-          pip install black flake8
-
-      - name: Run Python linters
-        run: |
-          cd truck-service
-          black . --check
-          flake8 .
-
-      #linting for C#
-      - name: Set up .NET
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: "6.0.x"
-
-      - name: Run C# linter
-        run: |
-          cd employee-service
-          dotnet format --verify-no-changes
-
-      - name: Run C# linter
-        run: |
-          cd shift-service
-          dotnet format --verify-no-changes
-
-      #linting for Go
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: 1.17
-
-      - name: Run Go linter
-        run: |
-          cd availability-service
-          gofmt -l .
-      
-      - name: Run Go linter
-        run: |
-          cd duty-service
-          gofmt -l .
-
-      - name: Run Go linter
-        run: |
-          cd event-service
-          gofmt -l .
+      - name: Lint Code Base
+        uses: github/super-linter@v4
+        env:
+          VALIDATE_ALL_CODEBASE: false
+          DEFAULT_BRANCH: "main"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
