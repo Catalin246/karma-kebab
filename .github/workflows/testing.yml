@@ -1,12 +1,13 @@
 name: Full CI/CD Pipeline with Testing
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+  workflow_dispatch:
+    push:
+      branches:
+        - testing
+    pull_request:
+      branches:
+        - testing
 
 jobs:
   # python unit tests
@@ -32,7 +33,7 @@ jobs:
           cd truck-service/tests
           pytest --maxfail=1 --disable-warnings -q
 
-  #c-sharp unit tests
+  # c-sharp unit tests
   csharp-test:
     runs-on: ubuntu-latest
     name: C# Unit Tests
