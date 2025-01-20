@@ -9,10 +9,10 @@ name: Lint Code Base
 
 on:
   workflow_dispatch
-  #push:
-    #branches: [ "main" ]
-  #pull_request:
-    #branches: [ "main" ]
+  push:
+    branches: [ "testing" ]
+  pull_request:
+    branches: [ "testing" ]
 jobs:
   run-lint:
     runs-on: ubuntu-latest
