@@ -123,6 +123,9 @@ services:
       - FLASK_ENV=development
     ports:
       - "3006:3006"
+    volumes:
+      - ./truck-service/.env:/app/.env
+      - ./truck-service/data:/app/data
     networks:
       - karama-kebab-network
 
