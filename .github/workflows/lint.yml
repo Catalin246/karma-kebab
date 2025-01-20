@@ -1,4 +1,4 @@
-name: Lint
+name: Linting automated process
 
 on:
   push:
@@ -58,14 +58,14 @@ jobs:
       - name: Run Go linter
         run: |
           cd availability-service
-          gofmt -l -w .
+          gofmt -l .
       
       - name: Run Go linter
         run: |
           cd duty-service
-          gofmt -l -w .
+          gofmt -l .
 
       - name: Run Go linter
         run: |
           cd event-service
-          gofmt -l -w .
+          gofmt -l .
