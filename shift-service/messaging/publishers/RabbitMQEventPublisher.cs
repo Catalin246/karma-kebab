@@ -15,7 +15,7 @@ namespace Messaging.Publishers
         private readonly ILogger<RabbitMQEventPublisher> _logger;
 
         private const string CLOCK_IN_EXCHANGE = "shift.clockin";
-        private const string SHIFT_CREATED_EXCHANGE = "shift.created";
+        private const string SHIFT_CREATED_EXCHANGE = "shiftCreated";
 
         public RabbitMQEventPublisher(IOptions<RabbitMQConfig> options, ILogger<RabbitMQEventPublisher> logger)
         {
